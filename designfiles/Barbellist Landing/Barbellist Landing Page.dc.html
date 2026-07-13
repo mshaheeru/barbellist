@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:#FAF7F2;font-family:'Geist',system-ui,sans-serif;color:#1F1F1F;-webkit-font-smoothing:antialiased;line-height:1.5}
+  a{color:#1B5E3C;text-decoration:none}
+  a:hover{color:#14472D}
+  .num{font-family:'Space Grotesk',sans-serif;font-feature-settings:"tnum" 1;letter-spacing:-0.02em}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+</style>
+</helmet>
+
+<div style="width:100%;overflow-x:hidden">
+
+  <!-- ===================== NAV ===================== -->
+  <nav data-screen-label="Nav" style="position:sticky;top:0;z-index:50;background:{{ navBg }};backdrop-filter:saturate(160%) blur(16px);-webkit-backdrop-filter:saturate(160%) blur(16px);border-bottom:1px solid {{ navBorder }};transition:background .25s,border-color .25s,box-shadow .25s;box-shadow:{{ navShadow }}">
+    <div style="max-width:1200px;margin:0 auto;padding:0 32px;height:82px;display:flex;align-items:center;justify-content:space-between">
+      <a href="#top" style="display:flex;align-items:baseline;gap:0;font-weight:800;font-size:23px;letter-spacing:-0.02em;color:#1B5E3C">Barbell<span style="position:relative;padding-bottom:5px">ist<span style="position:absolute;left:-1px;bottom:0;width:calc(100% + 2px);height:4px;background:linear-gradient(90deg,#C9861B,#E7B24E);border-radius:3px;box-shadow:0 1px 4px rgba(201,134,27,.45)"></span></span></a>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="display:flex;align-items:center;font-size:14.5px;font-weight:500;color:#3A3A38">
+          <a href="#features" style="color:#4A4A46;padding:8px 15px;border-radius:8px;transition:color .18s,background .18s" style-hover="color:#173D28;background:rgba(27,94,60,.06)">Features</a>
+          <a href="#pricing" style="color:#4A4A46;padding:8px 15px;border-radius:8px;transition:color .18s,background .18s" style-hover="color:#173D28;background:rgba(27,94,60,.06)">Pricing</a>
+          <a href="#customers" style="color:#4A4A46;padding:8px 15px;border-radius:8px;transition:color .18s,background .18s" style-hover="color:#173D28;background:rgba(27,94,60,.06)">Customers</a>
+          <a href="#faq" style="color:#4A4A46;padding:8px 15px;border-radius:8px;transition:color .18s,background .18s" style-hover="color:#173D28;background:rgba(27,94,60,.06)">Docs</a>
+        </div>
+        <span style="width:1px;height:22px;background:#DFDACF;margin:0 12px"></span>
+        <a href="#top" style="color:#4A4A46;font-size:14.5px;font-weight:500;padding:8px 8px;transition:color .18s" style-hover="color:#173D28">Sign in</a>
+        <a href="#pricing" style="margin-left:8px;background:#1B5E3C;color:#FAF7F2;padding:11px 22px;border-radius:11px;font-size:14.5px;font-weight:600;display:inline-flex;align-items:center;gap:7px;box-shadow:0 2px 8px rgba(27,94,60,.32);transition:transform .18s,box-shadow .18s,background .18s" style-hover="background:#174B31;transform:translateY(-1px);box-shadow:0 6px 18px rgba(27,94,60,.4)">Start free<span style="font-size:15px;line-height:1;transition:transform .18s">→</span></a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===================== HERO ===================== -->
+  <header id="top" data-screen-label="Hero" style="position:relative;background:#FAF7F2;overflow:hidden">
+    <div style="position:absolute;top:-120px;right:-80px;width:620px;height:620px;background:radial-gradient(circle,rgba(201,134,27,.16),transparent 62%);pointer-events:none"></div>
+    <div style="position:absolute;top:180px;left:-160px;width:520px;height:520px;background:radial-gradient(circle,rgba(27,94,60,.09),transparent 62%);pointer-events:none"></div>
+
+    <div style="max-width:1200px;margin:0 auto;padding:88px 32px 96px;position:relative">
+      <div style="max-width:820px">
+        <h1 style="font-size:40px;line-height:1.28;letter-spacing:-0.02em;font-weight:600;color:#2A2A28;max-width:24ch">You opened a gym to <strong style="font-weight:800;color:#173D28">transform lives</strong> and <strong style="font-weight:800;color:#173D28">build a community</strong>, not to drown in spreadsheets and 80-hour workweeks. Let Barbellist automate your scheduling, tracking, and cash flow so you can finally <strong style="font-weight:800;color:#173D28">get your weekends back</strong>.</h1>
+        <div style="display:flex;gap:14px;margin-top:34px;flex-wrap:wrap">
+          <a href="#pricing" style="background:#1B5E3C;color:#FAF7F2;padding:15px 26px;border-radius:12px;font-size:16px;font-weight:600;box-shadow:0 6px 18px rgba(27,94,60,.28)">Start free — no card</a>
+          <a href="#deepdive" style="display:inline-flex;align-items:center;gap:9px;background:#fff;color:#1B5E3C;padding:15px 24px;border-radius:12px;font-size:16px;font-weight:600;border:1px solid #DDD8CC">
+            <span style="display:inline-flex;width:22px;height:22px;border-radius:50%;background:#1B5E3C;align-items:center;justify-content:center"><span style="width:0;height:0;border-left:7px solid #FAF7F2;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;margin-left:2px"></span></span>
+            Watch 2-min demo
+          </a>
+        </div>
+        <p style="font-size:14px;color:#8A877E;margin-top:20px">Free for your first 3 months · No setup fees · Cancel anytime</p>
+      </div>
+
+      <!-- hero visuals -->
+      <div style="position:relative;margin-top:64px;height:520px">
+        <!-- secondary floating card (QR kiosk) -->
+        <div style="position:absolute;right:20px;top:36px;width:300px;transform:rotate(4deg);animation:floaty 7s ease-in-out infinite">
+          <div style="background:#fff;border-radius:20px;box-shadow:0 30px 60px -20px rgba(23,61,40,.35);border:1px solid #EDE8DD;overflow:hidden">
+            <div style="background:#173D28;padding:16px 18px;color:#EBF3ED;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">Check-in kiosk<span style="opacity:.6;font-weight:500">08:41</span></div>
+            <div style="padding:26px 22px;text-align:center">
+              <div style="width:56px;height:56px;border-radius:50%;background:#E7F3EC;margin:0 auto 14px;display:flex;align-items:center;justify-content:center">
+                <span style="width:22px;height:12px;border-left:3px solid #1B5E3C;border-bottom:3px solid #1B5E3C;transform:rotate(-45deg);margin-top:-6px"></span>
+              </div>
+              <div style="font-size:18px;font-weight:700;color:#173D28">Welcome back, Hamza</div>
+              <div style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:#E7F3EC;color:#1B5E3C;font-size:12px;font-weight:600;padding:5px 12px;border-radius:100px">Fees paid · valid to 30 Aug</div>
+              <div style="margin-top:20px;height:96px;border-radius:12px;background:repeating-linear-gradient(45deg,#F2EEE4,#F2EEE4 6px,#fff 6px,#fff 12px);border:1px solid #EDE8DD;display:flex;align-items:center;justify-content:center">
+                <div style="display:grid;grid-template-columns:repeat(5,7px);grid-template-rows:repeat(5,7px);gap:2px">{{ qrDots }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- main dashboard screenshot -->
+        <div style="position:absolute;left:0;top:0;width:760px;transform:rotate(-2deg)">
+          <div style="background:#fff;border-radius:22px;box-shadow:0 40px 80px -28px rgba(23,61,40,.4);border:1px solid #ECE7DC;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid #F0EDE4;background:#FBF9F4">
+              <span style="width:11px;height:11px;border-radius:50%;background:#E6E2D8"></span>
+              <span style="width:11px;height:11px;border-radius:50%;background:#E6E2D8"></span>
+              <span style="width:11px;height:11px;border-radius:50%;background:#E6E2D8"></span>
+              <span style="margin-left:14px;font-size:12px;color:#A29E93">app.barbellist.com/dashboard</span>
+            </div>
+            <div style="display:flex;min-height:400px">
+              <!-- sidebar -->
+              <div style="width:190px;background:#173D28;padding:20px 16px;color:#B9CFC1">
+                <div style="font-weight:800;color:#fff;font-size:16px;letter-spacing:-0.02em;margin-bottom:22px">Barbell<span style="color:#E7B24E">ist</span></div>
+                <div style="display:flex;flex-direction:column;gap:3px;font-size:13px">
+                  <div style="background:rgba(255,255,255,.12);color:#fff;padding:8px 11px;border-radius:8px;font-weight:600">Dashboard</div>
+                  <div style="padding:8px 11px">Members</div>
+                  <div style="padding:8px 11px">Attendance</div>
+                  <div style="padding:8px 11px">Payments</div>
+                  <div style="padding:8px 11px">Expenses</div>
+                  <div style="padding:8px 11px">Inventory</div>
+                  <div style="padding:8px 11px">Staff</div>
+                </div>
+              </div>
+              <!-- main -->
+              <div style="flex:1;padding:22px 24px;background:#fff">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+                  <div><div style="font-size:18px;font-weight:700;color:#1F1F1F">Good morning, Bilal</div><div style="font-size:13px;color:#9A968B">Iron Republic · Karachi · August 2026</div></div>
+                  <div style="width:34px;height:34px;border-radius:50%;background:#EDE8DD"></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px">
+                  <div style="background:#F7F5EF;border:1px solid #EEEAE0;border-radius:12px;padding:14px"><div style="font-size:12px;color:#8E8A7F">Revenue</div><div class="num" style="font-size:24px;font-weight:700;color:#1B5E3C;margin-top:4px">$8,420</div><div style="font-size:11px;color:#1B5E3C;font-weight:600;margin-top:2px">▲ 12%</div></div>
+                  <div style="background:#F7F5EF;border:1px solid #EEEAE0;border-radius:12px;padding:14px"><div style="font-size:12px;color:#8E8A7F">Expenses</div><div class="num" style="font-size:24px;font-weight:700;color:#1F1F1F;margin-top:4px">$3,180</div><div style="font-size:11px;color:#9A968B;font-weight:600;margin-top:2px">— utilities</div></div>
+                  <div style="background:#173D28;border-radius:12px;padding:14px"><div style="font-size:12px;color:#9DBBAB">Net profit</div><div class="num" style="font-size:24px;font-weight:700;color:#fff;margin-top:4px">$5,240</div><div style="font-size:11px;color:#E7B24E;font-weight:600;margin-top:2px">▲ 18%</div></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px">
+                  <div style="border:1px solid #EEEAE0;border-radius:12px;padding:16px">
+                    <div style="font-size:13px;font-weight:600;color:#54524B;margin-bottom:14px">Revenue vs expenses</div>
+                    <div style="display:flex;align-items:flex-end;gap:10px;height:120px">{{ chartBars }}</div>
+                  </div>
+                  <div style="border:1px solid #EEEAE0;border-radius:12px;padding:16px">
+                    <div style="font-size:13px;font-weight:600;color:#54524B;margin-bottom:12px">At-risk members</div>
+                    <div style="display:flex;flex-direction:column;gap:10px">
+                      <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:24px;border-radius:50%;background:#EDE8DD"></div><div style="font-size:12px">Adnan R.</div></div><div style="font-size:11px;color:#B4451F;font-weight:600;background:#FBEBE4;padding:2px 8px;border-radius:100px">7d overdue</div></div>
+                      <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:24px;border-radius:50%;background:#EDE8DD"></div><div style="font-size:12px">Sana K.</div></div><div style="font-size:11px;color:#B4451F;font-weight:600;background:#FBEBE4;padding:2px 8px;border-radius:100px">3d overdue</div></div>
+                      <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:24px;border-radius:50%;background:#EDE8DD"></div><div style="font-size:12px">Usman T.</div></div><div style="font-size:11px;color:#9A6A12;font-weight:600;background:#F7EBD3;padding:2px 8px;border-radius:100px">expires 2d</div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== TRUSTED STRIP ===================== -->
+  <section id="customers" style="background:#FAF7F2;border-top:1px solid #EFEBE1;border-bottom:1px solid #EFEBE1">
+    <div style="max-width:1200px;margin:0 auto;padding:38px 32px;text-align:center">
+      <p style="font-size:13px;color:#9A968B;letter-spacing:0.04em;text-transform:uppercase;font-weight:600">Trusted by gym owners in Karachi, Dubai, Lahore, Riyadh, Istanbul, and beyond</p>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:44px;margin-top:22px;opacity:.55">
+        <span style="font-weight:700;font-size:18px;letter-spacing:-0.01em;color:#8C887E">Ironclad Fitness</span>
+        <span style="font-weight:700;font-size:18px;letter-spacing:-0.01em;color:#8C887E">Peak Athletics</span>
+        <span style="font-weight:700;font-size:18px;letter-spacing:-0.01em;color:#8C887E">Barbell Republic</span>
+        <span style="font-weight:700;font-size:18px;letter-spacing:-0.01em;color:#8C887E">Titan Gym</span>
+        <span style="font-weight:700;font-size:18px;letter-spacing:-0.01em;color:#8C887E">Momentum Studio</span>
+        <span style="font-weight:700;font-size:18px;letter-spacing:-0.01em;color:#8C887E">Forge Fitness</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PROBLEM → SOLUTION ===================== -->
+  <section style="max-width:1200px;margin:0 auto;padding:96px 32px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px -34px rgba(23,61,40,.25)">
+      <div style="background:#F1EEE6;padding:56px 48px">
+        <div style="font-size:13px;font-weight:600;color:#B4451F;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:16px">The old way</div>
+        <h3 style="font-size:30px;line-height:1.15;letter-spacing:-0.02em;font-weight:800;color:#3A3A38">Still tracking members on paper?</h3>
+        <p style="font-size:17px;line-height:1.6;color:#6B6862;margin-top:18px">Overdue payments go unnoticed for weeks. Members forget renewal dates. Cash goes untracked. Expenses live in a drawer. And when you want to know if the gym is actually profitable this month, you're doing math on a napkin.</p>
+      </div>
+      <div style="background:#EBF1EC;padding:56px 48px;border-left:1px solid #DCE6DE">
+        <div style="font-size:13px;font-weight:600;color:#1B5E3C;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:16px">With Barbellist</div>
+        <h3 style="font-size:30px;line-height:1.15;letter-spacing:-0.02em;font-weight:800;color:#173D28">Barbellist gives you the whole picture.</h3>
+        <p style="font-size:17px;line-height:1.6;color:#4C5A50;margin-top:18px">Every member, every payment, every expense, every check-in — connected in real time. Automated WhatsApp reminders for overdue fees. Smart QR membership cards. A live dashboard that shows revenue, expenses, and profit at a glance.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FEATURE BENTO ===================== -->
+  <section id="features" style="max-width:1200px;margin:0 auto;padding:36px 32px 96px">
+    <div style="max-width:640px;margin-bottom:44px">
+      <div style="font-size:13px;font-weight:600;color:#C9861B;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:14px">Everything, connected</div>
+      <h2 style="font-size:40px;line-height:1.1;letter-spacing:-0.03em;font-weight:800;color:#173D28">One platform for the entire gym.</h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+      <!-- Member Management (large) -->
+      <div style="grid-column:span 2;background:#fff;border:1px solid #EEE9DE;border-radius:16px;padding:28px;box-shadow:0 12px 30px -22px rgba(23,61,40,.35)">
+        <h3 style="font-size:20px;font-weight:700;color:#1F1F1F">Member Management</h3>
+        <p style="font-size:15px;color:#6B6862;margin-top:6px">Digital profiles that replace the register.</p>
+        <div style="margin-top:22px;border:1px solid #F0EDE4;border-radius:12px;overflow:hidden">
+          <div style="display:flex;font-size:11px;color:#9A968B;background:#FBF9F4;padding:9px 14px;font-weight:600"><span style="flex:2">Member</span><span style="flex:1">Plan</span><span style="flex:1;text-align:right">Status</span></div>
+          <div style="display:flex;align-items:center;font-size:13px;padding:11px 14px;border-top:1px solid #F3F0E8"><span style="flex:2;display:flex;align-items:center;gap:9px"><span style="width:26px;height:26px;border-radius:50%;background:#EDE8DD"></span>Bilal Sheikh</span><span style="flex:1;color:#6B6862">Annual</span><span style="flex:1;text-align:right"><span style="background:#E7F3EC;color:#1B5E3C;font-size:11px;font-weight:600;padding:3px 9px;border-radius:100px">Active</span></span></div>
+          <div style="display:flex;align-items:center;font-size:13px;padding:11px 14px;border-top:1px solid #F3F0E8"><span style="flex:2;display:flex;align-items:center;gap:9px"><span style="width:26px;height:26px;border-radius:50%;background:#EDE8DD"></span>Sana Kamal</span><span style="flex:1;color:#6B6862">Monthly</span><span style="flex:1;text-align:right"><span style="background:#F7EBD3;color:#9A6A12;font-size:11px;font-weight:600;padding:3px 9px;border-radius:100px">Expiring</span></span></div>
+          <div style="display:flex;align-items:center;font-size:13px;padding:11px 14px;border-top:1px solid #F3F0E8"><span style="flex:2;display:flex;align-items:center;gap:9px"><span style="width:26px;height:26px;border-radius:50%;background:#EDE8DD"></span>Usman Tariq</span><span style="flex:1;color:#6B6862">Quarterly</span><span style="flex:1;text-align:right"><span style="background:#FBEBE4;color:#B4451F;font-size:11px;font-weight:600;padding:3px 9px;border-radius:100px">Overdue</span></span></div>
+        </div>
+      </div>
+
+      <!-- Automated Fee Reminders (large) -->
+      <div style="grid-column:span 2;background:#fff;border:1px solid #EEE9DE;border-radius:16px;padding:28px;box-shadow:0 12px 30px -22px rgba(23,61,40,.35)">
+        <h3 style="font-size:20px;font-weight:700;color:#1F1F1F">Automated Fee Reminders</h3>
+        <p style="font-size:15px;color:#6B6862;margin-top:6px">WhatsApp reminders that collect for you.</p>
+        <div style="margin-top:22px;display:flex;flex-direction:column;gap:12px">
+          <div style="align-self:flex-start;max-width:74%;background:#E7F3EC;border:1px solid #D6E7DC;border-radius:14px 14px 14px 4px;padding:12px 15px">
+            <div style="font-size:11px;font-weight:700;color:#1B5E3C;margin-bottom:3px">Barbellist · WhatsApp</div>
+            <div style="font-size:13px;color:#324237;line-height:1.45">Hi Usman, your Iron Republic membership fee of $28 is 7 days overdue. Tap to pay: <span style="color:#1B5E3C;font-weight:600">brbl.st/pay</span></div>
+            <div style="font-size:10px;color:#8AA593;text-align:right;margin-top:4px">Sent automatically · 9:00 AM ✓✓</div>
+          </div>
+          <div style="align-self:stretch;background:#FBF9F4;border:1px solid #EFEBE1;border-radius:12px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:13px;color:#54524B"><span style="font-weight:600;color:#1F1F1F">3 reminders</span> sent today</div>
+            <div class="num" style="font-size:15px;font-weight:700;color:#1B5E3C">$84 collected</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QR Smart Cards (small) -->
+      <div style="background:#fff;border:1px solid #EEE9DE;border-radius:16px;padding:24px;box-shadow:0 12px 30px -22px rgba(23,61,40,.35)">
+        <h3 style="font-size:17px;font-weight:700;color:#1F1F1F">QR Smart Cards</h3>
+        <p style="font-size:14px;color:#6B6862;margin-top:5px">Auto-generated membership cards in seconds.</p>
+        <div style="margin-top:20px;background:#173D28;border-radius:12px;padding:16px;color:#EBF3ED;transform:rotate(-3deg)">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:800;font-size:13px">Barbell<span style="color:#E7B24E">ist</span></span><span style="width:26px;height:26px;border-radius:5px;background:repeating-linear-gradient(45deg,#EBF3ED,#EBF3ED 2px,#173D28 2px,#173D28 4px)"></span></div>
+          <div style="margin-top:22px;font-size:14px;font-weight:600">Hamza Iqbal</div>
+          <div style="font-size:11px;color:#9DBBAB">Member · #IR-2048</div>
+        </div>
+      </div>
+
+      <!-- Live Attendance (small) -->
+      <div style="background:#fff;border:1px solid #EEE9DE;border-radius:16px;padding:24px;box-shadow:0 12px 30px -22px rgba(23,61,40,.35)">
+        <h3 style="font-size:17px;font-weight:700;color:#1F1F1F">Live Attendance</h3>
+        <p style="font-size:14px;color:#6B6862;margin-top:5px">Tap to check in. Fee status shown instantly.</p>
+        <div style="margin-top:20px;background:#EBF1EC;border:1px solid #D9E5DC;border-radius:12px;padding:20px;text-align:center">
+          <div style="width:40px;height:40px;border-radius:50%;background:#1B5E3C;margin:0 auto;display:flex;align-items:center;justify-content:center"><span style="width:15px;height:8px;border-left:3px solid #fff;border-bottom:3px solid #fff;transform:rotate(-45deg);margin-top:-4px"></span></div>
+          <div style="font-size:14px;font-weight:700;color:#173D28;margin-top:10px">Checked in</div>
+          <div style="font-size:12px;color:#5E7166">Fees valid · 08:41</div>
+        </div>
+      </div>
+
+      <!-- Expense & Profit (small) -->
+      <div style="background:#fff;border:1px solid #EEE9DE;border-radius:16px;padding:24px;box-shadow:0 12px 30px -22px rgba(23,61,40,.35)">
+        <h3 style="font-size:17px;font-weight:700;color:#1F1F1F">Expense &amp; Profit Tracking</h3>
+        <p style="font-size:14px;color:#6B6862;margin-top:5px">Know your real profit every day.</p>
+        <div style="margin-top:20px;border:1px solid #F0EDE4;border-radius:12px;padding:16px">
+          <div class="num" style="font-size:22px;font-weight:700;color:#1B5E3C">$5,240</div>
+          <div style="font-size:11px;color:#8E8A7F;margin-bottom:12px">Net profit · Aug</div>
+          <div style="display:flex;align-items:flex-end;gap:6px;height:56px">
+            <div style="flex:1;height:44%;background:#DED9CD;border-radius:3px 3px 0 0"></div>
+            <div style="flex:1;height:60%;background:#DED9CD;border-radius:3px 3px 0 0"></div>
+            <div style="flex:1;height:52%;background:#DED9CD;border-radius:3px 3px 0 0"></div>
+            <div style="flex:1;height:78%;background:#1B5E3C;border-radius:3px 3px 0 0"></div>
+            <div style="flex:1;height:92%;background:#1B5E3C;border-radius:3px 3px 0 0"></div>
+            <div style="flex:1;height:100%;background:#1B5E3C;border-radius:3px 3px 0 0"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory & POS (small) -->
+      <div style="background:#fff;border:1px solid #EEE9DE;border-radius:16px;padding:24px;box-shadow:0 12px 30px -22px rgba(23,61,40,.35)">
+        <h3 style="font-size:17px;font-weight:700;color:#1F1F1F">Inventory &amp; POS</h3>
+        <p style="font-size:14px;color:#6B6862;margin-top:5px">Sell supplements and drinks. Add to member tab.</p>
+        <div style="margin-top:20px;border:1px solid #F0EDE4;border-radius:12px;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;padding:11px 14px"><span style="display:flex;align-items:center;gap:8px"><span style="width:24px;height:24px;border-radius:6px;background:#F1EEE6"></span>Whey Protein 1kg</span><span class="num" style="font-weight:600">$34</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;padding:11px 14px;border-top:1px solid #F3F0E8"><span style="display:flex;align-items:center;gap:8px"><span style="width:24px;height:24px;border-radius:6px;background:#F1EEE6"></span>Energy drink</span><span class="num" style="font-weight:600">$3</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;padding:11px 14px;background:#EBF1EC;border-top:1px solid #D9E5DC"><span style="font-weight:600;color:#173D28">Add to Bilal's tab</span><span class="num" style="font-weight:700;color:#1B5E3C">$37</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ROI / REVENUE LEAK ===================== -->
+  <section style="position:relative;background:#F1EEE6;border-top:1px solid #E7E2D6;border-bottom:1px solid #E7E2D6;overflow:hidden">
+    <!-- soft leak / droplet motif -->
+    <div style="position:absolute;top:-60px;left:12%;width:340px;height:340px;background:radial-gradient(circle at 50% 40%,rgba(201,134,27,.10),transparent 66%);pointer-events:none"></div>
+    <div style="position:absolute;bottom:-40px;right:8%;width:300px;height:300px;background:radial-gradient(circle at 50% 40%,rgba(201,134,27,.08),transparent 66%);pointer-events:none"></div>
+    <div style="max-width:900px;margin:0 auto;padding:104px 32px;position:relative">
+      <h2 style="font-size:42px;line-height:1.14;letter-spacing:-0.03em;font-weight:800;color:#173D28;max-width:20ch">You are already paying for Barbellist. You just don't have the software yet.</h2>
+      <p style="font-size:20px;line-height:1.5;color:#8A877E;margin-top:18px">Right now, your gym is quietly leaking revenue.</p>
+
+      <div style="display:flex;flex-direction:column;gap:26px;margin-top:52px;max-width:720px">
+        <div style="display:flex;gap:18px;align-items:flex-start">
+          <span style="flex:0 0 auto;margin-top:3px;width:22px;height:26px;display:inline-block;background:#C9861B;border-radius:0 50% 50% 50%;transform:rotate(45deg);box-shadow:0 3px 8px rgba(201,134,27,.35)"></span>
+          <p style="font-size:19px;line-height:1.5;color:#3A3A38">It's in the overdue payments you feel too awkward to chase down on the gym floor.</p>
+        </div>
+        <div style="display:flex;gap:18px;align-items:flex-start">
+          <span style="flex:0 0 auto;margin-top:3px;width:22px;height:26px;display:inline-block;background:#C9861B;border-radius:0 50% 50% 50%;transform:rotate(45deg);box-shadow:0 3px 8px rgba(201,134,27,.35)"></span>
+          <p style="font-size:19px;line-height:1.5;color:#3A3A38">It's in the members who silently quit after their first year because nobody noticed they stopped showing up.</p>
+        </div>
+        <div style="display:flex;gap:18px;align-items:flex-start">
+          <span style="flex:0 0 auto;margin-top:3px;width:22px;height:26px;display:inline-block;background:#C9861B;border-radius:0 50% 50% 50%;transform:rotate(45deg);box-shadow:0 3px 8px rgba(201,134,27,.35)"></span>
+          <p style="font-size:19px;line-height:1.5;color:#3A3A38">It's in the manual billing errors that slip through the cracks.</p>
+        </div>
+      </div>
+
+      <p style="font-size:26px;line-height:1.35;font-weight:700;letter-spacing:-0.02em;color:#1B5E3C;margin-top:46px;max-width:26ch">Losing just one member a month to silent churn costs you hundreds of dollars a year.</p>
+
+      <p style="font-size:18px;line-height:1.65;color:#54524B;margin-top:34px;max-width:60ch">For just $50 a month, Barbellist plugs the leaks. <strong style="color:#2A2A28;font-weight:700">Our automated fee reminders recover your lost revenue without the awkward conversations. Our smart-tracking flags at-risk members before they quit, saving your retention rate.</strong></p>
+
+      <div style="margin-top:64px;text-align:center">
+        <p style="font-size:34px;line-height:1.25;letter-spacing:-0.02em;font-weight:800;color:#1B5E3C;max-width:22ch;margin:0 auto">Barbellist doesn't cost you money. It rescues the money you are already losing.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PRODUCT DEEP-DIVE ===================== -->
+  <section id="deepdive" style="max-width:1200px;margin:0 auto;padding:100px 32px;display:flex;flex-direction:column;gap:110px">
+
+    <!-- Row A: screenshot left, copy right -->
+    <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center">
+      <div style="background:#fff;border:1px solid #ECE7DC;border-radius:18px;padding:20px;box-shadow:0 30px 66px -34px rgba(23,61,40,.4)">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+          <div style="background:#F7F5EF;border:1px solid #EEEAE0;border-radius:12px;padding:14px"><div style="font-size:11px;color:#8E8A7F">Revenue</div><div class="num" style="font-size:22px;font-weight:700;color:#1B5E3C">$8,420</div></div>
+          <div style="background:#F7F5EF;border:1px solid #EEEAE0;border-radius:12px;padding:14px"><div style="font-size:11px;color:#8E8A7F">Expenses</div><div class="num" style="font-size:22px;font-weight:700;color:#1F1F1F">$3,180</div></div>
+          <div style="background:#173D28;border-radius:12px;padding:14px"><div style="font-size:11px;color:#9DBBAB">Net profit</div><div class="num" style="font-size:22px;font-weight:700;color:#fff">$5,240</div></div>
+        </div>
+        <div style="border:1px solid #EEEAE0;border-radius:12px;padding:16px">
+          <div style="font-size:12px;font-weight:600;color:#54524B;margin-bottom:12px">Revenue vs expenses · 6 months</div>
+          <div style="display:flex;align-items:flex-end;gap:12px;height:130px">{{ chartBars }}</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#C9861B;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:14px">Owner Dashboard</div>
+        <h2 style="font-size:36px;line-height:1.12;letter-spacing:-0.03em;font-weight:800;color:#173D28">Your gym, in one glance.</h2>
+        <p style="font-size:17px;line-height:1.6;color:#6B6862;margin-top:16px">Revenue, expenses, net profit, overdue fees, at-risk members — all live, all in one place. No more monthly guessing games.</p>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:24px">
+          <div style="display:flex;align-items:center;gap:10px;font-size:15px;color:#3A3A38"><span style="width:20px;height:20px;border-radius:6px;background:#E7F3EC;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #1B5E3C;border-bottom:2px solid #1B5E3C;transform:rotate(-45deg);margin-top:-2px"></span></span>Real-time revenue vs. expenses</div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:15px;color:#3A3A38"><span style="width:20px;height:20px;border-radius:6px;background:#E7F3EC;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #1B5E3C;border-bottom:2px solid #1B5E3C;transform:rotate(-45deg);margin-top:-2px"></span></span>At-risk member alerts</div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:15px;color:#3A3A38"><span style="width:20px;height:20px;border-radius:6px;background:#E7F3EC;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #1B5E3C;border-bottom:2px solid #1B5E3C;transform:rotate(-45deg);margin-top:-2px"></span></span>Expiring memberships this week</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row B: copy left, screenshot right -->
+    <div style="display:grid;grid-template-columns:.95fr 1.05fr;gap:64px;align-items:center">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#C9861B;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:14px">Attendance &amp; Cards</div>
+        <h2 style="font-size:36px;line-height:1.12;letter-spacing:-0.03em;font-weight:800;color:#173D28">Check-in that feels like a product, not a punishment.</h2>
+        <p style="font-size:17px;line-height:1.6;color:#6B6862;margin-top:16px">Every member gets an auto-generated smart card with a signed QR code. Tap at the kiosk. Fee status shown instantly. No lines, no register, no awkward conversations.</p>
+      </div>
+      <div style="position:relative;background:#173D28;border-radius:18px;padding:44px;box-shadow:0 30px 66px -34px rgba(23,61,40,.5);min-height:300px;display:flex;align-items:center;justify-content:center">
+        <div style="background:#fff;border-radius:14px;padding:26px;width:280px;text-align:center;box-shadow:0 20px 40px -18px rgba(0,0,0,.4)">
+          <div style="width:52px;height:52px;border-radius:50%;background:#E7F3EC;margin:0 auto 12px;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:11px;border-left:3px solid #1B5E3C;border-bottom:3px solid #1B5E3C;transform:rotate(-45deg);margin-top:-5px"></span></div>
+          <div style="font-size:17px;font-weight:700;color:#173D28">Welcome back, Hamza</div>
+          <div style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:#E7F3EC;color:#1B5E3C;font-size:12px;font-weight:600;padding:5px 12px;border-radius:100px">Fees paid · valid to 30 Aug</div>
+        </div>
+        <div style="position:absolute;right:26px;bottom:26px;background:#E7B24E;color:#3A2A08;font-size:12px;font-weight:700;padding:8px 14px;border-radius:100px;transform:rotate(-4deg)">Signed QR · tamper-proof</div>
+      </div>
+    </div>
+
+    <!-- Row C: screenshot left, copy right -->
+    <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center">
+      <div style="background:#fff;border:1px solid #ECE7DC;border-radius:18px;padding:22px;box-shadow:0 30px 66px -34px rgba(23,61,40,.4)">
+        <div style="font-size:13px;font-weight:600;color:#54524B;margin-bottom:14px">This month's outgoings</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:14px;padding:12px 15px;background:#FBF9F4;border:1px solid #F0EDE4;border-radius:10px"><span style="display:flex;align-items:center;gap:9px"><span style="width:26px;height:26px;border-radius:7px;background:#EDE8DD"></span>Staff salaries</span><span class="num" style="font-weight:600">$1,850</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:14px;padding:12px 15px;background:#FBF9F4;border:1px solid #F0EDE4;border-radius:10px"><span style="display:flex;align-items:center;gap:9px"><span style="width:26px;height:26px;border-radius:7px;background:#EDE8DD"></span>Electricity</span><span class="num" style="font-weight:600">$640</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:14px;padding:12px 15px;background:#FBF9F4;border:1px solid #F0EDE4;border-radius:10px"><span style="display:flex;align-items:center;gap:9px"><span style="width:26px;height:26px;border-radius:7px;background:#EDE8DD"></span>Equipment repair</span><span class="num" style="font-weight:600">$290</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:14px;padding:12px 15px;background:#EBF1EC;border:1px solid #D9E5DC;border-radius:10px"><span style="font-weight:600;color:#173D28">Inventory restock</span><span class="num" style="font-weight:700;color:#1B5E3C">$400</span></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#C9861B;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:14px">Expenses · Staff · Inventory</div>
+        <h2 style="font-size:36px;line-height:1.12;letter-spacing:-0.03em;font-weight:800;color:#173D28">Run the whole business, not just memberships.</h2>
+        <p style="font-size:17px;line-height:1.6;color:#6B6862;margin-top:16px">Track staff salaries, utility bills, cleaning supplies, and equipment repairs alongside your inventory sales. Because a gym isn't just members — it's a business.</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===================== PRICING ===================== -->
+  <section id="pricing" style="background:#F1EEE6;border-top:1px solid #E7E2D6">
+    <div style="max-width:1100px;margin:0 auto;padding:96px 32px">
+      <div style="text-align:center;max-width:640px;margin:0 auto 52px">
+        <h2 style="font-size:40px;line-height:1.1;letter-spacing:-0.03em;font-weight:800;color:#173D28">Pricing that grows with your gym.</h2>
+        <p style="font-size:18px;color:#6B6862;margin-top:14px">Pay per member, not per feature. Everything included, from day one.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:stretch">
+        <!-- Card 1: Early Access -->
+        <div style="background:#fff;border:1px solid #EAE5D9;border-radius:20px;padding:36px;box-shadow:0 20px 46px -30px rgba(23,61,40,.4);display:flex;flex-direction:column">
+          <div style="font-size:13px;font-weight:600;color:#C9861B;letter-spacing:0.04em;text-transform:uppercase">First 3 months</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:14px">
+            <span class="num" style="font-size:56px;font-weight:700;color:#173D28">$0.10</span>
+            <span style="font-size:14px;color:#8A877E">/ member / month</span>
+          </div>
+          <div style="font-size:14px;color:#8A877E;margin-top:4px">For new gyms joining Barbellist</div>
+          <div style="height:1px;background:#EEEAE0;margin:24px 0"></div>
+          <div style="display:flex;flex-direction:column;gap:12px;font-size:15px;color:#3A3A38">
+            <div style="display:flex;gap:10px;align-items:flex-start">{{ check }}All features included</div>
+            <div style="display:flex;gap:10px;align-items:flex-start">{{ check }}Automated WhatsApp reminders</div>
+            <div style="display:flex;gap:10px;align-items:flex-start">{{ check }}Smart QR membership cards</div>
+            <div style="display:flex;gap:10px;align-items:flex-start">{{ check }}Live dashboard &amp; reports</div>
+            <div style="display:flex;gap:10px;align-items:flex-start">{{ check }}Priority onboarding support</div>
+            <div style="display:flex;gap:10px;align-items:flex-start">{{ check }}No setup fees</div>
+            <div style="display:flex;gap:10px;align-items:flex-start">{{ check }}No lock-in — cancel anytime</div>
+          </div>
+          <div style="font-size:13px;color:#8A877E;margin-top:20px">$15/month minimum</div>
+          <a href="#top" style="margin-top:20px;text-align:center;background:#1B5E3C;color:#FAF7F2;padding:14px;border-radius:12px;font-size:16px;font-weight:600;box-shadow:0 6px 16px rgba(27,94,60,.26)">Start free</a>
+        </div>
+
+        <!-- Card 2: Standard -->
+        <div style="position:relative;background:#fff;border:1.5px solid #C9861B;border-radius:20px;padding:36px;box-shadow:0 24px 54px -28px rgba(201,134,27,.5);display:flex;flex-direction:column">
+          <div style="position:absolute;top:20px;right:-6px;background:#C9861B;color:#fff;font-size:12px;font-weight:700;padding:6px 16px;border-radius:6px 0 0 6px;letter-spacing:0.02em">Most Popular</div>
+          <div style="font-size:13px;font-weight:600;color:#1B5E3C;letter-spacing:0.04em;text-transform:uppercase">After your first 3 months</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:14px">
+            <span class="num" style="font-size:56px;font-weight:700;color:#173D28">$0.25</span>
+            <span style="font-size:14px;color:#8A877E">/ member / month</span>
+          </div>
+          <div style="font-size:14px;color:#8A877E;margin-top:4px">The everyday price</div>
+          <div style="height:1px;background:#EEEAE0;margin:24px 0"></div>
+          <div style="display:flex;flex-direction:column;gap:12px;font-size:15px;color:#3A3A38">
+            <div style="display:flex;gap:10px;align-items:flex-start">{{ check }}Everything in Early Access</div>
+            <div style="display:flex;gap:10px;align-items:flex-start">{{ check }}Priority support</div>
+            <div style="display:flex;gap:10px;align-items:flex-start">{{ check }}Monthly performance reports</div>
+            <div style="display:flex;gap:10px;align-items:flex-start">{{ check }}Multi-branch support</div>
+            <div style="display:flex;gap:10px;align-items:flex-start">{{ check }}Biometric integration available</div>
+          </div>
+          <div style="font-size:13px;color:#8A877E;margin-top:20px">$15/month minimum</div>
+          <a href="#top" style="margin-top:20px;text-align:center;background:#fff;color:#1B5E3C;padding:14px;border-radius:12px;font-size:16px;font-weight:600;border:1px solid #C9861B">Talk to sales</a>
+        </div>
+      </div>
+
+      <!-- Comparison strip -->
+      <div style="margin-top:56px;background:#fff;border:1px solid #EAE5D9;border-radius:18px;overflow:hidden;box-shadow:0 16px 40px -30px rgba(23,61,40,.35)">
+        <div style="padding:22px 28px;border-bottom:1px solid #F0EDE4"><div style="font-size:16px;font-weight:700;color:#1F1F1F">Compare that to legacy gym software.</div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 28px;background:#EBF1EC"><span style="font-weight:700;color:#173D28">Barbellist</span><span class="num" style="font-weight:700;color:#1B5E3C;font-size:17px">$50/mo <span style="font-size:13px;font-weight:500;color:#5E7166">· 200 members</span></span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-top:1px solid #F3F0E8"><span style="color:#8A877E">Legacy US enterprise platforms</span><span class="num" style="font-weight:600;color:#8A877E">$199+/mo</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-top:1px solid #F3F0E8"><span style="color:#8A877E">Modern US flat-rate platforms</span><span class="num" style="font-weight:600;color:#8A877E">$159+/mo</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-top:1px solid #F3F0E8"><span style="color:#8A877E">Specialty niche platforms</span><span class="num" style="font-weight:600;color:#8A877E">$198+/mo</span></div>
+      </div>
+      <p style="font-size:12px;color:#9A968B;margin-top:14px;text-align:center;max-width:70ch;margin-left:auto;margin-right:auto">Comparison based on publicly listed pricing pages of major gym software platforms in 2026, for a 200-member gym.</p>
+      <p style="font-size:13px;color:#6B6862;margin-top:20px;text-align:center;font-weight:500">All prices in USD. Local currency billing available.</p>
+    </div>
+  </section>
+
+  <!-- ===================== TESTIMONIALS ===================== -->
+  <section style="max-width:1200px;margin:0 auto;padding:96px 32px">
+    <h2 style="font-size:36px;line-height:1.12;letter-spacing:-0.03em;font-weight:800;color:#173D28;text-align:center;max-width:20ch;margin:0 auto 48px">Owners who put down the paper register.</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <div style="position:relative;background:#fff;border:1px solid #EEE9DE;border-radius:16px;padding:32px 28px;box-shadow:0 16px 40px -30px rgba(23,61,40,.35)">
+        <div style="position:absolute;top:18px;left:24px;font-family:'Space Grotesk',sans-serif;font-size:56px;line-height:1;color:#EBD8AE;font-weight:700">&ldquo;</div>
+        <p style="position:relative;font-size:17px;line-height:1.55;color:#2E2E2C;margin-top:30px;font-weight:500">We stopped losing $400 a month in forgotten renewals within our first two weeks.</p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:24px"><div style="width:42px;height:42px;border-radius:50%;background:#EDE8DD"></div><div><div style="font-size:15px;font-weight:600;color:#1F1F1F">Bilal S.</div><div style="font-size:13px;color:#8A877E">Owner, Barbell Republic · Karachi</div></div></div>
+      </div>
+      <div style="position:relative;background:#fff;border:1px solid #EEE9DE;border-radius:16px;padding:32px 28px;box-shadow:0 16px 40px -30px rgba(23,61,40,.35)">
+        <div style="position:absolute;top:18px;left:24px;font-family:'Space Grotesk',sans-serif;font-size:56px;line-height:1;color:#EBD8AE;font-weight:700">&ldquo;</div>
+        <p style="position:relative;font-size:17px;line-height:1.55;color:#2E2E2C;margin-top:30px;font-weight:500">The dashboard is the first thing I check every morning. It changed how I run the business.</p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:24px"><div style="width:42px;height:42px;border-radius:50%;background:#EDE8DD"></div><div><div style="font-size:15px;font-weight:600;color:#1F1F1F">Farrukh Q.</div><div style="font-size:13px;color:#8A877E">Owner, Titan Gym · Dubai</div></div></div>
+      </div>
+      <div style="position:relative;background:#fff;border:1px solid #EEE9DE;border-radius:16px;padding:32px 28px;box-shadow:0 16px 40px -30px rgba(23,61,40,.35)">
+        <div style="position:absolute;top:18px;left:24px;font-family:'Space Grotesk',sans-serif;font-size:56px;line-height:1;color:#EBD8AE;font-weight:700">&ldquo;</div>
+        <p style="position:relative;font-size:17px;line-height:1.55;color:#2E2E2C;margin-top:30px;font-weight:500">Members love the cards. My wife loves that I'm home for dinner again.</p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:24px"><div style="width:42px;height:42px;border-radius:50%;background:#EDE8DD"></div><div><div style="font-size:15px;font-weight:600;color:#1F1F1F">Adnan R.</div><div style="font-size:13px;color:#8A877E">Owner, Ironclad Fitness · Lahore</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FAQ ===================== -->
+  <section id="faq" style="background:#FAF7F2">
+    <div style="max-width:760px;margin:0 auto;padding:40px 32px 96px">
+      <h2 style="font-size:36px;line-height:1.12;letter-spacing:-0.03em;font-weight:800;color:#173D28;text-align:center;margin-bottom:44px">Questions, answered.</h2>
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ faqs }}" as="faq" hint-placeholder-count="6">
+          <div style="border-bottom:1px solid #E8E5DF">
+            <button onClick="{{ faq.onClick }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 4px;background:none;border:none;cursor:pointer;text-align:left;font-family:inherit">
+              <span style="font-size:18px;font-weight:600;color:#1F1F1F">{{ faq.q }}</span>
+              <span style="flex:0 0 auto;width:26px;height:26px;position:relative;color:#1B5E3C">
+                <span style="position:absolute;top:50%;left:50%;width:14px;height:2px;background:currentColor;transform:translate(-50%,-50%);border-radius:2px"></span>
+                <span style="position:absolute;top:50%;left:50%;width:2px;height:14px;background:currentColor;transform:translate(-50%,-50%) scaleY({{ faq.plus }});border-radius:2px;transition:transform .2s"></span>
+              </span>
+            </button>
+            <div style="max-height:{{ faq.maxH }};overflow:hidden;transition:max-height .3s ease">
+              <p style="font-size:16px;line-height:1.6;color:#6B6862;padding:0 4px 24px;max-width:64ch">{{ faq.a }}</p>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FINAL CTA ===================== -->
+  <section style="background:linear-gradient(180deg,#EBF1EC,#E4EDE6);border-top:1px solid #DCE6DE">
+    <div style="max-width:760px;margin:0 auto;padding:100px 32px;text-align:center">
+      <h2 style="font-size:46px;line-height:1.08;letter-spacing:-0.03em;font-weight:800;color:#173D28">Your paper register won't miss you.</h2>
+      <p style="font-size:19px;color:#4C5A50;margin-top:18px">Start free. Onboard your gym in under an hour.</p>
+      <a href="#top" style="display:inline-block;margin-top:30px;background:#1B5E3C;color:#FAF7F2;padding:16px 32px;border-radius:12px;font-size:17px;font-weight:600;box-shadow:0 10px 26px rgba(27,94,60,.32)">Start free — no card required</a>
+      <p style="font-size:14px;color:#7C8A80;margin-top:18px">Trusted by gym owners across three continents.</p>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer style="background:#173D28;color:#B9CFC1">
+    <div style="max-width:1200px;margin:0 auto;padding:64px 32px 40px;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:40px">
+      <div>
+        <div style="font-weight:800;font-size:22px;letter-spacing:-0.02em;color:#fff">Barbell<span style="color:#E7B24E">ist</span></div>
+        <p style="font-size:14px;line-height:1.55;color:#93AC9D;margin-top:14px;max-width:26ch">The calm, all-in-one gym management platform for independent gyms worldwide.</p>
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <span style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#CFE0D6">X</span>
+          <span style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#CFE0D6">IG</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#fff;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:16px">Product</div>
+        <div style="display:flex;flex-direction:column;gap:11px;font-size:14px"><a href="#features" style="color:#B9CFC1">Features</a><a href="#pricing" style="color:#B9CFC1">Pricing</a><a href="#top" style="color:#B9CFC1">Changelog</a><a href="#top" style="color:#B9CFC1">Roadmap</a></div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#fff;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:16px">Company</div>
+        <div style="display:flex;flex-direction:column;gap:11px;font-size:14px"><a href="#top" style="color:#B9CFC1">About</a><a href="#top" style="color:#B9CFC1">Blog</a><a href="#top" style="color:#B9CFC1">Contact</a><a href="#top" style="color:#B9CFC1">Careers</a></div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#fff;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:16px">Resources</div>
+        <div style="display:flex;flex-direction:column;gap:11px;font-size:14px"><a href="#faq" style="color:#B9CFC1">Docs</a><a href="#top" style="color:#B9CFC1">Support</a><a href="#top" style="color:#B9CFC1">API</a><a href="#top" style="color:#B9CFC1">Status</a></div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#fff;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:16px">Legal</div>
+        <div style="display:flex;flex-direction:column;gap:11px;font-size:14px"><a href="#top" style="color:#B9CFC1">Terms</a><a href="#top" style="color:#B9CFC1">Privacy</a><a href="#top" style="color:#B9CFC1">Security</a></div>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,.1)">
+      <div style="max-width:1200px;margin:0 auto;padding:20px 32px;font-size:13px;color:#7E988A">© 2026 Barbellist. All rights reserved.</div>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { openFaq: 0, scrolled: false };
+
+  componentDidMount() {
+    this._onScroll = () => {
+      const s = window.scrollY > 20;
+      if (s !== this.state.scrolled) this.setState({ scrolled: s });
+    };
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+  }
+  componentWillUnmount() { window.removeEventListener('scroll', this._onScroll); }
+
+  renderVals() {
+    // QR placeholder dots
+    const qrPattern = [1,0,1,1,0, 0,1,1,0,1, 1,1,0,1,0, 0,0,1,1,1, 1,0,1,0,1];
+    const qrDots = qrPattern.map((v,i) =>
+      React.createElement('span', { key:i, style:{ width:7, height:7, borderRadius:1, background: v ? '#173D28' : 'transparent' } })
+    );
+
+    // hero chart: revenue (green) vs expenses (grey) per month
+    const data = [
+      { r: 62, e: 30 }, { r: 70, e: 34 }, { r: 66, e: 28 },
+      { r: 82, e: 36 }, { r: 90, e: 38 }, { r: 100, e: 40 },
+    ];
+    const chartBars = data.map((d,i) =>
+      React.createElement('div', { key:i, style:{ flex:1, display:'flex', alignItems:'flex-end', gap:4, height:'100%' } }, [
+        React.createElement('div', { key:'r', style:{ flex:1, height: d.r + '%', background:'#1B5E3C', borderRadius:'4px 4px 0 0' } }),
+        React.createElement('div', { key:'e', style:{ flex:1, height: d.e + '%', background:'#DED9CD', borderRadius:'4px 4px 0 0' } }),
+      ])
+    );
+
+    const check = React.createElement('span', {
+      style:{ flex:'0 0 auto', width:20, height:20, borderRadius:6, background:'#E7F3EC', display:'inline-flex', alignItems:'center', justifyContent:'center', marginTop:1 }
+    }, React.createElement('span', {
+      style:{ width:9, height:5, borderLeft:'2px solid #1B5E3C', borderBottom:'2px solid #1B5E3C', transform:'rotate(-45deg)', marginTop:-2 }
+    }));
+
+    const faqData = [
+      { q: 'How is Barbellist different from legacy gym software?', a: 'Legacy platforms charge flat monthly fees regardless of your size and lock features behind tiers. Barbellist charges per member — cents, not hundreds of dollars — with every feature included from day one. It was built for independent gyms, not enterprise chains.' },
+      { q: 'Do you support gyms outside South Asia?', a: 'Yes. Barbellist is used by gyms across South Asia, the Middle East, and beyond. The platform supports local currency billing and multiple languages, and WhatsApp reminders work anywhere WhatsApp does.' },
+      { q: 'What happens after the first 3 months at $0.10/member?', a: 'You move to the Standard rate of $0.25 per member per month — still a fraction of legacy pricing. Nothing changes about your data or features, and there is no lock-in. You can cancel any time.' },
+      { q: 'Do I need special hardware?', a: 'No. Any phone, tablet, or laptop works as a check-in kiosk — members simply scan their QR card. Biometric integration is available on the Standard plan if you want it, but it is never required.' },
+      { q: 'Is my member data secure?', a: 'Yes. Data is encrypted in transit and at rest, QR cards are cryptographically signed to prevent tampering, and each gym\u2019s data is fully isolated. You own your data and can export it at any time.' },
+      { q: 'Can I cancel anytime?', a: 'Always. There are no contracts, no lock-in, and no cancellation fees. If Barbellist stops paying for itself, you are free to leave — though most owners find the opposite happens.' },
+    ];
+    const open = this.state.openFaq;
+    const faqs = faqData.map((f,i) => ({
+      q: f.q, a: f.a,
+      onClick: () => this.setState(s => ({ openFaq: s.openFaq === i ? -1 : i })),
+      plus: open === i ? 0 : 1,
+      maxH: open === i ? '240px' : '0px',
+    }));
+
+    const scrolled = this.state.scrolled;
+    return {
+      qrDots, chartBars, check, faqs,
+      navBg: scrolled ? 'rgba(250,247,242,.72)' : 'rgba(250,247,242,0)',
+      navBorder: scrolled ? '#E7E2D6' : 'transparent',
+      navShadow: scrolled ? '0 1px 0 rgba(23,61,40,.04), 0 8px 24px -18px rgba(23,61,40,.28)' : 'none',
+      openFaq: this.state.openFaq,
+      toggleFaq: (i) => this.setState(s => ({ openFaq: s.openFaq === i ? -1 : i })),
+    };
+  }
+}
+</script>
+</body>
+</html>

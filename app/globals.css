@@ -1,0 +1,57 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #faf7f2;
+  font-family: var(--font-geist), system-ui, sans-serif;
+  color: #1f1f1f;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+a {
+  color: #1b5e3c;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #14472d;
+}
+
+.num {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.02em;
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.nav-link:hover {
+  color: #173d28;
+  background: rgba(27, 94, 60, 0.06);
+}
+
+.nav-signin:hover {
+  color: #173d28;
+}
+
+.nav-cta:hover {
+  background: #174b31;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(27, 94, 60, 0.4);
+}
