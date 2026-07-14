@@ -63,6 +63,7 @@ export function SalesContactModal({ open, onClose }: SalesContactModalProps) {
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
         padding: 24,
+        overflowY: "auto",
       }}
     >
       <div
@@ -71,6 +72,7 @@ export function SalesContactModal({ open, onClose }: SalesContactModalProps) {
           position: "relative",
           width: "100%",
           maxWidth: 440,
+          margin: "auto",
           background: "#FAF7F2",
           borderRadius: 20,
           border: "1px solid #E7E2D6",
@@ -170,7 +172,7 @@ export function SalesContactModal({ open, onClose }: SalesContactModalProps) {
               Phone / WhatsApp
             </div>
             <div
-              className="num"
+              className="num lp-phone-num"
               style={{
                 fontSize: 26,
                 fontWeight: 700,
@@ -183,6 +185,7 @@ export function SalesContactModal({ open, onClose }: SalesContactModalProps) {
           </div>
 
           <div
+            className="lp-sales-actions"
             style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr",

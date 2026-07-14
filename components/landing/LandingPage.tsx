@@ -6,6 +6,7 @@ import { ChartBars, CheckIcon, QrDots } from "./landing-helpers";
 import { VideoModal } from "./VideoModal";
 import { OrderModal } from "./OrderModal";
 import { SalesContactModal } from "./SalesContactModal";
+import { Reveal } from "./Reveal";
 
 export function LandingPage() {
   const [openFaq, setOpenFaq] = useState(0);
@@ -13,6 +14,7 @@ export function LandingPage() {
   const [videoOpen, setVideoOpen] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
   const [salesOpen, setSalesOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
@@ -23,14 +25,19 @@ export function LandingPage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const navBg = scrolled ? "rgba(250,247,242,.72)" : "rgba(250,247,242,0)";
-  const navBorder = scrolled ? "#E7E2D6" : "transparent";
+  const closeMenu = () => setMenuOpen(false);
+
+  const navBg =
+    scrolled || menuOpen
+      ? "rgba(250,247,242,.96)"
+      : "rgba(250,247,242,0)";
+  const navBorder = scrolled || menuOpen ? "#E7E2D6" : "transparent";
   const navShadow = scrolled
     ? "0 1px 0 rgba(23,61,40,.04), 0 8px 24px -18px rgba(23,61,40,.28)"
     : "none";
 
   return (
-    <div style={{ width: "100%", overflowX: "hidden" }}>
+    <div className="landing">
       <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
       <OrderModal open={orderOpen} onClose={() => setOrderOpen(false)} />
       <SalesContactModal open={salesOpen} onClose={() => setSalesOpen(false)} />
@@ -49,6 +56,7 @@ export function LandingPage() {
         }}
       >
         <div
+          className="lp-nav-inner"
           style={{
             maxWidth: 1200,
             margin: "0 auto",
@@ -61,6 +69,8 @@ export function LandingPage() {
         >
           <a
             href="#top"
+            className="lp-logo"
+            onClick={closeMenu}
             style={{
               display: "flex",
               alignItems: "baseline",
@@ -88,7 +98,10 @@ export function LandingPage() {
               />
             </span>
           </a>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div
+            className="lp-nav-desktop"
+            style={{ display: "flex", alignItems: "center", gap: 8 }}
+          >
             <div
               style={{
                 display: "flex",
@@ -169,7 +182,47 @@ export function LandingPage() {
               </span>
             </button>
           </div>
+          <button
+            type="button"
+            className="lp-menu-btn"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            {menuOpen ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            )}
+          </button>
         </div>
+        {menuOpen && (
+          <div className="lp-mobile-drawer">
+            <a href="#features" onClick={closeMenu}>
+              Features
+            </a>
+            <a href="#pricing" onClick={closeMenu}>
+              Pricing
+            </a>
+            <a href="#faq" onClick={closeMenu}>
+              Docs
+            </a>
+            <button
+              type="button"
+              className="lp-mobile-order"
+              onClick={() => {
+                closeMenu();
+                setOrderOpen(true);
+              }}
+            >
+              Order Now →
+            </button>
+          </div>
+        )}
       </nav>
 
       {/* HERO */}
@@ -207,6 +260,7 @@ export function LandingPage() {
         />
 
         <div
+          className="lp-hero-pad"
           style={{
             maxWidth: 1200,
             margin: "0 auto",
@@ -214,8 +268,9 @@ export function LandingPage() {
             position: "relative",
           }}
         >
-          <div style={{ maxWidth: 820 }}>
+          <div style={{ maxWidth: 820 }} className="lp-hero-in">
             <h1
+              className="lp-hero-h1"
               style={{
                 fontSize: 40,
                 lineHeight: 1.28,
@@ -225,23 +280,15 @@ export function LandingPage() {
                 maxWidth: "24ch",
               }}
             >
-              You opened a gym to{" "}
-              <strong style={{ fontWeight: 800, color: "#173D28" }}>
-                transform lives
-              </strong>{" "}
-              and{" "}
-              <strong style={{ fontWeight: 800, color: "#173D28" }}>
-                build a community
-              </strong>
-              , not to drown in spreadsheets and 80-hour workweeks. Let
-              Barbellist automate your scheduling, tracking, and cash flow so you
-              can finally{" "}
+              Gym chalana tha, spreadsheets nahi. Barbellist sab sambhal leta
+              hai. Apna{" "}
               <strong style={{ fontWeight: 800, color: "#C9861B" }}>
-                get your weekends back
-              </strong>
-              .
+                weekend
+              </strong>{" "}
+              wapas lo.
             </h1>
             <div
+              className="lp-hero-ctas lp-hero-in-delay"
               style={{
                 display: "flex",
                 gap: 14,
@@ -316,9 +363,13 @@ export function LandingPage() {
           </div>
 
           {/* hero visuals */}
-          <div style={{ position: "relative", marginTop: 64, height: 520 }}>
+          <div
+            className="lp-hero-visuals lp-hero-in-delay-2"
+            style={{ position: "relative", marginTop: 64, height: 520 }}
+          >
             {/* secondary floating card (QR kiosk) */}
             <div
+              className="lp-kiosk"
               style={{
                 position: "absolute",
                 right: 20,
@@ -422,6 +473,7 @@ export function LandingPage() {
 
             {/* main dashboard screenshot */}
             <div
+              className="lp-dashboard"
               style={{
                 position: "absolute",
                 left: 0,
@@ -430,7 +482,9 @@ export function LandingPage() {
                 transform: "rotate(-2deg)",
               }}
             >
+              <div className="lp-dash-scroll">
               <div
+                className="lp-dash-shell"
                 style={{
                   background: "#fff",
                   borderRadius: 22,
@@ -841,14 +895,20 @@ export function LandingPage() {
                   </div>
                 </div>
               </div>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
       {/* PROBLEM → SOLUTION */}
-      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 32px" }}>
+      <Reveal
+        as="section"
+        className="lp-section-lg"
+        style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 32px" }}
+      >
         <div
+          className="lp-grid-2"
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
@@ -857,7 +917,7 @@ export function LandingPage() {
             boxShadow: "0 24px 60px -34px rgba(23,61,40,.25)",
           }}
         >
-          <div style={{ background: "#F1EEE6", padding: "56px 48px" }}>
+          <div className="lp-split-pad" style={{ background: "#F1EEE6", padding: "56px 48px" }}>
             <div
               style={{
                 fontSize: 13,
@@ -896,6 +956,7 @@ export function LandingPage() {
             </p>
           </div>
           <div
+            className="lp-split-pad lp-problem-border"
             style={{
               background: "#EBF1EC",
               padding: "56px 48px",
@@ -940,7 +1001,7 @@ export function LandingPage() {
             </p>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* FEATURE BENTO - continued in part 2 */}
       <FeaturesSection />
@@ -957,8 +1018,10 @@ export function LandingPage() {
 
 function FeaturesSection() {
   return (
-    <section
+    <Reveal
+      as="section"
       id="features"
+      className="lp-section"
       style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 32px 96px" }}
     >
       <div style={{ maxWidth: 640, marginBottom: 44 }}>
@@ -975,6 +1038,7 @@ function FeaturesSection() {
           Everything, connected
         </div>
         <h2
+          className="lp-heading-lg"
           style={{
             fontSize: 40,
             lineHeight: 1.1,
@@ -988,6 +1052,7 @@ function FeaturesSection() {
       </div>
 
       <div
+        className="lp-grid-4"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
@@ -996,6 +1061,7 @@ function FeaturesSection() {
       >
         {/* Member Management */}
         <div
+          className="lp-span-2"
           style={{
             gridColumn: "span 2",
             background: "#fff",
@@ -1088,6 +1154,7 @@ function FeaturesSection() {
 
         {/* Automated Fee Reminders */}
         <div
+          className="lp-span-2"
           style={{
             gridColumn: "span 2",
             background: "#fff",
@@ -1454,7 +1521,7 @@ function FeaturesSection() {
           </div>
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 }
 
@@ -1499,7 +1566,8 @@ function RoiSection() {
           pointerEvents: "none",
         }}
       />
-      <div
+      <Reveal
+        className="lp-section-lg"
         style={{
           maxWidth: 900,
           margin: "0 auto",
@@ -1508,6 +1576,7 @@ function RoiSection() {
         }}
       >
         <h2
+          className="lp-heading-lg"
           style={{
             fontSize: 42,
             lineHeight: 1.14,
@@ -1619,7 +1688,7 @@ function RoiSection() {
             already losing.
           </p>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }
@@ -1634,6 +1703,7 @@ function DeepDiveSection() {
   return (
     <section
       id="deepdive"
+      className="lp-section-lg"
       style={{
         maxWidth: 1200,
         margin: "0 auto",
@@ -1644,7 +1714,9 @@ function DeepDiveSection() {
       }}
     >
       {/* Row A */}
-      <div
+      <Reveal
+        variant="left"
+        className="lp-grid-deep"
         style={{
           display: "grid",
           gridTemplateColumns: "1.05fr .95fr",
@@ -1827,10 +1899,12 @@ function DeepDiveSection() {
             ))}
           </div>
         </div>
-      </div>
+      </Reveal>
 
       {/* Row B */}
-      <div
+      <Reveal
+        variant="right"
+        className="lp-grid-deep-rev"
         style={{
           display: "grid",
           gridTemplateColumns: ".95fr 1.05fr",
@@ -1964,10 +2038,12 @@ function DeepDiveSection() {
             Signed QR · tamper-proof
           </div>
         </div>
-      </div>
+      </Reveal>
 
       {/* Row C */}
-      <div
+      <Reveal
+        variant="left"
+        className="lp-grid-deep"
         style={{
           display: "grid",
           gridTemplateColumns: "1.05fr .95fr",
@@ -2075,7 +2151,7 @@ function DeepDiveSection() {
             isn&apos;t just members — it&apos;s a business.
           </p>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }
@@ -2107,14 +2183,17 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
   ];
 
   return (
-    <section
+    <Reveal
+      as="section"
       id="pricing"
+      variant="up"
       style={{
         background: "#F1EEE6",
         borderTop: "1px solid #E7E2D6",
       }}
     >
       <div
+        className="lp-section-lg"
         style={{
           maxWidth: 1100,
           margin: "0 auto",
@@ -2129,6 +2208,7 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
           }}
         >
           <h2
+            className="lp-heading-lg"
             style={{
               fontSize: 40,
               lineHeight: 1.1,
@@ -2145,6 +2225,7 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
         </div>
 
         <div
+          className="lp-grid-2"
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
@@ -2184,7 +2265,7 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
               }}
             >
               <span
-                className="num"
+                className="num lp-price"
                 style={{ fontSize: 56, fontWeight: 700, color: "#173D28" }}
               >
                 $0.10
@@ -2257,6 +2338,7 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
             }}
           >
             <div
+              className="lp-badge-popular"
               style={{
                 position: "absolute",
                 top: 20,
@@ -2292,7 +2374,7 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
               }}
             >
               <span
-                className="num"
+                className="num lp-price"
                 style={{ fontSize: 56, fontWeight: 700, color: "#173D28" }}
               >
                 $0.25
@@ -2442,7 +2524,7 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
           All prices in USD. Local currency billing available.
         </p>
       </div>
-    </section>
+    </Reveal>
   );
 }
 
@@ -2469,31 +2551,40 @@ function TestimonialsSection() {
   ];
 
   return (
-    <section style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 32px" }}>
-      <h2
-        style={{
-          fontSize: 36,
-          lineHeight: 1.12,
-          letterSpacing: "-0.03em",
-          fontWeight: 800,
-          color: "#173D28",
-          textAlign: "center",
-          maxWidth: "20ch",
-          margin: "0 auto 48px",
-        }}
-      >
-        Owners who put down the paper register.
-      </h2>
+    <section
+      className="lp-section-lg"
+      style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 32px" }}
+    >
+      <Reveal>
+        <h2
+          className="lp-heading-md"
+          style={{
+            fontSize: 36,
+            lineHeight: 1.12,
+            letterSpacing: "-0.03em",
+            fontWeight: 800,
+            color: "#173D28",
+            textAlign: "center",
+            maxWidth: "20ch",
+            margin: "0 auto 48px",
+          }}
+        >
+          Owners who put down the paper register.
+        </h2>
+      </Reveal>
       <div
+        className="lp-grid-3"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
           gap: 24,
         }}
       >
-        {testimonials.map((t) => (
-          <div
+        {testimonials.map((t, i) => (
+          <Reveal
             key={t.name}
+            variant="up"
+            delay={i * 120}
             style={{
               position: "relative",
               background: "#fff",
@@ -2558,7 +2649,7 @@ function TestimonialsSection() {
                 <div style={{ fontSize: 13, color: "#8A877E" }}>{t.role}</div>
               </div>
             </div>
-          </div>
+          </Reveal>
         ))}
       </div>
     </section>
@@ -2574,7 +2665,8 @@ function FaqSection({
 }) {
   return (
     <section id="faq" style={{ background: "#FAF7F2" }}>
-      <div
+      <Reveal
+        className="lp-section"
         style={{
           maxWidth: 760,
           margin: "0 auto",
@@ -2582,6 +2674,7 @@ function FaqSection({
         }}
       >
         <h2
+          className="lp-heading-md"
           style={{
             fontSize: 36,
             lineHeight: 1.12,
@@ -2683,7 +2776,7 @@ function FaqSection({
             </div>
           ))}
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }
@@ -2696,7 +2789,9 @@ function FinalCtaSection() {
         borderTop: "1px solid #DCE6DE",
       }}
     >
-      <div
+      <Reveal
+        variant="scale"
+        className="lp-section-lg"
         style={{
           maxWidth: 760,
           margin: "0 auto",
@@ -2705,6 +2800,7 @@ function FinalCtaSection() {
         }}
       >
         <h2
+          className="lp-heading-lg"
           style={{
             fontSize: 46,
             lineHeight: 1.08,
@@ -2737,7 +2833,7 @@ function FinalCtaSection() {
         <p style={{ fontSize: 14, color: "#7C8A80", marginTop: 18 }}>
           Trusted by gym owners across three continents.
         </p>
-      </div>
+      </Reveal>
     </section>
   );
 }
@@ -2784,6 +2880,7 @@ function FooterSection() {
   return (
     <footer style={{ background: "#173D28", color: "#B9CFC1" }}>
       <div
+        className="lp-footer-grid"
         style={{
           maxWidth: 1200,
           margin: "0 auto",
@@ -2793,7 +2890,7 @@ function FooterSection() {
           gap: 40,
         }}
       >
-        <div>
+        <div className="lp-footer-brand">
           <div
             style={{
               fontWeight: 800,

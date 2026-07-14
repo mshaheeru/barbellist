@@ -112,6 +112,7 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
         padding: 24,
+        overflowY: "auto",
       }}
     >
       <div
@@ -120,6 +121,7 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
           position: "relative",
           width: "100%",
           maxWidth: 520,
+          margin: "auto",
           background: "#FAF7F2",
           borderRadius: 20,
           border: "1px solid #E7E2D6",
@@ -276,6 +278,7 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
               </div>
 
               <div
+                className="lp-modal-row"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
@@ -313,6 +316,7 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
               </div>
 
               <div
+                className="lp-modal-row"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",

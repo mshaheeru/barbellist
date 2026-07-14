@@ -48,6 +48,7 @@ export function VideoModal({ open, onClose }: VideoModalProps) {
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
         padding: 24,
+        overflowY: "auto",
       }}
     >
       <div
@@ -56,6 +57,7 @@ export function VideoModal({ open, onClose }: VideoModalProps) {
           position: "relative",
           width: "100%",
           maxWidth: 960,
+          margin: "auto",
           background: "#173D28",
           borderRadius: 16,
           overflow: "hidden",
