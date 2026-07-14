@@ -414,7 +414,8 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
                 lineHeight: 1.5,
               }}
             >
-              Free for your first 3 months · No setup fees · Cancel anytime
+              Ridiculously low for your first 3 months · Still highly
+              affordable after · Cancel anytime
             </p>
           </form>
         )}

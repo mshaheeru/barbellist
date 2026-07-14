@@ -1,20 +1,35 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
-import { faqData } from "./landing-data";
+import { buildFaqData } from "./landing-data";
 import { ChartBars, CheckIcon, QrDots } from "./landing-helpers";
 import { VideoModal } from "./VideoModal";
 import { OrderModal } from "./OrderModal";
-import { SalesContactModal } from "./SalesContactModal";
+import { OrderChoiceModal } from "./OrderChoiceModal";
 import { Reveal } from "./Reveal";
+import { CurrencyProvider, useCurrency } from "./CurrencyProvider";
+import { WhatsAppFloat } from "./WhatsAppFloat";
+import { openWhatsApp } from "@/lib/whatsapp";
 
 export function LandingPage() {
+  return (
+    <CurrencyProvider>
+      <LandingInner />
+    </CurrencyProvider>
+  );
+}
+
+function LandingInner() {
+  const { demo } = useCurrency();
   const [openFaq, setOpenFaq] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
-  const [salesOpen, setSalesOpen] = useState(false);
+  const [orderChoiceOpen, setOrderChoiceOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const openOrderChoice = () => setOrderChoiceOpen(true);
 
   useEffect(() => {
     const onScroll = () => {
@@ -38,18 +53,27 @@ export function LandingPage() {
 
   return (
     <div className="landing">
+      <WhatsAppFloat />
       <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
+      <OrderChoiceModal
+        open={orderChoiceOpen}
+        onClose={() => setOrderChoiceOpen(false)}
+        onChooseForm={() => setOrderOpen(true)}
+      />
       <OrderModal open={orderOpen} onClose={() => setOrderOpen(false)} />
-      <SalesContactModal open={salesOpen} onClose={() => setSalesOpen(false)} />
-      {/* NAV */}
+      {/* NAV — overlays hero so photo covers full top */}
       <nav
         style={{
-          position: "sticky",
+          position: "fixed",
           top: 0,
+          left: 0,
+          right: 0,
           zIndex: 50,
           background: navBg,
-          backdropFilter: "saturate(160%) blur(16px)",
-          WebkitBackdropFilter: "saturate(160%) blur(16px)",
+          backdropFilter:
+            scrolled || menuOpen ? "saturate(160%) blur(16px)" : "none",
+          WebkitBackdropFilter:
+            scrolled || menuOpen ? "saturate(160%) blur(16px)" : "none",
           borderBottom: `1px solid ${navBorder}`,
           transition: "background .25s,border-color .25s,box-shadow .25s",
           boxShadow: navShadow,
@@ -145,12 +169,12 @@ export function LandingPage() {
                   transition: "color .18s,background .18s",
                 }}
               >
-                Docs
+                FAQ
               </a>
             </div>
             <button
               type="button"
-              onClick={() => setOrderOpen(true)}
+              onClick={openOrderChoice}
               className="nav-cta"
               style={{
                 marginLeft: 8,
@@ -209,14 +233,14 @@ export function LandingPage() {
               Pricing
             </a>
             <a href="#faq" onClick={closeMenu}>
-              Docs
+              FAQ
             </a>
             <button
               type="button"
               className="lp-mobile-order"
               onClick={() => {
                 closeMenu();
-                setOrderOpen(true);
+                openOrderChoice();
               }}
             >
               Order Now →
@@ -225,147 +249,87 @@ export function LandingPage() {
         )}
       </nav>
 
-      {/* HERO */}
-      <header
-        id="top"
-        style={{
-          position: "relative",
-          background: "#FAF7F2",
-          overflow: "hidden",
-        }}
-      >
+      {/* HERO — full-bleed photo like reference */}
+      <header id="top" className="lp-hero-bleed">
         <div
-          style={{
-            position: "absolute",
-            top: -120,
-            right: -80,
-            width: 620,
-            height: 620,
-            background:
-              "radial-gradient(circle,rgba(201,134,27,.16),transparent 62%)",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: 180,
-            left: -160,
-            width: 520,
-            height: 520,
-            background:
-              "radial-gradient(circle,rgba(27,94,60,.09),transparent 62%)",
-            pointerEvents: "none",
-          }}
-        />
-
-        <div
-          className="lp-hero-pad"
-          style={{
-            maxWidth: 1200,
-            margin: "0 auto",
-            padding: "48px 32px 96px",
-            position: "relative",
-          }}
+          className="lp-hero-bg"
+          aria-hidden
+          style={{ position: "absolute", inset: 0 }}
         >
-          <div style={{ maxWidth: 820 }} className="lp-hero-in">
-            <h1
-              className="lp-hero-h1"
-              style={{
-                fontSize: 40,
-                lineHeight: 1.28,
-                letterSpacing: "-0.02em",
-                fontWeight: 600,
-                color: "#2A2A28",
-                maxWidth: "24ch",
-              }}
-            >
-              Gym chalana tha, spreadsheets nahi. Barbellist sab sambhal leta
-              hai. Apna{" "}
-              <strong style={{ fontWeight: 800, color: "#C9861B" }}>
-                weekend
-              </strong>{" "}
-              wapas lo.
-            </h1>
-            <div
-              className="lp-hero-ctas lp-hero-in-delay"
-              style={{
-                display: "flex",
-                gap: 14,
-                marginTop: 34,
-                flexWrap: "wrap",
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => setOrderOpen(true)}
-                style={{
-                  background: "#1B5E3C",
-                  color: "#FAF7F2",
-                  padding: "15px 26px",
-                  borderRadius: 12,
-                  fontSize: 16,
-                  fontWeight: 600,
-                  boxShadow: "0 6px 18px rgba(27,94,60,.28)",
-                  border: "none",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
-              >
-                Order Now
-              </button>
-              <button
-                type="button"
-                onClick={() => setVideoOpen(true)}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 9,
-                  background: "#fff",
-                  color: "#1B5E3C",
-                  padding: "15px 24px",
-                  borderRadius: 12,
-                  fontSize: 16,
-                  fontWeight: 600,
-                  border: "1px solid #DDD8CC",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
-              >
-                <span
-                  style={{
-                    display: "inline-flex",
-                    width: 22,
-                    height: 22,
-                    borderRadius: "50%",
-                    background: "#1B5E3C",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 0,
-                      height: 0,
-                      borderLeft: "7px solid #FAF7F2",
-                      borderTop: "4.5px solid transparent",
-                      borderBottom: "4.5px solid transparent",
-                      marginLeft: 2,
-                    }}
-                  />
-                </span>
-                Watch 2-min demo
-              </button>
-            </div>
-            <p style={{ fontSize: 14, color: "#8A877E", marginTop: 20 }}>
-              Free for your first 3 months · No setup fees · Cancel anytime
-            </p>
-          </div>
+          <Image
+            src="/barbell.webp"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="lp-hero-bg-img"
+          />
+          <div className="lp-hero-bg-wash" />
+          <div className="lp-hero-bg-edge" />
+        </div>
 
-          {/* hero visuals */}
+        <div className="lp-hero-content lp-hero-in">
+          <h1 className="lp-hero-h1">
+            You opened a gym to run it — not drown in spreadsheets. Barbellist
+            handles the rest. Get your{" "}
+            <strong>weekend</strong> back.
+          </h1>
+          <p className="lp-hero-sub lp-hero-in-delay">
+            Ridiculously low for your first 3 months · Still highly affordable
+            after · Cancel anytime
+          </p>
+          <div className="lp-hero-ctas lp-hero-in-delay">
+            <button
+              type="button"
+              onClick={openOrderChoice}
+              className="lp-hero-btn-primary"
+            >
+              Order Now
+            </button>
+            <button
+              type="button"
+              onClick={() => setVideoOpen(true)}
+              className="lp-hero-btn-secondary"
+            >
+              <span className="lp-hero-play" aria-hidden>
+                <span />
+              </span>
+              Watch 2-min demo
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <section className="lp-after-hero">
+        <div className="lp-after-hero-inner">
+          <Reveal className="lp-proof">
+            <div className="lp-proof-label">Who builds Barbellist</div>
+            <h2 className="lp-proof-title">
+              10+ engineers. One team. Every piece covered.
+            </h2>
+            <p className="lp-proof-body">
+              Barbellist is built by{" "}
+              <a
+                href="https://www.tuspiretech.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lp-tuspire-link"
+              >
+                TuSpire Tech
+              </a>{" "}
+              — vetted senior engineers who have shipped real products, not a
+              side project learning curve. Product, backend, mobile, and ops
+              under one roof.
+            </p>
+            <p className="lp-proof-body" style={{ marginTop: 12 }}>
+              At the standard gym owners expect. On the timeline we promised.
+            </p>
+          </Reveal>
+
+          {/* product visuals */}
           <div
             className="lp-hero-visuals lp-hero-in-delay-2"
-            style={{ position: "relative", marginTop: 64, height: 520 }}
+            style={{ position: "relative", marginTop: 48, height: 520 }}
           >
             {/* secondary floating card (QR kiosk) */}
             <div
@@ -640,7 +604,7 @@ export function LandingPage() {
                             marginTop: 4,
                           }}
                         >
-                          $8,420
+                          {demo(8420)}
                         </div>
                         <div
                           style={{
@@ -673,7 +637,7 @@ export function LandingPage() {
                             marginTop: 4,
                           }}
                         >
-                          $3,180
+                          {demo(3180)}
                         </div>
                         <div
                           style={{
@@ -705,7 +669,7 @@ export function LandingPage() {
                             marginTop: 4,
                           }}
                         >
-                          $5,240
+                          {demo(5240)}
                         </div>
                         <div
                           style={{
@@ -899,7 +863,7 @@ export function LandingPage() {
             </div>
           </div>
         </div>
-      </header>
+      </section>
 
       {/* PROBLEM → SOLUTION */}
       <Reveal
@@ -1007,16 +971,20 @@ export function LandingPage() {
       <FeaturesSection />
       <RoiSection />
       <DeepDiveSection />
-      <PricingSection onTalkToSales={() => setSalesOpen(true)} />
+      <PricingSection
+        onOrder={openOrderChoice}
+        onTalkToSales={() => openWhatsApp()}
+      />
       <TestimonialsSection />
       <FaqSection openFaq={openFaq} setOpenFaq={setOpenFaq} />
-      <FinalCtaSection />
+      <FinalCtaSection onOrder={openOrderChoice} />
       <FooterSection />
     </div>
   );
 }
 
 function FeaturesSection() {
+  const { demo } = useCurrency();
   return (
     <Reveal
       as="section"
@@ -1201,7 +1169,7 @@ function FeaturesSection() {
               <div
                 style={{ fontSize: 13, color: "#324237", lineHeight: 1.45 }}
               >
-                Hi Usman, your Iron Republic membership fee of $28 is 7 days
+                Hi Usman, your Iron Republic membership fee of {demo(28)} is 7 days
                 overdue. Tap to pay:{" "}
                 <span style={{ color: "#1B5E3C", fontWeight: 600 }}>
                   brbl.st/pay
@@ -1240,7 +1208,7 @@ function FeaturesSection() {
                 className="num"
                 style={{ fontSize: 15, fontWeight: 700, color: "#1B5E3C" }}
               >
-                $84 collected
+                {demo(84)} collected
               </div>
             </div>
           </div>
@@ -1394,7 +1362,7 @@ function FeaturesSection() {
               className="num"
               style={{ fontSize: 22, fontWeight: 700, color: "#1B5E3C" }}
             >
-              $5,240
+              {demo(5240)}
             </div>
             <div
               style={{ fontSize: 11, color: "#8E8A7F", marginBottom: 12 }}
@@ -1469,7 +1437,7 @@ function FeaturesSection() {
                 Whey Protein 1kg
               </span>
               <span className="num" style={{ fontWeight: 600 }}>
-                $34
+                {demo(34)}
               </span>
             </div>
             <div
@@ -1494,7 +1462,7 @@ function FeaturesSection() {
                 Energy drink
               </span>
               <span className="num" style={{ fontWeight: 600 }}>
-                $3
+                {demo(3)}
               </span>
             </div>
             <div
@@ -1515,7 +1483,7 @@ function FeaturesSection() {
                 className="num"
                 style={{ fontWeight: 700, color: "#1B5E3C" }}
               >
-                $37
+                {demo(37)}
               </span>
             </div>
           </div>
@@ -1526,6 +1494,7 @@ function FeaturesSection() {
 }
 
 function RoiSection() {
+  const { earlyMin } = useCurrency();
   const bullets = [
     "It's in the overdue payments you feel too awkward to chase down on the gym floor.",
     "It's in the members who silently quit after their first year because nobody noticed they stopped showing up.",
@@ -1664,7 +1633,7 @@ function RoiSection() {
             maxWidth: "60ch",
           }}
         >
-          For just $50 a month, Barbellist plugs the leaks.{" "}
+          For just {earlyMin} a month, Barbellist plugs the leaks.{" "}
           <strong style={{ color: "#2A2A28", fontWeight: 700 }}>
             Our automated fee reminders recover your lost revenue without the
             awkward conversations. Our smart-tracking flags at-risk members
@@ -1694,6 +1663,7 @@ function RoiSection() {
 }
 
 function DeepDiveSection() {
+  const { demo } = useCurrency();
   const checklistItems = [
     "Real-time revenue vs. expenses",
     "At-risk member alerts",
@@ -1754,7 +1724,7 @@ function DeepDiveSection() {
                 className="num"
                 style={{ fontSize: 22, fontWeight: 700, color: "#1B5E3C" }}
               >
-                $8,420
+                {demo(8420)}
               </div>
             </div>
             <div
@@ -1770,7 +1740,7 @@ function DeepDiveSection() {
                 className="num"
                 style={{ fontSize: 22, fontWeight: 700, color: "#1F1F1F" }}
               >
-                $3,180
+                {demo(3180)}
               </div>
             </div>
             <div
@@ -1785,7 +1755,7 @@ function DeepDiveSection() {
                 className="num"
                 style={{ fontSize: 22, fontWeight: 700, color: "#fff" }}
               >
-                $5,240
+                {demo(5240)}
               </div>
             </div>
           </div>
@@ -2072,10 +2042,10 @@ function DeepDiveSection() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {[
-              { label: "Staff salaries", amount: "$1,850", highlight: false },
-              { label: "Electricity", amount: "$640", highlight: false },
-              { label: "Equipment repair", amount: "$290", highlight: false },
-              { label: "Inventory restock", amount: "$400", highlight: true },
+              { label: "Staff salaries", amount: demo(1850), highlight: false },
+              { label: "Electricity", amount: demo(640), highlight: false },
+              { label: "Equipment repair", amount: demo(290), highlight: false },
+              { label: "Inventory restock", amount: demo(400), highlight: true },
             ].map((row) => (
               <div
                 key={row.label}
@@ -2156,7 +2126,15 @@ function DeepDiveSection() {
   );
 }
 
-function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
+function PricingSection({
+  onOrder,
+  onTalkToSales,
+}: {
+  onOrder: () => void;
+  onTalkToSales: () => void;
+}) {
+  const { earlyRate, standardRate, earlyMin, standardMin, barbellist200, demo, profile } =
+    useCurrency();
   const earlyFeatures = [
     "All features included",
     "Automated WhatsApp reminders",
@@ -2176,10 +2154,27 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
   ];
 
   const comparisons = [
-    { name: "Barbellist", price: "$50/mo", sub: "· 200 members", highlight: true },
-    { name: "Legacy US enterprise platforms", price: "$199+/mo", highlight: false },
-    { name: "Modern US flat-rate platforms", price: "$159+/mo", highlight: false },
-    { name: "Specialty niche platforms", price: "$198+/mo", highlight: false },
+    {
+      name: "Barbellist",
+      price: `${barbellist200}/mo`,
+      sub: "· 200 members",
+      highlight: true,
+    },
+    {
+      name: "Legacy US enterprise platforms",
+      price: `${demo(199)}+/mo`,
+      highlight: false,
+    },
+    {
+      name: "Modern US flat-rate platforms",
+      price: `${demo(159)}+/mo`,
+      highlight: false,
+    },
+    {
+      name: "Specialty niche platforms",
+      price: `${demo(198)}+/mo`,
+      highlight: false,
+    },
   ];
 
   return (
@@ -2268,7 +2263,7 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
                 className="num lp-price"
                 style={{ fontSize: 56, fontWeight: 700, color: "#173D28" }}
               >
-                $0.10
+                {earlyRate}
               </span>
               <span style={{ fontSize: 14, color: "#8A877E" }}>
                 / member / month
@@ -2304,10 +2299,11 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
               ))}
             </div>
             <div style={{ fontSize: 13, color: "#8A877E", marginTop: 20 }}>
-              $9/month minimum
+              {earlyMin}/month minimum
             </div>
-            <a
-              href="#top"
+            <button
+              type="button"
+              onClick={onOrder}
               style={{
                 marginTop: 20,
                 textAlign: "center",
@@ -2318,10 +2314,14 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
                 fontSize: 16,
                 fontWeight: 600,
                 boxShadow: "0 6px 16px rgba(27,94,60,.26)",
+                border: "none",
+                cursor: "pointer",
+                fontFamily: "inherit",
+                width: "100%",
               }}
             >
-              Start free
-            </a>
+              Order Now
+            </button>
           </div>
 
           {/* Standard */}
@@ -2377,7 +2377,7 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
                 className="num lp-price"
                 style={{ fontSize: 56, fontWeight: 700, color: "#173D28" }}
               >
-                $0.25
+                {standardRate}
               </span>
               <span style={{ fontSize: 14, color: "#8A877E" }}>
                 / member / month
@@ -2413,7 +2413,7 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
               ))}
             </div>
             <div style={{ fontSize: 13, color: "#8A877E", marginTop: 20 }}>
-              $15/month minimum
+              {standardMin}/month minimum
             </div>
             <button
               type="button"
@@ -2521,7 +2521,7 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
             fontWeight: 500,
           }}
         >
-          All prices in USD. Local currency billing available.
+          All prices shown in {profile.label}. Local currency billing available.
         </p>
       </div>
     </Reveal>
@@ -2529,10 +2529,10 @@ function PricingSection({ onTalkToSales }: { onTalkToSales: () => void }) {
 }
 
 function TestimonialsSection() {
+  const { demo } = useCurrency();
   const testimonials = [
     {
-      quote:
-        "We stopped losing $400 a month in forgotten renewals within our first two weeks.",
+      quote: `We stopped losing ${demo(400)} a month in forgotten renewals within our first two weeks.`,
       name: "Bilal S.",
       role: "Owner, Barbell Republic · Karachi",
     },
@@ -2663,6 +2663,8 @@ function FaqSection({
   openFaq: number;
   setOpenFaq: (fn: (s: number) => number) => void;
 }) {
+  const { profile } = useCurrency();
+  const faqs = buildFaqData(profile);
   return (
     <section id="faq" style={{ background: "#FAF7F2" }}>
       <Reveal
@@ -2688,7 +2690,7 @@ function FaqSection({
           Questions, answered.
         </h2>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          {faqData.map((faq, i) => (
+          {faqs.map((faq, i) => (
             <div key={faq.q} style={{ borderBottom: "1px solid #E8E5DF" }}>
               <button
                 type="button"
@@ -2781,7 +2783,7 @@ function FaqSection({
   );
 }
 
-function FinalCtaSection() {
+function FinalCtaSection({ onOrder }: { onOrder: () => void }) {
   return (
     <section
       style={{
@@ -2814,8 +2816,9 @@ function FinalCtaSection() {
         <p style={{ fontSize: 19, color: "#4C5A50", marginTop: 18 }}>
           Start free. Onboard your gym in under an hour.
         </p>
-        <a
-          href="#top"
+        <button
+          type="button"
+          onClick={onOrder}
           style={{
             display: "inline-block",
             marginTop: 30,
@@ -2826,10 +2829,13 @@ function FinalCtaSection() {
             fontSize: 17,
             fontWeight: 600,
             boxShadow: "0 10px 26px rgba(27,94,60,.32)",
+            border: "none",
+            cursor: "pointer",
+            fontFamily: "inherit",
           }}
         >
-          Start free — no card required
-        </a>
+          Order Now — no card required
+        </button>
         <p style={{ fontSize: 14, color: "#7C8A80", marginTop: 18 }}>
           Trusted by gym owners across three continents.
         </p>
@@ -2861,7 +2867,7 @@ function FooterSection() {
     {
       title: "Resources",
       links: [
-        { label: "Docs", href: "#faq" },
+        { label: "FAQ", href: "#faq" },
         { label: "Support", href: "#top" },
         { label: "API", href: "#top" },
         { label: "Status", href: "#top" },
@@ -2974,9 +2980,24 @@ function FooterSection() {
             padding: "20px 32px",
             fontSize: 13,
             color: "#7E988A",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 8,
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
-          © 2026 Barbellist. All rights reserved.
+          <span>© 2026 Barbellist. All rights reserved.</span>
+          <span className="lp-footer-powered">
+            Powered by{" "}
+            <a
+              href="https://www.tuspiretech.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              TuspireTech
+            </a>
+          </span>
         </div>
       </div>
     </footer>
