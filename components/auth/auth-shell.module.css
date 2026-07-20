@@ -1,0 +1,80 @@
+.shell {
+  position: relative;
+  display: flex;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #123d28;
+}
+
+.bgWash {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+}
+
+.brandPanel {
+  display: none;
+  position: relative;
+  z-index: 10;
+  width: 50%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 48px;
+}
+
+@media (min-width: 1024px) {
+  .brandPanel {
+    display: flex;
+  }
+}
+
+@media (min-width: 1280px) {
+  .brandPanel {
+    padding: 0 64px;
+  }
+}
+
+.brandInner {
+  max-width: 520px;
+}
+
+.formMain {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  width: 100%;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+@media (min-width: 640px) {
+  .formMain {
+    padding: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .formMain {
+    width: 50%;
+    padding: 48px;
+  }
+}
+
+.formPaper {
+  width: 100%;
+  max-width: 460px;
+}
+
+.logoRow {
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: center;
+}
+
+.footer {
+  margin-top: 32px;
+  text-align: center;
+}

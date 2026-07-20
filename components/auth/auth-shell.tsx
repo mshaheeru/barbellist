@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { Paper, Stack, Text, Title } from "@mantine/core";
 import { BarbellistLogo } from "@/components/brand/barbellist-logo";
+import styles from "./auth-shell.module.css";
 
 type AuthShellProps = {
   children: ReactNode;
@@ -18,9 +19,9 @@ export function AuthShell({
   footer,
 }: AuthShellProps) {
   return (
-    <div className="auth-shell relative flex min-h-dvh overflow-hidden bg-[#123D28]">
+    <div className={`auth-shell ${styles.shell}`}>
       <div
-        className="pointer-events-none absolute inset-0"
+        className={styles.bgWash}
         aria-hidden
         style={{
           background:
@@ -28,15 +29,18 @@ export function AuthShell({
         }}
       />
 
-      {/* LEFT — brand panel */}
-      <aside className="auth-brand-panel relative z-10 w-1/2 flex-col items-center justify-center px-12 lg:flex xl:px-16">
-        <Stack align="center" gap={20} className="auth-fade-in max-w-[520px]">
+      <aside className={`auth-brand-panel ${styles.brandPanel}`}>
+        <Stack
+          align="center"
+          gap={20}
+          className={`auth-fade-in ${styles.brandInner}`}
+        >
           <BarbellistLogo
             layout="stacked"
             variant="light"
             markSize={96}
             wordmarkSize={56}
-            className="gap-7"
+            gap={28}
           />
 
           <Text
@@ -54,10 +58,9 @@ export function AuthShell({
         </Stack>
       </aside>
 
-      {/* RIGHT — form card */}
-      <main className="relative z-10 flex w-full flex-1 items-center justify-center p-5 sm:p-8 lg:w-1/2 lg:p-12">
+      <main className={styles.formMain}>
         <Paper
-          className="auth-fade-in-delay w-full max-w-[460px]"
+          className={`auth-fade-in-delay ${styles.formPaper}`}
           radius={28}
           p={{ base: 28, sm: 40 }}
           style={{
@@ -66,7 +69,7 @@ export function AuthShell({
               "0 24px 64px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.08)",
           }}
         >
-          <div className="mb-8 flex justify-center">
+          <div className={styles.logoRow}>
             <BarbellistLogo
               layout="horizontal"
               variant="dark"
@@ -97,7 +100,7 @@ export function AuthShell({
 
           {children}
 
-          <div className="mt-8 text-center">{footer}</div>
+          <div className={styles.footer}>{footer}</div>
         </Paper>
       </main>
     </div>
