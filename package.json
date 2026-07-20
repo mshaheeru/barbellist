@@ -9,8 +9,8 @@
     "lint": "eslint",
     "seed": "tsx scripts/seed.ts",
     "pages:build": "npx @cloudflare/next-on-pages",
-    "pages:preview": "npx wrangler pages dev .vercel/output/static",
-    "pages:deploy": "npx wrangler pages deploy .vercel/output/static"
+    "pages:preview": "npx wrangler pages dev .worker.next",
+    "pages:deploy": "npx wrangler pages deploy .worker.next"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
