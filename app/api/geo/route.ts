@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { profileFromCountry } from "@/lib/currency";
 
+export const runtime = "edge";
+
 export async function GET(request: Request) {
   const headers = request.headers;
   let country =

@@ -25,6 +25,9 @@ export const metadata: Metadata = {
   title: "Barbellist",
   description:
     "The calm, all-in-one gym management platform for independent gyms worldwide.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export const viewport: Viewport = {

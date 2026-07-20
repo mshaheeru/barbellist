@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { FeesList, FeesTableSkeleton } from "@/components/fees/fees-list";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 type PageProps = {
   searchParams: Promise<{

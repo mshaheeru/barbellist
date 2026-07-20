@@ -5,6 +5,7 @@ import {
 } from "@/components/inventory/inventory-list";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 type PageProps = {
   searchParams: Promise<{

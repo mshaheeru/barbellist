@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const runtime = "edge";
+
 const RECIPIENT =
   process.env.ORDER_RECIPIENT_EMAIL ?? "mshaheeruddin19757@gmail.com";
 

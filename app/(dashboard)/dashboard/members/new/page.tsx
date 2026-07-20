@@ -4,6 +4,7 @@ import { OnboardingWizard } from "@/components/members/onboarding/onboarding-wiz
 import styles from "@/components/members/members.module.css";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 export default async function NewMemberPage() {
   const { data: packages, error } = await getPackagesForGym();

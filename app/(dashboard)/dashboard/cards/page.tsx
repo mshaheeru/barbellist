@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { CardsPageClient } from "@/components/cards/cards-page-client";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 type PageProps = {
   searchParams: Promise<{

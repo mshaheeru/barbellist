@@ -18,6 +18,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { StaffRole } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 function emptyReports(
   from: string,

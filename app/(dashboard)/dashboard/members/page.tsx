@@ -9,6 +9,7 @@ import {
 } from "@/components/members/members-empty-state";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 type PageProps = {
   searchParams: Promise<{

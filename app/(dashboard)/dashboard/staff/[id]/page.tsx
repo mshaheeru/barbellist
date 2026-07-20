@@ -3,6 +3,7 @@ import { StaffProfileContent } from "@/components/staff/staff-profile-content";
 import { StaffProfileSkeleton } from "@/components/staff/staff-skeletons";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 type PageProps = {
   params: Promise<{ id: string }>;

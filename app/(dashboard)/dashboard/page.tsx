@@ -10,6 +10,7 @@ import type { DashboardData } from "@/lib/dashboard/types";
 import type { StaffRole } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 function emptyDashboard(role: StaffRole | null = null): DashboardData {
   return {
