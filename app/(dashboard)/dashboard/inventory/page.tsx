@@ -4,6 +4,8 @@ import {
   InventoryTableSkeleton,
 } from "@/components/inventory/inventory-list";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   searchParams: Promise<{
     search?: string;

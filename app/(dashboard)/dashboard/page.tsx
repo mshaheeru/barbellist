@@ -9,6 +9,8 @@ import { getDashboardVisibility } from "@/lib/auth/permissions";
 import type { DashboardData } from "@/lib/dashboard/types";
 import type { StaffRole } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 function emptyDashboard(role: StaffRole | null = null): DashboardData {
   return {
     visibility: getDashboardVisibility(role),

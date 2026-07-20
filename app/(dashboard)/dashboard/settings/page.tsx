@@ -10,6 +10,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { StaffRole } from "@/lib/types";
 import styles from "@/components/settings/settings.module.css";
 
+export const dynamic = "force-dynamic";
+
 async function SettingsContent() {
   const supabase = await createClient();
   const {

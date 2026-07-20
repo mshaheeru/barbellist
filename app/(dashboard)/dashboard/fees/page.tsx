@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { FeesList, FeesTableSkeleton } from "@/components/fees/fees-list";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   searchParams: Promise<{
     status?: string;

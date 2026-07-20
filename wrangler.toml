@@ -1,14 +1,18 @@
 name = "barbellist"
-compatibility_date = "2024-09-23"
+compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
-# Secrets / env vars: set in Cloudflare Pages dashboard (not here).
-# Required:
-#   NEXT_PUBLIC_SUPABASE_URL
-#   NEXT_PUBLIC_SUPABASE_ANON_KEY
-#   SUPABASE_SERVICE_ROLE_KEY
-#   QR_SIGNING_SECRET
-# Optional:
-#   WHATSAPP_API_TOKEN
-#   WHATSAPP_PHONE_NUMBER_ID
+# Runtime vars/secrets: Cloudflare dashboard → Workers → Variables and secrets
+# Build-time vars (required for Next.js NEXT_PUBLIC_*): Cloudflare dashboard →
+#   Settings → Build → Variables and secrets
+#   Must include at least:
+#     NEXT_PUBLIC_SUPABASE_URL
+#     NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   Also set for runtime:
+#     SUPABASE_SERVICE_ROLE_KEY
+#     QR_SIGNING_SECRET
+#     WHATSAPP_API_TOKEN (optional)
+#     WHATSAPP_PHONE_NUMBER_ID (optional — note the _ID suffix)
+#
+# After changing build vars, trigger a new deployment (Retry deployment).

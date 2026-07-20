@@ -13,6 +13,8 @@ import {
   StaffTableSkeleton,
 } from "@/components/staff/staff-skeletons";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   searchParams: Promise<{
     q?: string;

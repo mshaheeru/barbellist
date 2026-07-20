@@ -4,6 +4,8 @@ import {
   ExpensesTableSkeleton,
 } from "@/components/expenses/expenses-list";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   searchParams: Promise<{
     category?: string;

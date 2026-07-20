@@ -8,6 +8,8 @@ import {
   MembersTableSkeleton,
 } from "@/components/members/members-empty-state";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   searchParams: Promise<{
     q?: string;

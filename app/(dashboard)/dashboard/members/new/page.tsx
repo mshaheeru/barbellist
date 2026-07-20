@@ -3,6 +3,8 @@ import { getPackagesForGym } from "@/app/actions/members";
 import { OnboardingWizard } from "@/components/members/onboarding/onboarding-wizard";
 import styles from "@/components/members/members.module.css";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewMemberPage() {
   const { data: packages, error } = await getPackagesForGym();
 

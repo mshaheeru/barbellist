@@ -17,6 +17,8 @@ import type { ReportsData } from "@/lib/reports/types";
 import { createClient } from "@/lib/supabase/server";
 import type { StaffRole } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 function emptyReports(
   from: string,
   to: string,

@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { StaffProfileContent } from "@/components/staff/staff-profile-content";
 import { StaffProfileSkeleton } from "@/components/staff/staff-skeletons";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ tab?: string }>;

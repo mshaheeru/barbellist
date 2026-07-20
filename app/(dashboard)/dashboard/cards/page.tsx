@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { CardsPageClient } from "@/components/cards/cards-page-client";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   searchParams: Promise<{
     member?: string;
