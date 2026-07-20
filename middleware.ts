@@ -1,8 +1,12 @@
 import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 
-/** Next.js 16 proxy (replaces middleware) — always runs on the Edge. */
-export async function proxy(request: NextRequest) {
+/**
+ * Use middleware.ts (not proxy.ts) for Cloudflare Pages.
+ * Next.js 16 proxy.ts is Node-only; @cloudflare/next-on-pages requires Edge.
+ * middleware.ts still works (deprecated warning) and defaults to Edge.
+ */
+export async function middleware(request: NextRequest) {
   return updateSession(request);
 }
 
