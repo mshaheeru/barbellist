@@ -1,0 +1,356 @@
+/* Expenses — GymFlow Screen 13 */
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1f1f1f;
+  margin: 0;
+}
+
+.pageSubtitle {
+  font-size: 14.5px;
+  color: #7a7a70;
+  margin: 3px 0 0;
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: #1b5e3c;
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: 11px;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(27, 94, 60, 0.24);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.addBtn:hover {
+  background: #164d32;
+}
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 900px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #eee9dd;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(31, 31, 31, 0.04);
+}
+
+.cardSalary {
+  border-left: 3px solid #c9861b;
+}
+
+.cardPending {
+  background: #fefbf4;
+  border-color: #efd9ae;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.cardLabel {
+  font-size: 13px;
+  color: #7a7a70;
+  font-weight: 500;
+}
+
+.cardLabelPending {
+  color: #8a6a20;
+  font-weight: 600;
+}
+
+.iconBox {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconBoxGrey {
+  background: #edebe4;
+  color: #4a4a42;
+}
+
+.iconBoxAmber {
+  background: #f7ecd6;
+  color: #c9861b;
+}
+
+.num {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.02em;
+}
+
+.kpiValue {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.kpiValueAmber {
+  color: #b07a15;
+}
+
+.kpiMeta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 9px;
+  font-size: 12.5px;
+  color: #8a8a80;
+  font-weight: 600;
+}
+
+.kpiMetaAmber {
+  color: #b07a15;
+}
+
+.toolbarRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filterSelect {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #eae4d8;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 13px;
+  color: #4a4a42;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.dateRange {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #eae4d8;
+  border-radius: 10px;
+  padding: 9px 14px;
+}
+
+.dateInput {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: #4a4a42;
+  background: transparent;
+  font-family: inherit;
+}
+
+.legend {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: #8a8a80;
+}
+
+.legendBar {
+  width: 11px;
+  height: 3px;
+  border-radius: 2px;
+  background: #c9861b;
+}
+
+.tableWrap {
+  background: #fff;
+  border: 1px solid #eee9dd;
+  border-radius: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: 0 1px 2px rgba(31, 31, 31, 0.04);
+}
+
+.tableHead {
+  display: grid;
+  grid-template-columns: 0.75fr 1.25fr 2.4fr 1.25fr 1.15fr 0.95fr 0.5fr 40px;
+  gap: 12px;
+  padding: 13px 20px;
+  background: #f7f3ea;
+  border-bottom: 1px solid #eee9dd;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8a8a80;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  min-width: 900px;
+}
+
+.tableHead > :first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #f7f3ea;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 0.75fr 1.25fr 2.4fr 1.25fr 1.15fr 0.95fr 0.5fr 40px;
+  gap: 12px;
+  padding: 12px 20px;
+  align-items: center;
+  border-bottom: 1px solid #f4f0e6;
+  min-width: 900px;
+}
+
+.tableRow > :first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #fff;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableRowSalary {
+  border-left: 3px solid #c9861b;
+}
+
+.dateCell {
+  font-size: 13px;
+  color: #4a4a42;
+  font-weight: 600;
+}
+
+.descCell {
+  font-size: 13.5px;
+  color: #1f1f1f;
+}
+
+.mutedCell {
+  font-size: 13px;
+  color: #6b6b62;
+}
+
+.amountCell {
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.pill {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.receiptBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: none;
+  border: none;
+  color: #1b5e3c;
+  cursor: pointer;
+  padding: 0;
+}
+
+.receiptEmpty {
+  display: flex;
+  justify-content: center;
+  color: #cfccc2;
+}
+
+.menuBtn {
+  background: none;
+  border: none;
+  color: #b0b0a6;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+}
+
+.emptyState {
+  padding: 48px 24px;
+  text-align: center;
+  color: #8a8a80;
+  font-size: 14.5px;
+}
+
+.errorBox {
+  background: #f9e4e1;
+  color: #c0392b;
+  border-radius: 12px;
+  padding: 16px 20px;
+  font-weight: 500;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f2eee3 25%, #faf7f2 50%, #f2eee3 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: 16px;
+  height: 120px;
+  margin-bottom: 18px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  .tableWrap {
+    overflow-x: auto;
+  }
+
+  .tableHead,
+  .tableRow {
+    min-width: 900px;
+  }
+}

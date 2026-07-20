@@ -1,0 +1,19 @@
+.shell {
+  display: flex;
+  height: 100dvh;
+  overflow: hidden;
+  background: #faf7f2;
+}
+
+.main {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
+  padding: 28px 34px;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: 20px 16px;
+  }
+}

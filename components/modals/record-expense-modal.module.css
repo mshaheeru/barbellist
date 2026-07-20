@@ -1,0 +1,388 @@
+/* Record Expense modal — GymFlow Screen 14 */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: rgba(20, 30, 24, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal {
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100vh - 48px);
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .modal {
+    max-width: 100%;
+    max-height: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid #f2eee3;
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.closeBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #eae4d8;
+  background: #fff;
+  color: #7a7a70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.modalBody {
+  padding: 18px 24px 22px;
+  overflow-y: auto;
+}
+
+.sectionLabel {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #4a4a42;
+  margin-bottom: 9px;
+}
+
+.categoryPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.categoryPill {
+  border: 1px solid #eae4d8;
+  color: #4a4a42;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.categoryPillActive {
+  border: 2px solid #c9861b;
+  background: #fbefd6;
+  color: #b07a15;
+  font-weight: 700;
+  padding: 8px 14px;
+}
+
+.salaryBox {
+  background: #fdf7ec;
+  border: 1px solid #efd9ae;
+  border-radius: 12px;
+  padding: 14px 15px;
+  margin-bottom: 16px;
+}
+
+.salaryLabel {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #8a6a20;
+  margin-bottom: 10px;
+}
+
+.staffPicker {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.staffTrigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #eae4d8;
+  border-radius: 11px;
+  padding: 9px 12px;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.staffAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e7f0ea;
+  color: #1b5e3c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.staffAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.staffInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.staffName {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.staffSub {
+  font-size: 12px;
+  color: #8a8a80;
+}
+
+.staffDropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 1px solid #eae4d8;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  z-index: 10;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.staffSearch {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #f2eee3;
+  padding: 10px 12px;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+}
+
+.staffOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.staffOption:hover {
+  background: #f7f3ea;
+}
+
+.modeToggle {
+  display: flex;
+  background: #f2eee3;
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.modeBtn {
+  flex: 1;
+  text-align: center;
+  color: #8a8a80;
+  font-weight: 600;
+  font-size: 12.5px;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.modeBtnActive {
+  background: #fff;
+  color: #1b5e3c;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.fieldRow {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.field {
+  flex: 1;
+}
+
+.fieldWide {
+  flex: 1.3;
+}
+
+.fieldInput {
+  width: 100%;
+  border: 1px solid #eae4d8;
+  border-radius: 11px;
+  padding: 11px 14px;
+  font-size: 13.5px;
+  font-family: inherit;
+  outline: none;
+  background: #fff;
+}
+
+.fieldInput:focus {
+  border-color: #1b5e3c;
+}
+
+.amountInput {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.paymentGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.paymentPill {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #eae4d8;
+  border-radius: 11px;
+  padding: 11px 13px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  font-family: inherit;
+  text-align: left;
+}
+
+.paymentPillSelected {
+  border: 2px solid #1b5e3c;
+  background: #eaf3ee;
+  font-weight: 700;
+  padding: 10px 12px;
+}
+
+.methodIcon {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.receiptZone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px dashed #dcd6c8;
+  border-radius: 11px;
+  padding: 9px 13px;
+  color: #8a8a80;
+  font-size: 12.5px;
+  cursor: pointer;
+  background: #fff;
+  width: 100%;
+  font-family: inherit;
+}
+
+.receiptZoneHasFile {
+  border-style: solid;
+  border-color: #1b5e3c;
+  color: #1b5e3c;
+}
+
+.notesInput {
+  width: 100%;
+  border: 1px solid #eae4d8;
+  border-radius: 11px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #1f1f1f;
+  margin-bottom: 18px;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+  min-height: 42px;
+}
+
+.notesInput::placeholder {
+  color: #a0a096;
+}
+
+.submitBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  background: #1b5e3c;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(27, 94, 60, 0.28);
+  font-family: inherit;
+}
+
+.submitBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.hiddenFile {
+  display: none;
+}
+
+.monthField {
+  margin-bottom: 12px;
+}

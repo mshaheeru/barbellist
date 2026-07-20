@@ -1,0 +1,254 @@
+---
+description: Frontend development rules for Next.js 16, Mantine UI, vanilla CSS, and React Query
+globs:
+  - "src/app/**/*"
+  - "src/components/**/*"
+  - "src/hooks/**/*"
+  - "src/lib/**/*"
+  - "src/types/**/*"
+  - "src/actions/**/*"
+  - "**/*.tsx"
+  - "**/*.ts"
+alwaysApply: false
+---
+
+# Frontend Rules (Next.js 16 + Mantine UI + Vanilla CSS)
+
+## Styling — NON-NEGOTIABLE
+**NO Tailwind CSS.** Do not use Tailwind utility classes, `@tailwind`, or Tailwind plugins on new or refactored code.
+
+**Allowed styling only:**
+1. **Mantine UI** — components, props, `createTheme()`, component `styles`, `Stack`/`Group`/`Grid`/`Box`/`Paper` for layout
+2. **Pure vanilla CSS** — `app/globals.css`, co-located `*.module.css`, inline `style={{}}` only when necessary
+
+```
+✅ Mantine TextInput, Button, Paper, Stack, Grid
+✅ createTheme() in lib/mantine/theme.ts with Barbellist palette
+✅ .auth-shell { ... } in globals.css or MyComponent.module.css
+❌ className="flex gap-4 p-6 bg-primary" (Tailwind)
+❌ @import "tailwindcss"
+❌ Raw <input> when Mantine provides the control
+```
+
+## Design Files — ALWAYS CHECK FIRST
+Before building ANY screen, open the corresponding design from `designfiles/`:
+- `designfiles/GymFlow Mockups.dc.html` — all app screens (dashboard, members, fees, attendance, etc.)
+- `designfiles/Sidebar.dc.html` — sidebar/navigation
+- `designfiles/screenshots/` — exported screen images
+
+**Your job is to TRANSLATE these designs into Next.js 16 + Mantine + vanilla CSS, not to design from scratch.**
+- Match layout, spacing, colors, typography exactly
+- Match component shapes (pill badges, KPI cards, table styles, modal layouts)
+- Match the data shown in the designs (sample names, amounts, statuses)
+- Do NOT "improve" or deviate from the design — if it looks different from the mockup, it's wrong
+
+## Next.js 16 — Mental Model
+- **Server Components by default** — every component in `app/` is RSC unless marked `"use client"`
+- **Server Actions for mutations** — form submissions, button clicks that change DB state
+- **Route Handlers only for external APIs** — webhooks, mobile app endpoints
+- **`"use client"` as close to the leaf as possible** — never on layout or page if avoidable
+- **Async params in Next.js 16**: `params` and `searchParams` are now Promises — always `await` them:
+```typescript
+// ✅ Next.js 16
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+}
+
+// ❌ Next.js 15 style — BROKEN in 16
+export default function Page({ params }: { params: { id: string } }) {
+  const { id } = params; // Error: params is a Promise
+}
+```
+
+## Brand Tokens
+- Define brand colors in `lib/mantine/theme.ts` (`createTheme`) and CSS variables in `globals.css`
+- Use Mantine theme colors (`forest`, `amber`) or CSS vars — never raw hex scattered in components
+- Responsive layout: Mantine `Grid`, `SimpleGrid`, `visibleFrom` / `hiddenFrom`, or vanilla CSS media queries
+
+## Server Actions — When & How
+```typescript
+// ✅ USE Server Actions for:
+// - Form submissions (create member, record payment)
+// - Button-triggered mutations (send reminder, freeze membership)
+// - Optimistic UI updates
+
+// File: src/actions/members.ts
+'use server'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
+
+const CreateMemberSchema = z.object({
+  name: z.string().min(1),
+  phone: z.string().min(1),
+  gym_id: z.string().uuid(),
+})
+
+export async function createMember(formData: FormData) {
+  const parsed = CreateMemberSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return { error: parsed.error.flatten() }
+
+  const supabase = await createSupabaseServerClient()
+  const { data, error } = await supabase
+    .from('members')
+    .insert(parsed.data)
+    .select('id, name, member_code')
+    .single()
+
+  if (error) return { error: error.message }
+  revalidatePath('/dashboard/members')
+  return { data }
+}
+```
+
+## React Query v5 — For Client-Side Data
+Use React Query when you need:
+- Real-time UI updates (attendance feed)
+- Client-side filtering/sorting
+- Optimistic updates
+- Polling or refetch intervals
+
+```typescript
+// ✅ Hook pattern for paginated list (via Route Handler)
+export function useMembers(params: MemberFilters = {}) {
+  const gymId = useGymId() // from context
+  return useQuery({
+    queryKey: ['members', gymId, params],
+    queryFn: async () => {
+      const searchParams = new URLSearchParams({ ...params, gym_id: gymId })
+      const response = await fetch(`/api/members?${searchParams}`)
+      if (!response.ok) throw new Error('Failed to fetch members')
+      return response.json() // { data: [], meta: {} }
+    },
+    staleTime: 2 * 60 * 1000,
+    enabled: !!gymId,
+  })
+}
+
+// Component access:
+const { data, isLoading, error } = useMembers(filters)
+const members = data?.data || []
+const meta = data?.meta
+```
+
+### staleTime by Data Type
+| Data | staleTime | Reason |
+|------|-----------|--------|
+| Auth, gym settings | 5 min | Rendered on every page |
+| Packages, roles | 5 min | Rarely change |
+| Members, staff lists | 2 min | Moderate updates |
+| Attendance, fees | 1-2 min | Updated regularly |
+| Live attendance feed | 0 | Supabase Realtime |
+
+## API Response — Critical Rules
+
+**Server Actions and Route Handlers** return `{ data, error?, meta? }` directly.
+
+**Type parameter in hooks:** Always use payload type, NEVER wrapper type
+```typescript
+✅ fetch('/api/members').then(r => r.json()) as { data: Member[], meta?: PaginationMeta }
+❌ get<PaginatedApiResponse<Member>>(...) // NEVER
+❌ get<{ data: Member[] }>(...)            // NEVER
+```
+
+**The one question before writing any hook:**
+> Does this endpoint return `meta`?
+> **Yes** → `return response` → component uses `data?.data`
+> **No** → `return response.data` → component uses `data`
+
+## Loading vs Empty State
+```tsx
+// ✅ CORRECT — check isLoading AND data existence
+{isLoading || !data ? (
+  <Skeleton className="h-64 w-full" />
+) : error ? (
+  <Alert variant="destructive">{error.message}</Alert>
+) : data.data.length === 0 ? (
+  <EmptyState message="No members yet" action="Add your first member" />
+) : (
+  <MembersTable data={data.data} />
+)}
+
+// ❌ WRONG — shows "No records" during initial load
+{isLoading ? <Skeleton /> : data.data.length === 0 ? ... }
+```
+
+## Page Layout Pattern
+```tsx
+// ALL dashboard pages follow this structure — Mantine layout, no Tailwind
+export default async function MembersPage() {
+  return (
+    <>
+      <Group justify="space-between" mb="lg">
+        <div>
+          <Title order={1}>Members</Title>
+          <Text c="dimmed" size="sm">Manage your gym members</Text>
+        </div>
+        <Button leftSection={<Plus size={16} />}>Add Member</Button>
+      </Group>
+      <Suspense fallback={<MembersTableSkeleton />}>
+        <MembersList />
+      </Suspense>
+    </>
+  )
+}
+```
+
+## Gym Context — Always Available
+```typescript
+// GymProvider wraps all dashboard pages
+const { gymId, gymName, currency, currencySymbol, userRole } = useGym()
+
+// Every query MUST include gymId
+useQuery({
+  queryKey: ['members', gymId, filters],
+  enabled: !!gymId,
+  ...
+})
+```
+
+## Forms
+- Use `react-hook-form` + `zodResolver` for client-side forms
+- Date pickers: use a consistent date library (e.g., `date-fns`)
+- Dynamic routes in client components: `useParams()` from `next/navigation`
+- Edit mode: `form.reset(data)` when data loads
+- All form actions: either Server Action (preferred) or mutation hook
+
+## Supabase Realtime (Attendance Feed)
+```typescript
+// ✅ Subscribe to attendance inserts for live feed
+useEffect(() => {
+  const channel = supabase
+    .channel('attendance-feed')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'attendance',
+      filter: `gym_id=eq.${gymId}`,
+    }, (payload) => {
+      queryClient.setQueryData(['attendance', gymId], (old) => {
+        // Prepend new record
+      })
+    })
+    .subscribe()
+
+  return () => { supabase.removeChannel(channel) }
+}, [gymId])
+```
+
+## Common Mistakes (From Past Projects)
+1. **Missing nav link** — always add to sidebar after creating a page
+2. **Forgetting gym_id** — every query, every mutation, every subscription
+3. **Wrong type param** — `get<T[]>()` not `get<PaginatedApiResponse<T>>()`
+4. **SPA navigation** — `router.push()` not `window.location.href`
+5. **`useEffect` for fetching** — use Server Components or React Query instead
+6. **Not awaiting params** — Next.js 16 params are Promises
+7. **`"use client"` too high** — keep it at the leaf, not on layouts/pages
+8. **Missing empty state** — every list page needs a designed empty state
+9. **Hardcoded colors** — use Mantine theme or CSS variables, never raw hex
+10. **Tailwind classes** — forbidden; use Mantine + vanilla CSS only
+11. **No loading skeleton** — every async section needs a Suspense boundary with skeleton
+
+---
+**Detailed patterns:** `@api-patterns` skill
+**Performance:** `@performance-patterns` skill

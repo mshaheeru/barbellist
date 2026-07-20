@@ -1,3 +1,94 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1b5e3c;
+  --color-accent: #c9861b;
+  --color-background: #faf7f2;
+  --color-foreground: #1f1f1f;
+  --color-muted: #e8e5df;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-sidebar: #123d28;
+  --color-sidebar-active: #1b5e3c;
+  --color-sidebar-muted: #a9c4b4;
+  --color-sidebar-subtle: #88a596;
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), sans-serif;
+}
+
+@keyframes authFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-fade-in {
+  animation: authFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-fade-in-delay {
+  animation: authFadeUp 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+
+.auth-fade-in-delay-2 {
+  animation: authFadeUp 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.24s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-fade-in,
+  .auth-fade-in-delay,
+  .auth-fade-in-delay-2 {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Kill Chrome autofill “baby blue” on auth/forms — keep white brand fields */
+.auth-shell input:-webkit-autofill,
+.auth-shell input:-webkit-autofill:hover,
+.auth-shell input:-webkit-autofill:focus,
+.auth-shell input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 40px #ffffff inset !important;
+  -webkit-text-fill-color: #1f1f1f !important;
+  caret-color: #1f1f1f;
+  transition: background-color 99999s ease-out;
+}
+
+.auth-shell .mantine-TextInput-input,
+.auth-shell .mantine-PasswordInput-input,
+.auth-shell .mantine-PasswordInput-innerInput {
+  background-color: #ffffff !important;
+}
+
+.auth-display-title {
+  font-family: var(--font-space-grotesk), var(--font-geist), system-ui, sans-serif;
+}
+
+.auth-brand-tagline {
+  margin-top: 0;
+}
+
+.auth-brand-panel {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .auth-brand-panel {
+    display: flex;
+  }
+}
+
+.auth-brand-mark {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

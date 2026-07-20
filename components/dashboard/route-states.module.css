@@ -1,0 +1,174 @@
+/* Branded route-level loading / error / 404 — matches dashboard cream surface */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 60vh;
+  padding: 8px 0 32px;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 60vh;
+  padding: 48px 24px;
+  gap: 12px;
+}
+
+.title {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1f1f1f;
+  margin: 0;
+}
+
+.message {
+  font-size: 15px;
+  color: #7a7a70;
+  margin: 0;
+  max-width: 42ch;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  justify-content: center;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #1b5e3c;
+  color: #faf7f2;
+  padding: 12px 22px;
+  border-radius: 11px;
+  font-weight: 600;
+  font-size: 14.5px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(27, 94, 60, 0.24);
+  font-family: inherit;
+}
+
+.primaryBtn:hover {
+  background: #164d32;
+}
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #1b5e3c;
+  padding: 12px 22px;
+  border-radius: 11px;
+  font-weight: 600;
+  font-size: 14.5px;
+  border: 1px solid #ddd8cc;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.secondaryBtn:hover {
+  background: #faf7f2;
+}
+
+.iconCircle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #e7f0ea;
+  color: #1b5e3c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.iconCircleMuted {
+  background: #edebe4;
+  color: #7a7a70;
+}
+
+/* Loading skeleton */
+.skelTop {
+  margin-bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skelTitle {
+  width: 180px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.skelSub {
+  width: 260px;
+  height: 14px;
+  border-radius: 6px;
+}
+
+.skelKpiGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 900px) {
+  .skelKpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.skelKpi {
+  height: 96px;
+  border-radius: 16px;
+  border: 1px solid #eee9dd;
+  background: #fff;
+}
+
+.skelPanel {
+  background: #fff;
+  border: 1px solid #eee9dd;
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skelRow {
+  height: 44px;
+  border-radius: 10px;
+}
+
+.pulse {
+  background: linear-gradient(90deg, #f2eee3 0%, #faf7f2 50%, #f2eee3 100%);
+  background-size: 200% 100%;
+  animation: routeSkelPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes routeSkelPulse {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}

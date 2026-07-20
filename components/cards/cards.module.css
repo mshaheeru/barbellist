@@ -1,0 +1,656 @@
+/* Membership Card Generator — designfiles/GymFlow Mockups.dc.html Screen 06 */
+
+.layout {
+  display: flex;
+  min-height: calc(100vh - 48px);
+  margin: -28px -34px;
+}
+
+.previewPane {
+  width: 60%;
+  padding: 28px 34px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.detailsPane {
+  width: 40%;
+  background: #fff;
+  border-left: 1px solid #eae4d8;
+  padding: 28px 30px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1f1f1f;
+  margin: 0 0 4px;
+}
+
+.pageSubtitle {
+  font-size: 14.5px;
+  color: #7a7a70;
+  margin: 0 0 22px;
+}
+
+.previewStage {
+  flex: 1;
+  border-radius: 16px;
+  background: #edeae1;
+  background-image: radial-gradient(#dbd6c9 1.3px, transparent 1.3px);
+  background-size: 18px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  border: 1px solid #e6e1d6;
+  padding: 28px 20px;
+  min-height: 520px;
+}
+
+.previewEmpty {
+  color: #8a8a80;
+  font-size: 14.5px;
+  font-weight: 500;
+  text-align: center;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+/* —— Membership card face —— */
+.cardFace {
+  width: 430px;
+  height: 271px;
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.cardFront {
+  background: linear-gradient(150deg, #1b5e3c 0%, #123d28 100%);
+  box-shadow: 0 18px 40px rgba(18, 61, 40, 0.35);
+  padding: 22px 24px;
+}
+
+.cardBack {
+  background: linear-gradient(150deg, #123d28 0%, #0e2e1f 100%);
+  box-shadow: 0 18px 40px rgba(18, 61, 40, 0.3);
+}
+
+.cardOrb {
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: rgba(201, 134, 27, 0.14);
+  pointer-events: none;
+}
+
+.packageBadge {
+  position: absolute;
+  right: 20px;
+  top: 26px;
+  background: #c9861b;
+  color: #fff;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 5px 13px;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  text-transform: uppercase;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.gymBrand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 26px;
+  position: relative;
+  z-index: 1;
+}
+
+.gymLogo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.gymLogoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gymName {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.gymTagline {
+  font-size: 9px;
+  color: #9fc3ae;
+  letter-spacing: 0.16em;
+  margin-top: 2px;
+}
+
+.memberRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.avatar {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: #c9861b;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 24px;
+  border: 2.5px solid rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.memberInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.memberName {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.memberCode {
+  font-size: 12px;
+  color: #9fc3ae;
+  letter-spacing: 0.1em;
+  margin-top: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.memberSince {
+  font-size: 9.5px;
+  color: #7fa890;
+  letter-spacing: 0.14em;
+  margin-top: 8px;
+}
+
+.qrWrap {
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.qrImg {
+  width: 52px;
+  height: 52px;
+  display: block;
+}
+
+.backStripe {
+  height: 42px;
+  background: #0a2418;
+  margin-top: 22px;
+}
+
+.backBody {
+  padding: 18px 24px;
+}
+
+.backGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.backLabel {
+  font-size: 9px;
+  color: #7fa890;
+  letter-spacing: 0.12em;
+  margin-bottom: 3px;
+}
+
+.backValue {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.backFooter {
+  font-size: 9.5px;
+  color: #8fb09e;
+  line-height: 1.6;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
+}
+
+.backHint {
+  margin-top: 8px;
+  font-size: 9px;
+  color: #7fa890;
+  letter-spacing: 0.04em;
+}
+
+.watermark {
+  margin-top: 6px;
+  font-size: 8px;
+  color: #5a8a6e;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* —— Details panel —— */
+.detailsTitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 22px;
+  color: #1f1f1f;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1;
+}
+
+.fieldLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a4a42;
+  margin-bottom: 8px;
+}
+
+.fieldHint {
+  color: #8a8a80;
+  font-weight: 400;
+}
+
+.fieldBox {
+  border: 1px solid #eae4d8;
+  border-radius: 11px;
+  padding: 12px 14px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #6b6b62;
+  font-variant-numeric: tabular-nums;
+  background: #fff;
+}
+
+.memberPicker {
+  position: relative;
+}
+
+.memberTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #eae4d8;
+  border-radius: 11px;
+  padding: 12px 14px;
+  background: #fff;
+  cursor: pointer;
+  width: 100%;
+  font-family: inherit;
+  text-align: left;
+  transition: border-color 0.15s;
+}
+
+.memberTrigger:hover {
+  border-color: #c9861b;
+}
+
+.memberTriggerOpen {
+  border-color: #1b5e3c;
+}
+
+.memberTriggerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pickerAvatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #f7ecd6;
+  color: #c9861b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.pickerAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pickerLabel {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1f1f1f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pickerPlaceholder {
+  font-weight: 500;
+  font-size: 14px;
+  color: #8a8a80;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #eae4d8;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(31, 31, 31, 0.12);
+  z-index: 20;
+  overflow: hidden;
+}
+
+.dropdownSearch {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0ebe0;
+}
+
+.dropdownList {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.dropdownItem:hover {
+  background: #faf7f2;
+}
+
+.dropdownEmpty {
+  padding: 16px 14px;
+  font-size: 13px;
+  color: #8a8a80;
+  text-align: center;
+}
+
+.tierRow {
+  display: flex;
+  gap: 9px;
+}
+
+.tierPill {
+  flex: 1;
+  border: 1px solid #eae4d8;
+  border-radius: 10px;
+  padding: 9px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #8a8a80;
+  background: #fff;
+  cursor: default;
+  font-family: inherit;
+}
+
+.tierPillActive {
+  border: 2px solid #c9861b;
+  background: #fbefd6;
+  color: #b07a15;
+  font-weight: 700;
+  padding: 8px;
+}
+
+.dateRow {
+  display: flex;
+  gap: 12px;
+}
+
+.dateCol {
+  flex: 1;
+  min-width: 0;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin-top: 22px;
+}
+
+.btnPrimary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  background: #1b5e3c;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(27, 94, 60, 0.28);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: #164e32;
+}
+
+.btnPrimary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btnSecondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid #dcd6c8;
+  color: #1f1f1f;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 13px;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.btnSecondary:hover:not(:disabled) {
+  border-color: #1b5e3c;
+  background: #faf7f2;
+}
+
+.btnSecondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btnTertiary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  color: #6b6b62;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.btnTertiary:hover:not(:disabled) {
+  color: #1b5e3c;
+  background: #f2eee3;
+}
+
+.btnTertiary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bulkSection {
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid #f0ebe0;
+}
+
+.bulkProgress {
+  margin-top: 10px;
+}
+
+.bulkStatus {
+  font-size: 12px;
+  color: #7a7a70;
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* Offscreen capture target for print / bulk */
+.captureRoot {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    flex-direction: column;
+    margin: -20px -16px;
+  }
+
+  .previewPane,
+  .detailsPane {
+    width: 100%;
+  }
+
+  .detailsPane {
+    border-left: none;
+    border-bottom: 1px solid #eae4d8;
+    order: -1;
+  }
+
+  .previewPane {
+    padding: 20px 16px 28px;
+  }
+
+  .detailsPane {
+    padding: 20px 16px;
+  }
+
+  .cardFace {
+    width: min(430px, 92vw);
+    height: auto;
+    aspect-ratio: 430 / 271;
+  }
+
+  .previewStage {
+    min-height: 400px;
+    gap: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .memberName {
+    font-size: 18px;
+  }
+
+  .avatar {
+    width: 58px;
+    height: 58px;
+    font-size: 18px;
+  }
+
+  .qrImg {
+    width: 44px;
+    height: 44px;
+  }
+
+  .tierRow {
+    flex-wrap: wrap;
+  }
+
+  .tierPill {
+    flex: 1 1 40%;
+  }
+}

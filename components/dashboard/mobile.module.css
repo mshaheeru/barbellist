@@ -1,0 +1,47 @@
+/* Shared mobile table + chart helpers */
+
+.tableScroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tableScroll table,
+.tableMin {
+  min-width: 720px;
+}
+
+.stickyName {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #fff;
+}
+
+.stickyNameHead {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: #faf7f2;
+}
+
+.chartContain {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Fullscreen modal panel on mobile */
+@media (max-width: 768px) {
+  :global(.mobileFullscreenModal) {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    overflow-y: auto;
+  }
+}

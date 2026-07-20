@@ -1,0 +1,10 @@
+.start {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.text {
+  min-width: 0;
+}

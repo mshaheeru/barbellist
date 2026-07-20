@@ -1,0 +1,575 @@
+/* Reports & Analytics — matches designfiles Screen 8 */
+
+.page {
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1f1f1f;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 14.5px;
+  color: #7a7a70;
+  margin-top: 3px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.rangeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: #fff;
+  border: 1px solid #eae4d8;
+  border-radius: 11px;
+  padding: 11px 15px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1f1f1f;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.rangeBtn:hover {
+  border-color: #d4cec0;
+}
+
+.exportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: #1b5e3c;
+  color: #fff;
+  border: none;
+  border-radius: 11px;
+  padding: 11px 17px;
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(27, 94, 60, 0.24);
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.exportBtn:hover {
+  background: #164e32;
+}
+
+.exportBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.rangePopover {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 260px;
+}
+
+.rangeField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rangeLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #7a7a70;
+}
+
+.rangeInput {
+  border: 1px solid #eae4d8;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: #1f1f1f;
+  background: #fff;
+}
+
+.rangeApply {
+  background: #1b5e3c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.rangeApply:hover {
+  background: #164e32;
+}
+
+.num {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.02em;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #eee9dd;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(31, 31, 31, 0.04);
+}
+
+.cardLabel {
+  font-size: 13px;
+  color: #7a7a70;
+  margin-bottom: 8px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f1f1f;
+}
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 900px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.kpiValueRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.kpiValue {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1f1f1f;
+  line-height: 1.15;
+}
+
+.kpiUnit {
+  font-size: 15px;
+  color: #8a8a80;
+  font-weight: 600;
+}
+
+.trendUp {
+  font-size: 12.5px;
+  color: #2e7d4f;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.trendDown {
+  font-size: 12.5px;
+  color: #c0392b;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.trendMuted {
+  font-size: 12.5px;
+  color: #8a8a80;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.churnRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.churnNew {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1b5e3c;
+}
+
+.churnLost {
+  font-size: 20px;
+  font-weight: 600;
+  color: #c0392b;
+}
+
+.donutGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 900px) {
+  .donutGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.donutBody {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  margin-top: 16px;
+}
+
+@media (max-width: 640px) {
+  .donutBody {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+}
+
+.donutChartWrap {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  flex-shrink: 0;
+}
+
+.donutCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.donutCenterValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f1f1f;
+  line-height: 1;
+}
+
+.donutCenterLabel {
+  font-size: 10px;
+  color: #8a8a80;
+  margin-top: 4px;
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.legendRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13.5px;
+}
+
+.legendLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f1f1f;
+  min-width: 0;
+}
+
+.legendSwatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legendPct {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #1f1f1f;
+}
+
+.midGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 900px) {
+  .midGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.panelMeta {
+  font-size: 12.5px;
+  color: #2e7d4f;
+  font-weight: 600;
+}
+
+.panelMetaMuted {
+  font-size: 12px;
+  color: #8a8a80;
+}
+
+.profitPanel {
+  background: #eaf3ee;
+  border-radius: 12px;
+  padding: 16px 14px 10px;
+}
+
+.profitFootnote {
+  font-size: 12.5px;
+  color: #7a7a70;
+  margin-top: 12px;
+}
+
+.profitFootnoteStrong {
+  color: #1b5e3c;
+  font-weight: 700;
+}
+
+.expenseRows {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.expenseRow {
+  display: grid;
+  grid-template-columns: 120px 1fr 74px;
+  gap: 12px;
+  align-items: center;
+}
+
+@media (max-width: 480px) {
+  .expenseRow {
+    grid-template-columns: 90px 1fr 64px;
+    gap: 8px;
+  }
+}
+
+.expenseName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f1f1f;
+}
+
+.expenseBarTrack {
+  height: 12px;
+  background: #f2eee3;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.expenseBarFill {
+  height: 100%;
+  border-radius: 6px;
+}
+
+.expenseBarAmber {
+  background: #c9861b;
+}
+
+.expenseBarGreen {
+  background: #1b5e3c;
+}
+
+.expenseAmount {
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: right;
+  color: #1f1f1f;
+}
+
+.heatmapCard {
+  background: #fff;
+  border: 1px solid #eee9dd;
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: 0 1px 2px rgba(31, 31, 31, 0.04);
+}
+
+.heatmapLegend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #8a8a80;
+}
+
+.heatSwatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+}
+
+.heatmapGrid {
+  display: grid;
+  grid-template-columns: 40px repeat(8, 1fr);
+  gap: 6px;
+  align-items: center;
+  overflow-x: auto;
+}
+
+.heatHour {
+  font-size: 11px;
+  color: #9a9a90;
+  text-align: center;
+}
+
+.heatDay {
+  font-size: 11.5px;
+  color: #6b6b62;
+  font-weight: 600;
+}
+
+.heatCell {
+  height: 26px;
+  border-radius: 5px;
+}
+
+.heat0 {
+  background: #eaf3ee;
+}
+
+.heat1 {
+  background: #c7ded2;
+}
+
+.heat2 {
+  background: #9fc3ae;
+}
+
+.heat3 {
+  background: #4e9a6e;
+}
+
+.heat4 {
+  background: #1b5e3c;
+}
+
+.heat5 {
+  background: #164e32;
+}
+
+.heatmapFootnote {
+  font-size: 12.5px;
+  color: #7a7a70;
+  margin-top: 14px;
+}
+
+.heatmapFootnoteStrong {
+  font-weight: 600;
+  color: #1b5e3c;
+}
+
+.emptyText {
+  font-size: 13.5px;
+  color: #8a8a80;
+  margin: 8px 0 0;
+}
+
+.chartTooltip {
+  background: #fff;
+  border: 1px solid #eee9dd;
+  border-radius: 10px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 16px rgba(31, 31, 31, 0.08);
+  font-size: 12.5px;
+}
+
+.chartTooltipLabel {
+  color: #7a7a70;
+  margin-bottom: 2px;
+}
+
+.chartTooltipValue {
+  font-weight: 700;
+  color: #1f1f1f;
+}
+
+.skeletonBlock {
+  background: linear-gradient(90deg, #efeae0 0%, #f7f3eb 50%, #efeae0 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+  border-radius: 16px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeletonTitle {
+  height: 28px;
+  width: 240px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+.skeletonSub {
+  height: 16px;
+  width: 280px;
+  border-radius: 6px;
+  margin-bottom: 22px;
+}
+
+.skeletonKpi {
+  height: 110px;
+}
+
+.skeletonDonut {
+  height: 200px;
+}
+
+.skeletonMid {
+  height: 260px;
+}
+
+.skeletonHeat {
+  height: 280px;
+}

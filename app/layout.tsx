@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Space_Grotesk } from "next/font/google";
+import {
+  ColorSchemeScript,
+  mantineHtmlProps,
+} from "@mantine/core";
+import { Providers } from "@/components/providers";
+import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
 import "./globals.css";
 
 const geist = Geist({
@@ -32,9 +39,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geist.variable} ${spaceGrotesk.variable}`}>
-        {children}
+    <html lang="en" {...mantineHtmlProps}>
+      <head>
+        <ColorSchemeScript defaultColorScheme="light" />
+      </head>
+      <body
+        className={`${geist.variable} ${spaceGrotesk.variable} ${geist.className}`}
+      >
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

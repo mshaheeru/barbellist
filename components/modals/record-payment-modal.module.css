@@ -1,0 +1,272 @@
+/* Record Payment modal — GymFlow Screen 05 */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: rgba(20, 30, 24, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal {
+  width: 100%;
+  max-width: 520px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .modal {
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modalBody {
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f2eee3;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.closeBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #eae4d8;
+  background: #fff;
+  color: #7a7a70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.modalBody {
+  padding: 22px 24px;
+}
+
+.memberCard {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: #f7f3ea;
+  border-radius: 12px;
+  padding: 13px 15px;
+  margin-bottom: 20px;
+}
+
+.memberInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.memberName {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.memberSub {
+  font-size: 12.5px;
+  color: #8a8a80;
+}
+
+.overdueBadge {
+  background: #f9e4e1;
+  color: #c0392b;
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.breakdown {
+  border: 1px solid #eee9dd;
+  border-radius: 12px;
+  padding: 15px 16px;
+  margin-bottom: 20px;
+}
+
+.breakdownRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 13.5px;
+}
+
+.breakdownLabel {
+  color: #6b6b62;
+}
+
+.breakdownValue {
+  font-weight: 600;
+}
+
+.divider {
+  height: 1px;
+  background: #f2eee3;
+  margin: 12px 0;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.totalLabel {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.totalValue {
+  font-weight: 700;
+  font-size: 19px;
+  color: #1b5e3c;
+}
+
+.sectionLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a4a42;
+  margin-bottom: 10px;
+}
+
+.paymentMethodGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.paymentPill {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #eae4d8;
+  border-radius: 11px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+}
+
+.paymentPillSelected {
+  border: 2px solid #1b5e3c;
+  background: #eaf3ee;
+  font-weight: 700;
+}
+
+.amountRow {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.amountField {
+  flex: 1;
+}
+
+.toggleWrap {
+  align-self: flex-end;
+  display: flex;
+  background: #f2eee3;
+  border-radius: 11px;
+  padding: 3px;
+}
+
+.toggleBtn {
+  border: none;
+  background: transparent;
+  color: #8a8a80;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 9px 16px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.toggleBtnActive {
+  background: #fff;
+  color: #1b5e3c;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+  font-size: 13.5px;
+  color: #4a4a42;
+  cursor: pointer;
+}
+
+.submitBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  background: #1b5e3c;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 15px;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 6px 16px rgba(27, 94, 60, 0.28);
+  cursor: pointer;
+}
+
+.submitBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.num {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-feature-settings: "tnum" 1;
+}
+
+.loading {
+  padding: 40px;
+  text-align: center;
+  color: #8a8a80;
+  font-size: 14px;
+}
+
+.errorText {
+  color: #c0392b;
+  font-size: 13px;
+  margin-bottom: 12px;
+}

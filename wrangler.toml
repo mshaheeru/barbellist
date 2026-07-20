@@ -1,0 +1,14 @@
+name = "barbellist"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+# Secrets / env vars: set in Cloudflare Pages dashboard (not here).
+# Required:
+#   NEXT_PUBLIC_SUPABASE_URL
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   SUPABASE_SERVICE_ROLE_KEY
+#   QR_SIGNING_SECRET
+# Optional:
+#   WHATSAPP_API_TOKEN
+#   WHATSAPP_PHONE_NUMBER_ID

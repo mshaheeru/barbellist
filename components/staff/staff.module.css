@@ -1,0 +1,366 @@
+/* Staff List — designfiles/GymFlow Mockups Screen 11 */
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  gap: 16px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1f1f1f;
+  margin: 0;
+}
+
+.pageSubtitle {
+  font-size: 14.5px;
+  color: #7a7a70;
+  margin: 3px 0 0;
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: #1b5e3c;
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: 11px;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(27, 94, 60, 0.24);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.addBtn:hover {
+  background: #164d32;
+}
+
+.toolbarRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.searchWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #eae4d8;
+  border-radius: 11px;
+  padding: 11px 15px;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #1f1f1f;
+  background: transparent;
+}
+
+.searchInput::placeholder {
+  color: #a0a096;
+}
+
+.sortBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #eae4d8;
+  border-radius: 11px;
+  padding: 11px 15px;
+  font-size: 14px;
+  color: #4a4a42;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 18px;
+}
+
+.filterChip {
+  background: #fff;
+  border: 1px solid #eae4d8;
+  color: #4a4a42;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.filterChipActive {
+  background: #1b5e3c;
+  border-color: #1b5e3c;
+  color: #fff;
+  font-weight: 600;
+}
+
+.tableWrap {
+  background: #fff;
+  border: 1px solid #eee9dd;
+  border-radius: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: 0 1px 2px rgba(31, 31, 31, 0.04);
+}
+
+.tableHead {
+  display: grid;
+  grid-template-columns: 2.1fr 1.4fr 1.1fr 1.5fr 1.2fr 0.9fr 44px;
+  gap: 12px;
+  padding: 14px 20px;
+  background: #f7f3ea;
+  border-bottom: 1px solid #eee9dd;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8a8a80;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  min-width: 920px;
+}
+
+.tableHead > :first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #f7f3ea;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 2.1fr 1.4fr 1.1fr 1.5fr 1.2fr 0.9fr 44px;
+  gap: 12px;
+  padding: 13px 20px;
+  align-items: center;
+  border-bottom: 1px solid #f4f0e6;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  min-width: 920px;
+}
+
+.tableRow > :first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #fff;
+}
+
+.tableRow:hover > :first-child {
+  background: #faf8f4;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableRow:hover {
+  background: #faf8f4;
+}
+
+.staffCell {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.staffName {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.staffSubtitle {
+  font-size: 12px;
+  color: #8a8a80;
+}
+
+.cellMuted {
+  font-size: 13px;
+  color: #6b6b62;
+}
+
+.cellStrong {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.cellMutedSalary {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #9a9a90;
+}
+
+.num {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-feature-settings: "tnum" 1;
+}
+
+.attendanceCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.progressTrack {
+  height: 5px;
+  width: 88px;
+  background: #f2eee3;
+  border-radius: 3px;
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #1b5e3c;
+  border-radius: 3px;
+}
+
+.actionsBtn {
+  color: #b0b0a6;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 24px;
+  background: #fff;
+  border: 1px solid #eee9dd;
+  border-radius: 16px;
+}
+
+.emptyTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.emptyText {
+  font-size: 14px;
+  color: #7a7a70;
+  margin: 0;
+}
+
+.errorBox {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 16px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.roleBadge {
+  display: inline-flex;
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.roleTrainer {
+  background: #e7f0ea;
+  color: #1b5e3c;
+}
+
+.roleCleaner {
+  background: #edebe4;
+  color: #7a7a70;
+}
+
+.roleManager {
+  background: #fbefd6;
+  color: #b07a15;
+}
+
+.roleCashier {
+  background: #e8e6e1;
+  color: #4a4a42;
+}
+
+.roleOwner {
+  background: transparent;
+  border: 1px solid #c9861b;
+  color: #b07a15;
+  padding: 3px 10px;
+}
+
+.roleOther {
+  background: #efece4;
+  color: #6b6b62;
+}
+
+.statusBadge {
+  display: inline-flex;
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.statusActive {
+  background: #e4f1e9;
+  color: #2e7d4f;
+}
+
+.statusInactive {
+  background: #efece4;
+  color: #7a7a70;
+}
+
+.statusTerminated {
+  background: #f2dad6;
+  color: #c0392b;
+}
+
+@media (max-width: 1100px) {
+  /* Horizontal scroll + sticky name — keep all columns */
+}
+
+.skeleton {
+  height: 56px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #f2eee3 0%, #faf7f2 50%, #f2eee3 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.skeletonWrap {
+  background: #fff;
+  border: 1px solid #eee9dd;
+  border-radius: 16px;
+  padding: 12px 16px;
+}

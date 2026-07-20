@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<aside style="width:248px;height:100%;background:#123D28;display:flex;flex-direction:column;flex-shrink:0;padding:22px 0">
+  <div style="display:flex;align-items:center;gap:11px;padding:0 24px 20px">
+    <div style="width:38px;height:38px;border-radius:10px;background:#1B5E3C;display:flex;align-items:center;justify-content:center">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#C9861B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="4" height="8" rx="1.2" transform="rotate(-45 4 18)"/><rect x="18" y="2" width="4" height="8" rx="1.2" transform="rotate(-45 20 6)"/><path d="M6.5 6.5l11 11"/></svg>
+    </div>
+    <span style="color:#fff;font-weight:700;font-size:19px;letter-spacing:-.01em">Barbellist</span>
+  </div>
+  <nav style="display:flex;flex-direction:column;gap:2px;padding:0 14px;flex:1">
+    <div style="{{ sDashboard }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</div>
+    <div style="{{ sMembers }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Members</div>
+    <div style="{{ sStaff }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2.2"/><path d="M5.5 16.2a3.6 3.6 0 0 1 7 0"/><path d="M15 9.5h3.5M15 13h3.5"/></svg>Staff</div>
+    <div style="{{ sAttendance }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg>Attendance</div>
+    <div style="{{ sFees }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"/><path d="M16 11h2M3 9h18"/></svg>Fees</div>
+    <div style="{{ sInventory }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5M12 22V12"/></svg>Inventory</div>
+    <div style="{{ sExpenses }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2.5v19l2-1.3 2 1.3 2-1.3 2 1.3 2-1.3 2 1.3 2-1.3 2 1.3v-19l-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Expenses</div>
+    <div style="{{ sPackages }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V21H3V8M1 3h22v5H1zM10 12h4"/></svg>Packages</div>
+    <div style="{{ sCards }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Cards</div>
+    <div style="{{ sReports }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>Reports</div>
+    <div style="{{ sSettings }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>Settings</div>
+  </nav>
+  <div style="margin:8px 14px 0;padding:11px 14px;border-radius:12px;background:rgba(255,255,255,.06);display:flex;align-items:center;gap:11px">
+    <div style="width:36px;height:36px;border-radius:50%;background:#C9861B;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px">IS</div>
+    <div style="min-width:0">
+      <div style="color:#fff;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Imran Sheikh</div>
+      <div style="color:#88A596;font-size:11.5px">Owner · Iron Republic</div>
+    </div>
+  </div>
+</aside>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:248,&quot;height&quot;:760},&quot;active&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dashboard&quot;,&quot;members&quot;,&quot;staff&quot;,&quot;attendance&quot;,&quot;fees&quot;,&quot;inventory&quot;,&quot;expenses&quot;,&quot;packages&quot;,&quot;cards&quot;,&quot;reports&quot;,&quot;settings&quot;],&quot;default&quot;:&quot;dashboard&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const active = this.props.active || 'dashboard';
+    const base = { display:'flex', alignItems:'center', gap:'12px', padding:'9.5px 14px', borderRadius:'10px', fontSize:'14px' };
+    const on = Object.assign({}, base, { background:'#1B5E3C', color:'#fff', fontWeight:600 });
+    const off = Object.assign({}, base, { background:'transparent', color:'#A9C4B4', fontWeight:500 });
+    const s = k => (active === k ? on : off);
+    return {
+      sDashboard:s('dashboard'), sMembers:s('members'), sStaff:s('staff'), sAttendance:s('attendance'),
+      sFees:s('fees'), sInventory:s('inventory'), sExpenses:s('expenses'), sPackages:s('packages'),
+      sCards:s('cards'), sReports:s('reports'), sSettings:s('settings')
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+---
+description: Database schema design, query optimization, and multi-tenant RLS rules
+globs:
+  - "**/migrations/**/*"
+  - "**/supabase/**/*"
+  - "**/*.sql"
+alwaysApply: false
+---
+
+# Database Rules (Supabase / PostgreSQL)
+
+## Required Columns — Every Table
+```sql
+id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+gym_id     UUID NOT NULL REFERENCES public.gyms(id) ON DELETE CASCADE,
+created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+```
+Exception: `gyms` table itself has no `gym_id`.
+
+## Multi-Tenant RLS — MANDATORY on ALL Tables
+
+```sql
+-- Step 1: Enable RLS
+ALTER TABLE public.new_table ENABLE ROW LEVEL SECURITY;
+
+-- Step 2: Create isolation policy
+CREATE POLICY "gym_isolation" ON public.new_table
+  FOR ALL USING (gym_id = public.get_current_gym_id());
+```
+
+**Helper function (already exists in schema):**
+```sql
+CREATE OR REPLACE FUNCTION public.get_current_gym_id()
+RETURNS UUID AS $$
+  SELECT (auth.jwt() -> 'user_metadata' ->> 'gym_id')::UUID;
+$$ LANGUAGE SQL STABLE SECURITY DEFINER;
+```
+
+**RLS tip:** Use `(SELECT auth.uid())` not `auth.uid()` — the SELECT form caches per query, not per row. Same for `get_current_gym_id()`.
+
+## Naming
+- Tables: `snake_case` plural (`fee_dues`, `inventory_items`, `inventory_sale_items`)
+- FK columns: `{singular_table}_id` (`gym_id`, `member_id`, `staff_id`)
+- Indexes: `idx_{table}_{columns}` (`idx_members_gym`, `idx_attendance_date`)
+- Constraints: `{table}_{type}_{description}` (`attendance_person_check`)
+
+## Column Verification — Critical
+**Before writing ANY query, verify columns exist:**
+```sql
+SELECT column_name FROM information_schema.columns WHERE table_name = 'your_table';
+```
+
+Or use the MCP Supabase connection to check schema.
+
+Common mismatches that cause runtime errors:
+- Zod schema `camelCase` ≠ DB `snake_case` — Server Action must map
+- `memberCode` (Zod) ≠ `member_code` (DB column)
+- Verify column actually exists before using in WHERE clause
+
+## Query Rules — Always Follow
+```sql
+❌ SELECT *                        -- Never, wastes bandwidth
+✅ SELECT id, name, phone, status  -- Explicit columns only
+
+❌ Loop per row                    -- N+1 queries kill performance
+✅ WHERE id = ANY($1)              -- Batch reads
+
+❌ Fetch all → count in JS         -- Wasteful
+✅ SELECT COUNT(*) ...             -- DB aggregation
+
+❌ Fetch all → filter in JS        -- Wrong
+✅ WHERE status = 'active'         -- Filter in SQL
+```
+
+## Supabase Query Patterns
+
+### Paginated List
+```typescript
+const { data, error, count } = await supabase
+  .from('members')
+  .select('id, name, phone, status, package_id, joined_at', { count: 'exact' })
+  .eq('gym_id', gymId)
+  .order('created_at', { ascending: false })
+  .range(offset, offset + limit - 1);
+```
+
+### Count Without Fetching Rows
+```typescript
+const { count } = await supabase
+  .from('fee_dues')
+  .select('*', { count: 'exact', head: true })
+  .eq('gym_id', gymId)
+  .eq('status', 'overdue');
+```
+
+### Batch Read (avoid N+1)
+```typescript
+// ✅ Fetch all in one query, group in memory
+const { data: allDues } = await supabase
+  .from('fee_dues')
+  .select('id, member_id, amount_due, status')
+  .eq('gym_id', gymId)
+  .in('member_id', memberIds);
+
+const duesByMember = allDues.reduce((acc, due) => {
+  (acc[due.member_id] ||= []).push(due);
+  return acc;
+}, {} as Record<string, FeeDue[]>);
+```
+
+### Join Pattern
+```typescript
+// Supabase supports FK joins via select syntax
+const { data } = await supabase
+  .from('members')
+  .select(`
+    id, name, phone, status,
+    packages ( id, name, price, duration_days )
+  `)
+  .eq('gym_id', gymId);
+```
+
+## Always Index
+- All `gym_id` columns (tenant isolation)
+- All FK columns used in WHERE/JOIN
+- All status/filter columns (`status`, `category`, `payment_method`)
+- All ORDER BY columns (`created_at`, `due_date`)
+- Composite indexes for multi-column queries: `(gym_id, status)`, `(gym_id, check_in_at)`
+
+```sql
+CREATE INDEX idx_members_gym_status ON public.members(gym_id, status);
+CREATE INDEX idx_attendance_gym_date ON public.attendance(gym_id, check_in_at);
+CREATE INDEX idx_fee_dues_gym_status ON public.fee_dues(gym_id, status);
+CREATE INDEX idx_expenses_gym_date ON public.expenses(gym_id, expense_date);
+```
+
+## Data Types
+- IDs: `UUID` (never SERIAL)
+- Timestamps: `TIMESTAMPTZ` (with timezone, always)
+- JSON: `JSONB` (never JSON)
+- Money: `NUMERIC(12,2)` (never FLOAT)
+- Enums: `TEXT` with `CHECK` constraint (not PostgreSQL ENUM — easier to modify)
+
+## FK Constraints
+- Gym relation: `ON DELETE CASCADE` (gym deleted = all data deleted)
+- Member ↔ Package: `ON DELETE SET NULL` (package deleted, member keeps profile)
+- Payment ↔ Member: `ON DELETE CASCADE` (member deleted, payments deleted)
+- Expense ↔ Staff: `ON DELETE SET NULL` (staff deleted, expense record preserved)
+
+## Trigger Patterns (already in schema)
+- `update_timestamp()` — auto-updates `updated_at` on every UPDATE
+- `generate_member_code()` — auto-generates `MBR-0001` codes on INSERT
+- `compute_bmi()` — auto-calculates BMI from height/weight
+- `deduct_inventory_on_sale()` — auto-reduces stock on sale item INSERT
+
+## Migration Safety
+- Always test migrations on a branch database first
+- Never drop columns in production without a deprecation period
+- Use `IF NOT EXISTS` / `IF EXISTS` for idempotent migrations
+- Back up before destructive changes
+
+---
+**Server Actions / Route Handlers:** `frontend.mdc`
+**Multi-tenant patterns:** `@multi-tenant` skill

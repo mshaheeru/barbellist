@@ -1,0 +1,148 @@
+---
+description: Core project rules for Barbellist Gym Management SaaS — applies to all development contexts
+globs:
+alwaysApply: true
+---
+
+# Barbellist — Global Rules
+
+## Tech Stack (Non-Negotiable)
+- **Frontend**: Next.js 16 (App Router, React 19, Server Components, Server Actions)
+- **Data Layer**: Supabase (PostgreSQL + Auth + Realtime + Storage) via Server Actions and Route Handlers
+- **UI Components**: **Mantine UI** (`@mantine/core`, `@mantine/hooks`, `@mantine/form`, `@mantine/notifications`) — primary component library for forms, inputs, buttons, modals, tables, overlays, layout
+- **Styling**: **Mantine UI + pure vanilla CSS ONLY**. Use Mantine theme/props/components for UI; use vanilla CSS (`globals.css`, CSS Modules, Mantine `styles`/`createTheme`) for layout, brand surfaces, and custom styling. **NO Tailwind CSS.**
+- **Validation**: Zod (frontend forms, Server Actions, Route Handlers)
+- **State**: React Query v5 (TanStack Query) for server state, React state for UI state
+- **Icons**: Lucide React (or `@tabler/icons-react` when pairing with Mantine)
+- **Charts**: Recharts (or `@mantine/charts` when preferred)
+- **Deployment**: Cloudflare Pages (frontend), Supabase (database/auth)
+
+## Brand Palette (use everywhere)
+```
+primary:    #1B5E3C  (forest green)
+accent:     #C9861B  (amber/gold)
+background: #FAF7F2  (off-white)
+foreground: #1F1F1F  (charcoal)
+muted:      #E8E5DF  (soft grey)
+success:    #16A34A
+warning:    #D97706
+danger:     #DC2626
+```
+
+## Multi-Tenant Architecture — CRITICAL
+This is a multi-tenant SaaS. Every gym is a tenant. NEVER forget this.
+
+1. **Every table has `gym_id`** (except `gyms` itself)
+2. **Every query MUST filter by `gym_id`** — no exceptions
+3. **RLS is enabled on every table** — policies filter by `get_current_gym_id()`
+4. **gym_id comes from the authenticated user's JWT metadata** (`user_metadata.gym_id`)
+5. **Never expose data from one gym to another** — this is a security-critical invariant
+6. **When creating any new table, add `gym_id UUID NOT NULL REFERENCES gyms(id)`**
+
+```typescript
+// ✅ ALWAYS
+.from('members').select('...').eq('gym_id', gymId)
+
+// ❌ NEVER — returns data from ALL gyms
+.from('members').select('...')
+```
+
+## Core Architecture
+1. **Frontend → Server Actions / Route Handlers → Supabase**: No separate backend layer. Server Actions and Route Handlers call Supabase directly.
+2. **Server Actions for mutations**: form submissions, button clicks that change state (`src/actions/`)
+3. **Route Handlers for client-fetchable data and external APIs**: webhooks, mobile apps, public endpoints (`app/api/`)
+4. **API Response Format**: Server Actions and Route Handlers return `{ data: T, error?: string, meta?: {...} }` — always
+5. **TypeScript Strict Mode**: No `any` types ever
+6. **Feature-based folder organization**: `src/actions/`, `app/(dashboard)/`, `components/`
+
+## Project State
+- **Next.js 16 project is already scaffolded** — `app/`, `components/`, `lib/` folders exist
+- **Landing page is already live** at barbellist.com — do NOT rebuild it
+- **Supabase is connected via MCP** — use it for migrations and schema checks
+
+## Design Files — CRITICAL
+**Pre-made UI designs exist in `designfiles/` folder.** These are the source of truth for all screens.
+
+- `designfiles/screenshots/` — exported screen images
+- `designfiles/Barbellist Landing/` — landing page design
+- `designfiles/GymFlow Mockups.dc.html` — full app mockup screens (dashboard, members, fees, attendance, staff, expenses, inventory, cards, reports, settings, kiosk)
+- `designfiles/Barbellist Deck.dc.html` — pitch deck screens
+- `designfiles/Sidebar.dc.html` — sidebar/navigation design
+
+**Rules for using design files:**
+1. **OPEN and VISUALLY INSPECT the relevant design file BEFORE building any screen**
+2. **Translate the design EXACTLY to Next.js 16 + Mantine + vanilla CSS** — do not reinvent, do not "improve," do not deviate
+3. **Match colors, spacing, typography, layout, component structure pixel-for-pixel**
+4. **Match the sidebar navigation exactly** as shown in `Sidebar.dc.html`
+5. **If a design shows specific data** (sample names, amounts, dates), use that same sample data in your implementation
+6. **If the design shows a specific component** (pill badge, KPI card, table row), build it to match exactly
+7. **When in doubt, the design file wins** — not your assumptions about "better" UI
+
+## Before Starting ANY Task
+1. **OPEN the relevant design file** from `designfiles/` and inspect the screen you're building
+2. Check existing similar code and follow the pattern
+3. Read the relevant skill file for the feature area
+4. Ask: "Does this respect gym_id isolation?"
+5. Ask: "Am I duplicating something that already exists?"
+
+## Feature Completion Checklist
+**Do NOT mark complete until ALL boxes checked:**
+
+**Server Actions / Route Handlers:** Zod schema → Action/Handler (with gym_id filter) → `{ data, error? }` response → revalidatePath if mutation
+**Frontend:** Types → Hook/Server Action → UI component → Sidebar nav link → Loading/Error/Empty states
+**Integration:** Network tab verified → Data loads correctly → Mutations work → Multi-tenant isolation tested
+
+### The Test
+1. Can I **see** it? (UI renders)
+2. Can I **click** it? (navigation works)
+3. Does it **work**? (data loads/saves correctly)
+4. Is it **isolated**? (no cross-gym data leakage)
+
+If any answer is No → not complete.
+
+## Critical Never-Do List
+❌ Add unrequested features
+❌ Remove existing functionality without approval
+❌ Use `any` in TypeScript
+❌ Call Supabase directly from client components (except auth session)
+❌ Query without gym_id filter
+❌ Use `select('*')` in database queries
+❌ `console.log` in production code
+❌ Mark complete without sidebar nav link
+❌ `await` inside a loop — batch with `.in()` instead
+❌ Use Tailwind CSS — no utility classes, no `@tailwind`, no Tailwind config for new work
+❌ Hardcode colors — use Mantine theme tokens or CSS variables from brand palette
+❌ Hand-roll TextInput/Button/Modal/Select when Mantine already provides them
+❌ Use `useEffect` for data fetching — use React Query or Server Components
+❌ Create Route Handlers when Server Actions suffice for internal mutations
+
+## Always-Do List
+✅ Filter every query by `gym_id`
+✅ Check existing similar code before writing new patterns
+✅ Handle loading + error + empty states on every page
+✅ Use Server Components by default, `"use client"` only when interactivity needed
+✅ Keep `"use client"` boundary as close to the leaf as possible
+✅ Use **Mantine** for interactive UI and layout (`Stack`, `Group`, `Grid`, `Box`, `Paper`, etc.)
+✅ Use **pure vanilla CSS** (`globals.css`, `*.module.css`, Mantine theme) for custom styling — never Tailwind
+✅ Verify Network tab before marking integration complete
+✅ Use explicit column selects: `.select('id, name, email, created_at')`
+✅ Use `Promise.all()` for independent parallel queries
+✅ Add Suspense boundaries with skeleton fallbacks for async components
+✅ Use Zod for all validation (frontend forms, Server Actions, Route Handlers)
+
+## Important Principles
+- Fix things at the cause, not the symptom
+- Be concise in summaries — do not paste large code blocks unless asked
+- When debugging, check the simplest explanation first
+- When in doubt, look at how a similar feature was already built
+
+## MCP Connection with DB
+- NEVER ASK the user to do DB operations such as migrations. You (Cursor) must do it yourself since you have MCP connection to Supabase!
+- Use the MCP tools to verify column names before writing queries
+- Use MCP to run migrations directly
+
+---
+Skills available (load when relevant):
+- `@api-patterns` — Hook patterns, response structure, debugging data issues
+- `@performance-patterns` — N+1 fixes, parallel queries, React Query optimization
+- `@multi-tenant` — Gym isolation patterns, RLS, tenant-scoped queries
