@@ -14,7 +14,6 @@ import {
 } from "@/components/staff/staff-skeletons";
 
 export const dynamic = "force-dynamic";
-export const runtime = "edge";
 
 type PageProps = {
   searchParams: Promise<{

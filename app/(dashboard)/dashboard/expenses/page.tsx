@@ -5,7 +5,6 @@ import {
 } from "@/components/expenses/expenses-list";
 
 export const dynamic = "force-dynamic";
-export const runtime = "edge";
 
 type PageProps = {
   searchParams: Promise<{

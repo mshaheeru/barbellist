@@ -3,7 +3,6 @@ import { AttendanceList } from "@/components/attendance/attendance-list";
 import { AttendancePageSkeleton } from "@/components/attendance/attendance-empty-state";
 
 export const dynamic = "force-dynamic";
-export const runtime = "edge";
 
 type PageProps = {
   searchParams: Promise<{

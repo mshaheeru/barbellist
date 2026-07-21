@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 
 /** Dashboard requires auth + Supabase — never statically prerender at build. */
 export const dynamic = "force-dynamic";
-export const runtime = "edge";
 
 export default function DashboardSegmentLayout({
   children,

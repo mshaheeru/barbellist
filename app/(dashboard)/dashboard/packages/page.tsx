@@ -11,7 +11,6 @@ import type { StaffRole } from "@/lib/types";
 import styles from "@/components/packages/packages.module.css";
 
 export const dynamic = "force-dynamic";
-export const runtime = "edge";
 
 async function PackagesContent() {
   const supabase = await createClient();

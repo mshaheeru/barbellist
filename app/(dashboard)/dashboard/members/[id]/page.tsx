@@ -3,7 +3,6 @@ import { MemberProfileContent } from "@/components/members/member-profile-conten
 import { MembersTableSkeleton } from "@/components/members/members-empty-state";
 
 export const dynamic = "force-dynamic";
-export const runtime = "edge";
 
 type PageProps = {
   params: Promise<{ id: string }>;
