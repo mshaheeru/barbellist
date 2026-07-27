@@ -63,6 +63,7 @@ function LandingInner() {
       <OrderModal open={orderOpen} onClose={() => setOrderOpen(false)} />
       {/* NAV — overlays hero so photo covers full top */}
       <nav
+        aria-label="Primary"
         style={{
           position: "fixed",
           top: 0,
@@ -249,6 +250,7 @@ function LandingInner() {
         )}
       </nav>
 
+      <main>
       {/* HERO — full-bleed photo like reference */}
       <header id="top" className="lp-hero-bleed">
         <div
@@ -300,7 +302,7 @@ function LandingInner() {
         </div>
       </header>
 
-      <section className="lp-after-hero">
+      <section className="lp-after-hero" aria-label="About Barbellist">
         <div className="lp-after-hero-inner">
           <Reveal className="lp-proof">
             <div className="lp-proof-label">Who builds Barbellist</div>
@@ -978,6 +980,7 @@ function LandingInner() {
       <TestimonialsSection />
       <FaqSection openFaq={openFaq} setOpenFaq={setOpenFaq} />
       <FinalCtaSection onOrder={openOrderChoice} />
+      </main>
       <FooterSection />
     </div>
   );
@@ -1503,6 +1506,7 @@ function RoiSection() {
 
   return (
     <section
+      aria-label="Return on investment"
       style={{
         position: "relative",
         background: "#F1EEE6",
@@ -2552,6 +2556,7 @@ function TestimonialsSection() {
 
   return (
     <section
+      aria-label="Customer testimonials"
       className="lp-section-lg"
       style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 32px" }}
     >
@@ -2666,7 +2671,7 @@ function FaqSection({
   const { profile } = useCurrency();
   const faqs = buildFaqData(profile);
   return (
-    <section id="faq" style={{ background: "#FAF7F2" }}>
+    <section id="faq" aria-label="Frequently asked questions" style={{ background: "#FAF7F2" }}>
       <Reveal
         className="lp-section"
         style={{
@@ -2786,6 +2791,7 @@ function FaqSection({
 function FinalCtaSection({ onOrder }: { onOrder: () => void }) {
   return (
     <section
+      aria-label="Get started"
       style={{
         background: "linear-gradient(180deg,#EBF1EC,#E4EDE6)",
         borderTop: "1px solid #DCE6DE",

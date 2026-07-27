@@ -22,15 +22,66 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Barbellist",
+  metadataBase: new URL("https://barbellist.com"),
+  title: {
+    default: "Barbellist — Gym Management Software",
+    template: "%s | Barbellist",
+  },
   description:
-    "The calm, all-in-one gym management platform for independent gyms worldwide.",
+    "The calm, all-in-one gym management platform for independent gyms. Members, fees, attendance, staff, expenses, and inventory — in one dashboard.",
+  keywords: [
+    "gym management software",
+    "gym billing system",
+    "gym attendance system",
+    "gym member management",
+    "fitness center software",
+    "gym management app",
+    "gym fee tracking",
+    "gym management Pakistan",
+    "gym software Saudi Arabia",
+  ],
+  authors: [{ name: "Barbellist" }],
+  creator: "Barbellist",
+  publisher: "Barbellist",
+  formatDetection: {
+    email: false,
+    telephone: false,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://barbellist.com",
+    siteName: "Barbellist",
+    title: "Barbellist — Gym Management Software",
+    description:
+      "The calm, all-in-one gym management platform for independent gyms. Members, fees, attendance, staff, expenses, and inventory — in one dashboard.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Barbellist — Gym Management Dashboard",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Barbellist — Gym Management Software",
+    description:
+      "The calm, all-in-one gym management platform for independent gyms.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: "/icon.svg",
   },
 };
 
 export const viewport: Viewport = {
+  themeColor: "#1B5E3C",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
