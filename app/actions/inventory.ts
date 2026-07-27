@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { getActionContextWithStaff } from "@/lib/auth/get-action-context";
 import {
   canManageInventory,
   canRecordSale,
@@ -26,43 +26,7 @@ import type {
   InventoryListResult,
   InventoryListRow,
   MemberSalePickerItem,
-  StaffRole,
 } from "@/lib/types";
-
-type AuthContext = {
-  gymId: string;
-  userId: string;
-  role: StaffRole;
-  staffId: string;
-};
-
-async function getAuthContext(): Promise<AuthContext | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const gymId = user.user_metadata?.gym_id as string | undefined;
-  const role = user.user_metadata?.role as StaffRole | undefined;
-  if (!gymId || !role) return null;
-
-  const { data: staffRow } = await supabase
-    .from("staff")
-    .select("id")
-    .eq("gym_id", gymId)
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
-
-  if (!staffRow) return null;
-
-  return {
-    gymId,
-    userId: user.id,
-    role,
-    staffId: staffRow.id,
-  };
-}
 
 function revalidateInventory() {
   revalidatePath("/dashboard/inventory");
@@ -73,14 +37,13 @@ export async function getInventoryItems(
   params: InventoryListParams = {},
 ): Promise<{ data: InventoryListResult | null; error: string | null }> {
   try {
-    const ctx = await getAuthContext();
+    const ctx = await getActionContextWithStaff();
     if (!ctx) return { data: null, error: "Not authenticated" };
     if (!canViewInventory(ctx.role)) {
       return { data: null, error: "You do not have access to inventory" };
     }
 
-    const supabase = await createClient();
-    const result = await fetchInventoryOverview(supabase, ctx.gymId, params);
+    const result = await fetchInventoryOverview(ctx.supabase, ctx.gymId, params);
     return { data: result, error: null };
   } catch (e) {
     return {
@@ -101,14 +64,14 @@ export async function createItem(
     };
   }
 
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) return { itemId: null, error: "Not authenticated" };
   if (!canManageInventory(ctx.role)) {
     return { itemId: null, error: "Not allowed to manage inventory" };
   }
 
   const data = parsed.data;
-  const supabase = await createClient();
+  const { supabase } = ctx;
   const { data: inserted, error } = await supabase
     .from("inventory_items")
     .insert({
@@ -150,7 +113,7 @@ export async function updateItem(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) return { error: "Not authenticated" };
   if (!canManageInventory(ctx.role)) {
     return { error: "Not allowed" };
@@ -162,8 +125,7 @@ export async function updateItem(
     if (value !== undefined) updates[key] = value;
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase
+  const { error } = await ctx.supabase
     .from("inventory_items")
     .update(updates)
     .eq("gym_id", ctx.gymId)
@@ -179,13 +141,12 @@ export async function searchSaleMembers(
   search: string,
 ): Promise<{ data: MemberSalePickerItem[]; error: string | null }> {
   try {
-    const ctx = await getAuthContext();
+    const ctx = await getActionContextWithStaff();
     if (!ctx) return { data: [], error: "Not authenticated" };
     if (!canRecordSale(ctx.role)) {
       return { data: [], error: "Not allowed" };
     }
-    const supabase = await createClient();
-    const data = await searchMembersForSale(supabase, ctx.gymId, search);
+    const data = await searchMembersForSale(ctx.supabase, ctx.gymId, search);
     return { data, error: null };
   } catch (e) {
     return {
@@ -199,13 +160,12 @@ export async function searchSaleItems(
   search: string,
 ): Promise<{ data: InventoryListRow[]; error: string | null }> {
   try {
-    const ctx = await getAuthContext();
+    const ctx = await getActionContextWithStaff();
     if (!ctx) return { data: [], error: "Not authenticated" };
     if (!canRecordSale(ctx.role)) {
       return { data: [], error: "Not allowed" };
     }
-    const supabase = await createClient();
-    const data = await searchInventoryItems(supabase, ctx.gymId, search);
+    const data = await searchInventoryItems(ctx.supabase, ctx.gymId, search);
     return { data, error: null };
   } catch (e) {
     return {
@@ -226,7 +186,7 @@ export async function createSale(
     };
   }
 
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) return { saleId: null, error: "Not authenticated" };
   if (!canRecordSale(ctx.role)) {
     return { saleId: null, error: "Not allowed to record sales" };
@@ -234,7 +194,7 @@ export async function createSale(
 
   const data = parsed.data;
   const isWalkin = data.is_walkin || !data.member_id;
-  const supabase = await createClient();
+  const { supabase } = ctx;
 
   const itemIds = data.items.map((i) => i.item_id);
   const { data: stockRows, error: stockError } = await supabase
@@ -306,7 +266,11 @@ export async function createSale(
     .insert(lineRows);
 
   if (linesError) {
-    await supabase.from("inventory_sales").delete().eq("id", sale.id);
+    await supabase
+      .from("inventory_sales")
+      .delete()
+      .eq("id", sale.id)
+      .eq("gym_id", ctx.gymId);
     return { saleId: null, error: linesError.message };
   }
 
@@ -383,7 +347,7 @@ export async function getInventoryPermissions(): Promise<{
   canSell: boolean;
   currentStaffId: string | null;
 }> {
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) {
     return { canManage: false, canSell: false, currentStaffId: null };
   }

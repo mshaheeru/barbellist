@@ -1,4 +1,11 @@
 import type { ExpenseCategory, PaymentMethod } from "@/lib/types";
+export {
+  monthLabel,
+  firstOfMonthIso as firstOfMonth,
+  startOfMonthIso,
+  endOfMonthIso,
+  previousMonthRange,
+} from "@/lib/format/date";
 
 export const EXPENSE_CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   salary: "Salary",
@@ -38,34 +45,6 @@ export function formatExpenseDate(iso: string): string {
   const d = new Date(`${iso}T12:00:00`);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-}
-
-export function monthLabel(date = new Date()): string {
-  return date.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
-}
-
-export function firstOfMonth(date = new Date()): string {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-01`;
-}
-
-export function startOfMonthIso(date = new Date()): string {
-  return firstOfMonth(date);
-}
-
-export function endOfMonthIso(date = new Date()): string {
-  const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-  return end.toISOString().slice(0, 10);
-}
-
-export function previousMonthRange(date = new Date()): {
-  start: string;
-  end: string;
-} {
-  const prev = new Date(date.getFullYear(), date.getMonth() - 1, 1);
-  return {
-    start: startOfMonthIso(prev),
-    end: endOfMonthIso(prev),
-  };
 }
 
 export function normalizeSalaryMonth(value: string): string {

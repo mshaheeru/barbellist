@@ -24,6 +24,7 @@ import { CardTemplateSection } from "./card-template-section";
 import { StaffAccessSection } from "./staff-access-section";
 import { BillingSection } from "./billing-section";
 import { DangerZoneSection } from "./danger-zone-section";
+import { DemoDataSection } from "./demo-data-section";
 import styles from "./settings.module.css";
 
 function profileFromGym(data: SettingsPageData): GymProfileInput {
@@ -224,6 +225,10 @@ export function SettingsPage({ initial }: SettingsPageProps) {
               activeMemberCount={initial.activeMemberCount}
             />
           ) : null}
+        </RoleGate>
+
+        <RoleGate allow="owner">
+          <DemoDataSection />
         </RoleGate>
 
         <RoleGate allow="owner">

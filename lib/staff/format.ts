@@ -1,4 +1,5 @@
 import type { StaffRole } from "@/lib/types";
+export { firstOfMonthIso, addMonthsIso } from "@/lib/format/date";
 
 export function formatStaffRole(role: StaffRole): string {
   const labels: Record<StaffRole, string> = {
@@ -26,14 +27,4 @@ export function countWorkingDaysInMonth(year: number, month: number): number {
     if (dow !== 0) count += 1; // exclude Sunday
   }
   return count;
-}
-
-export function firstOfMonthIso(d = new Date()): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
-}
-
-export function addMonthsIso(yearMonthDay: string, months: number): string {
-  const d = new Date(yearMonthDay + "T00:00:00");
-  d.setMonth(d.getMonth() + months);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
 }

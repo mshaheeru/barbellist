@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { getFeesOverview } from "@/app/actions/fees";
-import { getWhatsAppStatus } from "@/app/actions/whatsapp";
 import {
   feeSortSchema,
   feeStatusFilterSchema,
@@ -42,17 +41,13 @@ export async function FeesList({
   const status = parseStatus(statusRaw);
   const sort = parseSort(sortRaw);
 
-  const [{ data, error }, { configured: whatsappConfigured }] =
-    await Promise.all([
-      getFeesOverview({
-        status,
-        sort,
-        date_from,
-        date_to,
-        cursor,
-      }),
-      getWhatsAppStatus(),
-    ]);
+  const { data, error } = await getFeesOverview({
+    status,
+    sort,
+    date_from,
+    date_to,
+    cursor,
+  });
 
   if (error || !data) {
     return (
@@ -68,15 +63,6 @@ export async function FeesList({
         overdueMemberCount={data.summary.overdueMemberCount}
         outstanding={data.summary.outstanding}
       />
-      {!whatsappConfigured ? (
-        <div className={styles.whatsappBanner} role="status">
-          <div>
-            <strong>WhatsApp reminders are not configured</strong>
-            Add your API credentials (WHATSAPP_API_TOKEN and
-            WHATSAPP_PHONE_NUMBER_ID) to enable automated reminders.
-          </div>
-        </div>
-      ) : null}
       <FeesSummaryCards summary={data.summary} />
       <Suspense fallback={null}>
         <FeesToolbar
@@ -96,7 +82,6 @@ export async function FeesList({
           hasCursor={Boolean(cursor)}
           total={data.meta.total}
           showing={data.data.length}
-          whatsappConfigured={whatsappConfigured}
         />
       )}
     </>

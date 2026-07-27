@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { getDashboardData } from "@/app/actions/dashboard";
-import { getWhatsAppStatus } from "@/app/actions/whatsapp";
 import {
   DashboardSkeleton,
   OwnerDashboard,
@@ -44,24 +43,13 @@ function emptyDashboard(role: StaffRole | null = null): DashboardData {
 }
 
 async function DashboardContent() {
-  const [{ data, error }, { configured: whatsappConfigured }] =
-    await Promise.all([getDashboardData(), getWhatsAppStatus()]);
+  const { data, error } = await getDashboardData();
 
   if (error || !data) {
-    return (
-      <OwnerDashboard
-        data={emptyDashboard()}
-        whatsappConfigured={whatsappConfigured}
-      />
-    );
+    return <OwnerDashboard data={emptyDashboard()} />;
   }
 
-  return (
-    <OwnerDashboard
-      data={data}
-      whatsappConfigured={whatsappConfigured}
-    />
-  );
+  return <OwnerDashboard data={data} />;
 }
 
 export default function DashboardPage() {

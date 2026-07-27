@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { salePaymentMethodSchema as commonSalePaymentMethodSchema } from "@/lib/validations/common";
 
 export const inventoryCategorySchema = z.enum([
   "supplements",
@@ -16,15 +17,7 @@ export const stockStatusFilterSchema = z.enum([
   "out",
 ]);
 
-export const salePaymentMethodSchema = z.enum([
-  "cash",
-  "easypaisa",
-  "jazzcash",
-  "bank_transfer",
-  "card",
-  "member_tab",
-  "other",
-]);
+export const salePaymentMethodSchema = commonSalePaymentMethodSchema;
 
 export const inventoryFilterSchema = z.object({
   search: z.string().optional(),

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { getActionContextWithStaff } from "@/lib/auth/get-action-context";
 import {
   canManageExpenses,
   canRecordExpense,
@@ -19,42 +19,7 @@ import {
   type CreateExpenseInput,
   type UpdateExpenseInput,
 } from "@/lib/validations/expenses";
-import type { ExpensesListResult, StaffRole } from "@/lib/types";
-
-type AuthContext = {
-  gymId: string;
-  userId: string;
-  role: StaffRole;
-  staffId: string;
-};
-
-async function getAuthContext(): Promise<AuthContext | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const gymId = user.user_metadata?.gym_id as string | undefined;
-  const role = user.user_metadata?.role as StaffRole | undefined;
-  if (!gymId || !role) return null;
-
-  const { data: staffRow } = await supabase
-    .from("staff")
-    .select("id")
-    .eq("gym_id", gymId)
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
-
-  if (!staffRow) return null;
-
-  return {
-    gymId,
-    userId: user.id,
-    role,
-    staffId: staffRow.id,
-  };
-}
+import type { ExpensesListResult } from "@/lib/types";
 
 function revalidateExpenses(staffId?: string | null) {
   revalidatePath("/dashboard/expenses");
@@ -66,14 +31,13 @@ export async function getExpenses(
   params: ExpensesListParams = {},
 ): Promise<{ data: ExpensesListResult | null; error: string | null }> {
   try {
-    const ctx = await getAuthContext();
+    const ctx = await getActionContextWithStaff();
     if (!ctx) return { data: null, error: "Not authenticated" };
     if (!canManageExpenses(ctx.role)) {
       return { data: null, error: "You do not have access to expenses" };
     }
 
-    const supabase = await createClient();
-    const result = await fetchExpensesOverview(supabase, ctx.gymId, params);
+    const result = await fetchExpensesOverview(ctx.supabase, ctx.gymId, params);
     return { data: result, error: null };
   } catch (e) {
     return {
@@ -94,7 +58,7 @@ export async function createExpense(
     };
   }
 
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) return { expenseId: null, error: "Not authenticated" };
 
   const data = parsed.data;
@@ -109,7 +73,7 @@ export async function createExpense(
     return { expenseId: null, error: "Not allowed to record expenses" };
   }
 
-  const supabase = await createClient();
+  const { supabase } = ctx;
   let description = data.description;
   let is_salary_full_month = data.is_salary_full_month ?? true;
 
@@ -197,7 +161,7 @@ export async function updateExpense(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) return { error: "Not authenticated" };
   if (!canManageExpenses(ctx.role)) {
     return { error: "Not allowed" };
@@ -212,7 +176,7 @@ export async function updateExpense(
     updates.salary_month = normalizeSalaryMonth(updates.salary_month);
   }
 
-  const supabase = await createClient();
+  const { supabase } = ctx;
   const { data: existing } = await supabase
     .from("expenses")
     .select("id, staff_id, category")
@@ -240,13 +204,13 @@ export async function updateExpense(
 export async function deleteExpense(
   id: string,
 ): Promise<{ error: string | null }> {
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) return { error: "Not authenticated" };
   if (!canManageExpenses(ctx.role)) {
     return { error: "Not allowed" };
   }
 
-  const supabase = await createClient();
+  const { supabase } = ctx;
   const { data: existing } = await supabase
     .from("expenses")
     .select("id, staff_id, category")
@@ -282,7 +246,7 @@ export async function deleteExpense(
 export async function getReceiptSignedUrl(
   path: string,
 ): Promise<{ url: string | null; error: string | null }> {
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) return { url: null, error: "Not authenticated" };
   if (!canManageExpenses(ctx.role)) {
     return { url: null, error: "Not allowed" };
@@ -293,8 +257,7 @@ export async function getReceiptSignedUrl(
     return { url: path, error: null };
   }
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.storage
+  const { data, error } = await ctx.supabase.storage
     .from("receipts")
     .createSignedUrl(path, 60 * 60);
 

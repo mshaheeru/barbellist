@@ -34,23 +34,28 @@ async function getPageContext() {
   let currencySymbol = "Rs.";
   let staffId: string | null = null;
 
-  if (user) {
-    const { data: staffRow } = await supabase
-      .from("staff")
-      .select("id")
-      .eq("auth_user_id", user.id)
-      .maybeSingle();
-    staffId = staffRow?.id ?? null;
-  }
+  const [staffRes, gymRes] = await Promise.all([
+    user && gymId
+      ? supabase
+          .from("staff")
+          .select("id")
+          .eq("gym_id", gymId)
+          .eq("auth_user_id", user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null as { id: string } | null }),
+    gymId
+      ? supabase
+          .from("gyms")
+          .select("currency_symbol")
+          .eq("id", gymId)
+          .maybeSingle()
+      : Promise.resolve({
+          data: null as { currency_symbol: string | null } | null,
+        }),
+  ]);
 
-  if (gymId) {
-    const { data } = await supabase
-      .from("gyms")
-      .select("currency_symbol")
-      .eq("id", gymId)
-      .maybeSingle();
-    currencySymbol = data?.currency_symbol ?? "Rs.";
-  }
+  staffId = staffRes.data?.id ?? null;
+  currencySymbol = gymRes.data?.currency_symbol ?? "Rs.";
 
   return {
     role,

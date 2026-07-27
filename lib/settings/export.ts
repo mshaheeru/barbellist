@@ -42,26 +42,28 @@ export async function buildGymDataZip(
 ): Promise<{ base64: string; filename: string } | { error: string }> {
   const zip = new JSZip();
 
-  for (const table of EXPORT_TABLES) {
-    const { data, error } = await supabase
-      .from(table)
-      .select("*")
-      .eq("gym_id", gymId);
+  const [tableResults, gymRes] = await Promise.all([
+    Promise.all(
+      EXPORT_TABLES.map(async (table) => {
+        const { data, error } = await supabase
+          .from(table)
+          .select("*")
+          .eq("gym_id", gymId);
+        return { table, data, error };
+      }),
+    ),
+    supabase.from("gyms").select("*").eq("id", gymId).maybeSingle(),
+  ]);
 
+  for (const { table, data, error } of tableResults) {
     if (error) {
       return { error: `Failed to export ${table}: ${error.message}` };
     }
-
     const rows = (data ?? []) as Record<string, unknown>[];
     zip.file(`${table}.csv`, rowsToCsv(rows));
   }
 
-  const { data: gym } = await supabase
-    .from("gyms")
-    .select("*")
-    .eq("id", gymId)
-    .maybeSingle();
-
+  const gym = gymRes.data;
   if (gym) {
     zip.file("gym.csv", rowsToCsv([gym as Record<string, unknown>]));
   }

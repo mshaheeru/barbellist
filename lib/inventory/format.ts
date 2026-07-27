@@ -1,4 +1,9 @@
 import type { InventoryCategory } from "@/lib/types";
+export {
+  monthLabel,
+  startOfMonthIso,
+  previousMonthStart,
+} from "@/lib/format/date";
 
 export const INVENTORY_CATEGORY_LABELS: Record<InventoryCategory, string> = {
   supplements: "Supplements",
@@ -60,17 +65,4 @@ export function itemInitials(name: string): string {
   if (parts.length === 0) return "?";
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
-}
-
-export function monthLabel(date = new Date()): string {
-  return date.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
-}
-
-export function startOfMonthIso(date = new Date()): string {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-01`;
-}
-
-export function previousMonthStart(date = new Date()): string {
-  const prev = new Date(date.getFullYear(), date.getMonth() - 1, 1);
-  return startOfMonthIso(prev);
 }

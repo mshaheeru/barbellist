@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  feePaymentMethodSchema,
+  noteTextSchema,
+} from "@/lib/validations/common";
 
 export const memberFilterSchema = z.enum([
   "all",
@@ -44,10 +48,7 @@ export const freezeMemberSchema = z.object({
 
 export type FreezeMemberInput = z.infer<typeof freezeMemberSchema>;
 
-export const memberNoteSchema = z.object({
-  text: z.string().min(1, "Note cannot be empty"),
-});
-
+export const memberNoteSchema = noteTextSchema;
 export const fitnessGoalSchema = z.enum([
   "weight_loss",
   "muscle_gain",
@@ -93,12 +94,7 @@ export type OnboardingStep2Input = z.infer<typeof onboardingStep2Schema>;
 
 export const onboardingPaymentSchema = z.object({
   package_id: z.string().uuid("Please select a package"),
-  payment_method: z.enum([
-    "cash",
-    "easypaisa",
-    "jazzcash",
-    "bank_transfer",
-  ]),
+  payment_method: feePaymentMethodSchema,
   amount: z.coerce.number().positive("Amount must be positive"),
   is_partial: z.boolean().default(false),
   notes: z.string().optional().nullable(),

@@ -16,6 +16,16 @@ import {
 } from "@/lib/staff/format";
 import type { StaffFilter, StaffSort } from "@/lib/validations/staff";
 
+/** Columns matching Staff — keep in sync with lib/types.ts */
+const STAFF_COLUMNS =
+  "id, gym_id, auth_user_id, name, phone, whatsapp, email, photo_url, role, monthly_salary, commission_rate, joining_date, status, notes, created_at, updated_at";
+
+const ATTENDANCE_COLUMNS =
+  "id, gym_id, member_id, staff_id, person_type, check_in_method, check_in_at, check_out_at, fee_status_at_checkin, notes, created_at";
+
+const EXPENSE_COLUMNS =
+  "id, gym_id, category, description, amount, payment_method, staff_id, salary_month, is_salary_full_month, receipt_url, recorded_by, expense_date, status, notes, created_at, updated_at";
+
 function startOfMonth(d = new Date()) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
 }
@@ -97,7 +107,7 @@ export async function fetchStaffList(
   const sort = params.sort ?? "name_asc";
   const search = params.search?.trim();
 
-  let query = supabase.from("staff").select("*").eq("gym_id", gymId);
+  let query = supabase.from("staff").select(STAFF_COLUMNS).eq("gym_id", gymId);
 
   if (filter !== "all") {
     query = query.eq("role", filter);
@@ -245,7 +255,7 @@ export async function fetchStaffById(
 ): Promise<StaffProfile | null> {
   const { data: staff, error } = await supabase
     .from("staff")
-    .select("*")
+    .select(STAFF_COLUMNS)
     .eq("gym_id", gymId)
     .eq("id", id)
     .maybeSingle();
@@ -265,7 +275,7 @@ export async function fetchStaffById(
   const [attendance30Res, attendanceMonthRes, salaryRes] = await Promise.all([
     supabase
       .from("attendance")
-      .select("*")
+      .select(ATTENDANCE_COLUMNS)
       .eq("gym_id", gymId)
       .eq("staff_id", id)
       .eq("person_type", "staff")
@@ -273,7 +283,7 @@ export async function fetchStaffById(
       .order("check_in_at", { ascending: false }),
     supabase
       .from("attendance")
-      .select("*")
+      .select(ATTENDANCE_COLUMNS)
       .eq("gym_id", gymId)
       .eq("staff_id", id)
       .eq("person_type", "staff")
@@ -282,7 +292,9 @@ export async function fetchStaffById(
     opts.canViewSalary
       ? supabase
           .from("expenses")
-          .select("*, recorder:staff!expenses_recorded_by_fkey(name)")
+          .select(
+            `${EXPENSE_COLUMNS}, recorder:staff!expenses_recorded_by_fkey(name)`,
+          )
           .eq("gym_id", gymId)
           .eq("staff_id", id)
           .eq("category", "salary")

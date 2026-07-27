@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { feePaymentMethodSchema } from "@/lib/validations/common";
 
 export const feeStatusFilterSchema = z.enum([
   "all",
@@ -33,12 +34,7 @@ export type FeesFilterInput = z.infer<typeof feesFilterSchema>;
 
 export const recordPaymentSchema = z.object({
   member_id: z.string().uuid(),
-  payment_method: z.enum([
-    "cash",
-    "easypaisa",
-    "jazzcash",
-    "bank_transfer",
-  ]),
+  payment_method: feePaymentMethodSchema,
   amount: z.coerce.number().positive("Amount must be positive"),
   is_partial: z.boolean().default(false),
   notes: z.string().optional().nullable(),

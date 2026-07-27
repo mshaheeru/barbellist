@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { getActionContext } from "@/lib/auth/get-action-context";
 import {
   fetchCardMember,
   fetchUnissuedMembers,
@@ -13,18 +14,7 @@ import type {
   UnissuedCardMember,
 } from "@/lib/cards/types";
 import { signMemberQrToken } from "@/lib/qr/sign-member-token";
-import { createClient } from "@/lib/supabase/server";
 import type { Package } from "@/lib/types";
-
-async function getAuthenticatedGymId(): Promise<string | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const gymId = user?.user_metadata?.gym_id as string | undefined;
-  if (!gymId || !user) return null;
-  return gymId;
-}
 
 function revalidateCardPaths(memberId?: string) {
   revalidatePath("/dashboard/cards");
@@ -38,13 +28,13 @@ export async function getCardMember(
   memberId: string,
 ): Promise<{ data: CardMember | null; error: string | null }> {
   try {
-    const gymId = await getAuthenticatedGymId();
-    if (!gymId) return { data: null, error: "Not authenticated" };
+    const ctx = await getActionContext();
+    if (!ctx) return { data: null, error: "Not authenticated" };
+    const { gymId, supabase } = ctx;
 
     const parsed = z.string().uuid().safeParse(memberId);
     if (!parsed.success) return { data: null, error: "Invalid member" };
 
-    const supabase = await createClient();
     const data = await fetchCardMember(supabase, gymId, parsed.data);
     return { data, error: null };
   } catch (e) {
@@ -59,15 +49,15 @@ export async function searchMembersForCardSelector(raw: {
   query: string;
 }): Promise<{ data: CardMemberSearchResult[]; error: string | null }> {
   try {
-    const gymId = await getAuthenticatedGymId();
-    if (!gymId) return { data: [], error: "Not authenticated" };
+    const ctx = await getActionContext();
+    if (!ctx) return { data: [], error: "Not authenticated" };
+    const { gymId, supabase } = ctx;
 
     const parsed = z
       .object({ query: z.string().trim().min(1).max(80) })
       .safeParse(raw);
     if (!parsed.success) return { data: [], error: null };
 
-    const supabase = await createClient();
     const data = await searchMembersForCards(
       supabase,
       gymId,
@@ -87,10 +77,10 @@ export async function getPackagesForCards(): Promise<{
   error: string | null;
 }> {
   try {
-    const gymId = await getAuthenticatedGymId();
-    if (!gymId) return { data: null, error: "Not authenticated" };
+    const ctx = await getActionContext();
+    if (!ctx) return { data: null, error: "Not authenticated" };
+    const { gymId, supabase } = ctx;
 
-    const supabase = await createClient();
     const { data, error } = await supabase
       .from("packages")
       .select("id, name, color")
@@ -112,13 +102,13 @@ export async function ensureCardToken(
   memberId: string,
 ): Promise<{ data: CardMember | null; error: string | null }> {
   try {
-    const gymId = await getAuthenticatedGymId();
-    if (!gymId) return { data: null, error: "Not authenticated" };
+    const ctx = await getActionContext();
+    if (!ctx) return { data: null, error: "Not authenticated" };
+    const { gymId, supabase } = ctx;
 
     const parsed = z.string().uuid().safeParse(memberId);
     if (!parsed.success) return { data: null, error: "Invalid member" };
 
-    const supabase = await createClient();
     const existing = await fetchCardMember(supabase, gymId, parsed.data);
     if (!existing) return { data: null, error: "Member not found" };
 
@@ -154,13 +144,13 @@ export async function regenerateQRToken(
   memberId: string,
 ): Promise<{ data: CardMember | null; error: string | null }> {
   try {
-    const gymId = await getAuthenticatedGymId();
-    if (!gymId) return { data: null, error: "Not authenticated" };
+    const ctx = await getActionContext();
+    if (!ctx) return { data: null, error: "Not authenticated" };
+    const { gymId, supabase } = ctx;
 
     const parsed = z.string().uuid().safeParse(memberId);
     if (!parsed.success) return { data: null, error: "Invalid member" };
 
-    const supabase = await createClient();
     const existing = await fetchCardMember(supabase, gymId, parsed.data);
     if (!existing) return { data: null, error: "Member not found" };
 
@@ -193,13 +183,13 @@ export async function markCardPrinted(
   memberId: string,
 ): Promise<{ data: CardMember | null; error: string | null }> {
   try {
-    const gymId = await getAuthenticatedGymId();
-    if (!gymId) return { data: null, error: "Not authenticated" };
+    const ctx = await getActionContext();
+    if (!ctx) return { data: null, error: "Not authenticated" };
+    const { gymId, supabase } = ctx;
 
     const parsed = z.string().uuid().safeParse(memberId);
     if (!parsed.success) return { data: null, error: "Invalid member" };
 
-    const supabase = await createClient();
     const existing = await fetchCardMember(supabase, gymId, parsed.data);
     if (!existing) return { data: null, error: "Member not found" };
 
@@ -231,10 +221,10 @@ export async function listUnissuedMembers(): Promise<{
   error: string | null;
 }> {
   try {
-    const gymId = await getAuthenticatedGymId();
-    if (!gymId) return { data: null, error: "Not authenticated" };
+    const ctx = await getActionContext();
+    if (!ctx) return { data: null, error: "Not authenticated" };
+    const { gymId, supabase } = ctx;
 
-    const supabase = await createClient();
     const data = await fetchUnissuedMembers(supabase, gymId);
     return { data, error: null };
   } catch (e) {

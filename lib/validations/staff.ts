@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  noteTextSchema,
+  paymentMethodSchema,
+} from "@/lib/validations/common";
 
 export const staffRoleSchema = z.enum([
   "owner",
@@ -93,14 +97,7 @@ export type UpdateStaffInput = z.infer<typeof updateStaffSchema>;
 export const recordSalarySchema = z.object({
   staff_id: z.string().uuid(),
   amount: z.coerce.number().positive("Amount must be positive"),
-  payment_method: z.enum([
-    "cash",
-    "easypaisa",
-    "jazzcash",
-    "bank_transfer",
-    "card",
-    "other",
-  ]),
+  payment_method: paymentMethodSchema,
   salary_month: z.string().min(1, "Salary month is required"),
   expense_date: z.string().optional(),
   notes: z.string().optional().nullable(),
@@ -109,6 +106,4 @@ export const recordSalarySchema = z.object({
 
 export type RecordSalaryInput = z.infer<typeof recordSalarySchema>;
 
-export const staffNoteSchema = z.object({
-  text: z.string().min(1, "Note cannot be empty"),
-});
+export const staffNoteSchema = noteTextSchema;

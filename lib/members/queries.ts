@@ -17,6 +17,18 @@ import type { MemberFilter, MemberSort } from "@/lib/validations/members";
 
 const PAGE_SIZE = 20;
 
+const MEMBER_COLUMNS =
+  "id, gym_id, member_code, name, phone, whatsapp, email, photo_url, date_of_birth, gender, address, emergency_contact_name, emergency_contact_phone, height_cm, weight_kg, bmi, fitness_goals, package_id, membership_start, membership_end, status, freeze_start, freeze_end, freeze_reason, card_qr_token, card_issued_at, card_printed, referred_by, notes, joined_at, created_at, updated_at";
+
+const FEE_DUE_COLUMNS =
+  "id, gym_id, member_id, amount_due, amount_paid, due_date, status, generated_for_month, last_reminder_sent_at, reminder_count, notes, created_at, updated_at";
+
+const PAYMENT_COLUMNS =
+  "id, gym_id, member_id, amount, payment_type, payment_method, is_partial, covers_from, covers_to, notes, receipt_sent, receipt_generated, recorded_by, paid_at, created_at";
+
+const ATTENDANCE_COLUMNS =
+  "id, gym_id, member_id, staff_id, person_type, check_in_method, check_in_at, check_out_at, fee_status_at_checkin, notes, created_at";
+
 type RawMemberRow = Member & {
   packages: { name: string } | { name: string }[] | null;
   fee_dues: Pick<FeeDue, "status" | "due_date" | "amount_due" | "amount_paid">[];
@@ -150,8 +162,7 @@ export async function fetchMembersList(
       `
       id, gym_id, member_code, name, phone, photo_url, status, joined_at,
       packages(name),
-      fee_dues(status, due_date, amount_due, amount_paid),
-      attendance(check_in_at)
+      fee_dues(status, due_date, amount_due, amount_paid)
     `,
     )
     .eq("gym_id", gymId)
@@ -199,7 +210,38 @@ export async function fetchMembersList(
     throw new Error(error.message);
   }
 
-  let items = (data as RawMemberRow[]).map(toListItem);
+  const rawRows = (data ?? []) as unknown as RawMemberRow[];
+  const pageIds = rawRows.map((r) => r.id);
+
+  const lastCheckInByMember = new Map<string, string>();
+  if (pageIds.length > 0) {
+    const since = new Date();
+    since.setDate(since.getDate() - 180);
+    const { data: attendanceRows, error: attError } = await supabase
+      .from("attendance")
+      .select("member_id, check_in_at")
+      .eq("gym_id", gymId)
+      .in("member_id", pageIds)
+      .gte("check_in_at", since.toISOString())
+      .order("check_in_at", { ascending: false });
+
+    if (attError) throw new Error(attError.message);
+
+    for (const row of attendanceRows ?? []) {
+      if (!row.member_id || !row.check_in_at) continue;
+      if (!lastCheckInByMember.has(row.member_id)) {
+        lastCheckInByMember.set(row.member_id, row.check_in_at);
+      }
+    }
+  }
+
+  let items = rawRows.map((row) => {
+    const last = lastCheckInByMember.get(row.id);
+    return toListItem({
+      ...row,
+      attendance: last ? [{ check_in_at: last }] : [],
+    });
+  });
 
   if (filter === "overdue" || filter === "due_soon") {
     items = items.filter((m) =>
@@ -227,7 +269,7 @@ export async function fetchMembersList(
   };
 }
 
-async function fetchFilterCounts(
+export async function fetchFilterCounts(
   supabase: SupabaseClient,
   gymId: string,
   search?: string,
@@ -296,7 +338,7 @@ export async function fetchMemberById(
 
   const { data: member, error } = await supabase
     .from("members")
-    .select("*")
+    .select(MEMBER_COLUMNS)
     .eq("gym_id", gymId)
     .eq("id", id)
     .neq("status", "cancelled")
@@ -308,6 +350,7 @@ export async function fetchMemberById(
   const [
     packageRes,
     feeDuesRes,
+    allFeeDuesRes,
     paymentsRes,
     attendance30Res,
     attendanceMonthRes,
@@ -316,26 +359,32 @@ export async function fetchMemberById(
       ? supabase
           .from("packages")
           .select("name, price, duration_days, color")
+          .eq("gym_id", gymId)
           .eq("id", member.package_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
     supabase
       .from("fee_dues")
-      .select("*")
+      .select(FEE_DUE_COLUMNS)
       .eq("gym_id", gymId)
       .eq("member_id", id)
       .not("status", "in", '("paid","waived")')
       .order("due_date", { ascending: true }),
     supabase
+      .from("fee_dues")
+      .select("status, due_date, amount_due, amount_paid")
+      .eq("gym_id", gymId)
+      .eq("member_id", id),
+    supabase
       .from("payments")
-      .select("*, staff(name)")
+      .select(`${PAYMENT_COLUMNS}, staff(name)`)
       .eq("gym_id", gymId)
       .eq("member_id", id)
       .order("paid_at", { ascending: false })
       .limit(50),
     supabase
       .from("attendance")
-      .select("*")
+      .select(ATTENDANCE_COLUMNS)
       .eq("gym_id", gymId)
       .eq("member_id", id)
       .eq("person_type", "member")
@@ -343,19 +392,13 @@ export async function fetchMemberById(
       .order("check_in_at", { ascending: false }),
     supabase
       .from("attendance")
-      .select("*")
+      .select(ATTENDANCE_COLUMNS)
       .eq("gym_id", gymId)
       .eq("member_id", id)
       .eq("person_type", "member")
       .gte("check_in_at", monthStart.toISOString())
       .order("check_in_at", { ascending: false }),
   ]);
-
-  const allFeeDuesRes = await supabase
-    .from("fee_dues")
-    .select("status, due_date, amount_due, amount_paid")
-    .eq("gym_id", gymId)
-    .eq("member_id", id);
 
   const feeDuesForStatus = allFeeDuesRes.data ?? [];
   const attendance30 = (attendance30Res.data ?? []) as Attendance[];
@@ -369,6 +412,8 @@ export async function fetchMemberById(
       const staff = Array.isArray(row.staff) ? row.staff[0] : row.staff;
       return {
         ...row,
+        receipt_generated: Boolean(row.receipt_generated),
+        receipt_sent: Boolean(row.receipt_sent),
         recorded_by_name: staff?.name ?? null,
       };
     },

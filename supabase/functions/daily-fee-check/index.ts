@@ -117,36 +117,64 @@ async function generateMonthlyDues(
 
   if (membersError) throw new Error(membersError.message);
 
+  const memberList = members ?? [];
+  const memberIds = memberList.map((m) => m.id);
   let created = 0;
-  for (const member of members ?? []) {
-    const pkgRaw = member.packages as
-      | { price: number }
-      | { price: number }[]
-      | null;
-    const pkg = Array.isArray(pkgRaw) ? pkgRaw[0] : pkgRaw;
-    if (!pkg) continue;
 
-    const { data: existing } = await supabase
+  if (memberIds.length > 0) {
+    const { data: existingDues, error: existingError } = await supabase
       .from("fee_dues")
-      .select("id")
+      .select("member_id")
       .eq("gym_id", gymId)
-      .eq("member_id", member.id)
       .eq("generated_for_month", monthStart)
-      .maybeSingle();
+      .in("member_id", memberIds);
 
-    if (existing) continue;
+    if (existingError) throw new Error(existingError.message);
 
-    const { error: insertError } = await supabase.from("fee_dues").insert({
-      gym_id: gymId,
-      member_id: member.id,
-      amount_due: pkg.price,
-      amount_paid: 0,
-      due_date: monthStart,
-      status: "pending",
-      generated_for_month: monthStart,
-    });
+    const existingSet = new Set(
+      (existingDues ?? []).map((r) => r.member_id as string),
+    );
 
-    if (!insertError) created += 1;
+    const toInsert: Array<{
+      gym_id: string;
+      member_id: string;
+      amount_due: number;
+      amount_paid: number;
+      due_date: string;
+      status: string;
+      generated_for_month: string;
+    }> = [];
+
+    for (const member of memberList) {
+      if (existingSet.has(member.id)) continue;
+
+      const pkgRaw = member.packages as
+        | { price: number }
+        | { price: number }[]
+        | null;
+      const pkg = Array.isArray(pkgRaw) ? pkgRaw[0] : pkgRaw;
+      if (!pkg) continue;
+
+      toInsert.push({
+        gym_id: gymId,
+        member_id: member.id,
+        amount_due: pkg.price,
+        amount_paid: 0,
+        due_date: monthStart,
+        status: "pending",
+        generated_for_month: monthStart,
+      });
+    }
+
+    if (toInsert.length > 0) {
+      const { data: inserted, error: insertError } = await supabase
+        .from("fee_dues")
+        .insert(toInsert)
+        .select("id");
+
+      if (insertError) throw new Error(insertError.message);
+      created = inserted?.length ?? toInsert.length;
+    }
   }
 
   const { data: overdueCandidates, error: overdueFetchError } = await supabase

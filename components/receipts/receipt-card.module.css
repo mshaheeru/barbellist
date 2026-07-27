@@ -1,0 +1,173 @@
+/* Payment receipt — fixed capture size for html-to-image */
+
+.card {
+  width: 400px;
+  height: 600px;
+  background: #faf7f2;
+  color: #1f1f1f;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+.header {
+  background: #1b5e3c;
+  color: #fff;
+  padding: 22px 24px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.logoWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.logoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gymName {
+  font-family: var(--font-display, system-ui, sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.gymLabel {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a9c4b4;
+  margin-top: 2px;
+}
+
+.body {
+  flex: 1;
+  padding: 22px 24px 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.title {
+  font-family: var(--font-display, system-ui, sans-serif);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px;
+  color: #1f1f1f;
+}
+
+.receiptNumber {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8a8a80;
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
+}
+
+.amberLine {
+  height: 3px;
+  width: 56px;
+  background: #c9861b;
+  border-radius: 2px;
+  margin-bottom: 18px;
+}
+
+.memberBlock {
+  margin-bottom: 18px;
+}
+
+.memberName {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 2px;
+  line-height: 1.3;
+}
+
+.memberCode {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1b5e3c;
+  letter-spacing: 0.02em;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e8e5df;
+}
+
+.detailRow:last-child {
+  border-bottom: none;
+}
+
+.detailLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8a8a80;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.detailValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f1f1f;
+  text-align: right;
+}
+
+.detailValueAmount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1b5e3c;
+}
+
+.footer {
+  padding: 16px 24px 20px;
+  border-top: 1px solid #e8e5df;
+  background: #f3efe8;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.thanks {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1b5e3c;
+  margin: 0 0 8px;
+}
+
+.contact {
+  font-size: 11.5px;
+  color: #7a7a70;
+  line-height: 1.45;
+  margin: 0;
+}

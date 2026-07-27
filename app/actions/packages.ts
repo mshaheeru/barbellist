@@ -1,38 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { getActionContextWithRole } from "@/lib/auth/get-action-context";
 import { canManagePackages } from "@/lib/auth/permissions";
 import {
   fetchPackageById,
   fetchPackagesForAdmin,
+  PACKAGE_COLUMNS,
 } from "@/lib/packages/queries";
 import {
   packageFormSchema,
   reorderPackagesSchema,
   type PackageFormInput,
 } from "@/lib/validations/packages";
-import type { Package, StaffRole } from "@/lib/types";
-
-type AuthContext = {
-  gymId: string;
-  userId: string;
-  role: StaffRole;
-};
-
-async function getAuthContext(): Promise<AuthContext | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const gymId = user.user_metadata?.gym_id as string | undefined;
-  const role = user.user_metadata?.role as StaffRole | undefined;
-  if (!gymId || !role) return null;
-
-  return { gymId, userId: user.id, role };
-}
+import type { Package } from "@/lib/types";
 
 function revalidatePackages() {
   revalidatePath("/dashboard/packages");
@@ -63,14 +44,13 @@ export async function listPackages(): Promise<{
   error: string | null;
 }> {
   try {
-    const ctx = await getAuthContext();
+    const ctx = await getActionContextWithRole();
     if (!ctx) return { data: null, error: "Not authenticated" };
     if (!canManagePackages(ctx.role)) {
       return { data: null, error: "You do not have access to packages" };
     }
 
-    const supabase = await createClient();
-    const data = await fetchPackagesForAdmin(supabase, ctx.gymId);
+    const data = await fetchPackagesForAdmin(ctx.supabase, ctx.gymId);
     return { data, error: null };
   } catch (e) {
     return {
@@ -91,20 +71,19 @@ export async function createPackage(
     };
   }
 
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { data: null, error: "Not authenticated" };
   if (!canManagePackages(ctx.role)) {
     return { data: null, error: "Only owners and managers can manage packages" };
   }
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error } = await ctx.supabase
     .from("packages")
     .insert({
       gym_id: ctx.gymId,
       ...toDbRow(parsed.data),
     })
-    .select("*")
+    .select(PACKAGE_COLUMNS)
     .single();
 
   if (error || !data) {
@@ -127,22 +106,21 @@ export async function updatePackage(
     };
   }
 
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { data: null, error: "Not authenticated" };
   if (!canManagePackages(ctx.role)) {
     return { data: null, error: "Only owners and managers can manage packages" };
   }
 
-  const supabase = await createClient();
-  const existing = await fetchPackageById(supabase, ctx.gymId, id);
+  const existing = await fetchPackageById(ctx.supabase, ctx.gymId, id);
   if (!existing) return { data: null, error: "Package not found" };
 
-  const { data, error } = await supabase
+  const { data, error } = await ctx.supabase
     .from("packages")
     .update(toDbRow(parsed.data))
     .eq("id", id)
     .eq("gym_id", ctx.gymId)
-    .select("*")
+    .select(PACKAGE_COLUMNS)
     .single();
 
   if (error || !data) {
@@ -156,17 +134,16 @@ export async function updatePackage(
 export async function deletePackage(
   id: string,
 ): Promise<{ error: string | null }> {
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { error: "Not authenticated" };
   if (!canManagePackages(ctx.role)) {
     return { error: "Only owners and managers can manage packages" };
   }
 
-  const supabase = await createClient();
-  const existing = await fetchPackageById(supabase, ctx.gymId, id);
+  const existing = await fetchPackageById(ctx.supabase, ctx.gymId, id);
   if (!existing) return { error: "Package not found" };
 
-  const { error } = await supabase
+  const { error } = await ctx.supabase
     .from("packages")
     .delete()
     .eq("id", id)
@@ -181,22 +158,21 @@ export async function deletePackage(
 export async function togglePackageActive(
   id: string,
 ): Promise<{ data: Package | null; error: string | null }> {
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { data: null, error: "Not authenticated" };
   if (!canManagePackages(ctx.role)) {
     return { data: null, error: "Only owners and managers can manage packages" };
   }
 
-  const supabase = await createClient();
-  const existing = await fetchPackageById(supabase, ctx.gymId, id);
+  const existing = await fetchPackageById(ctx.supabase, ctx.gymId, id);
   if (!existing) return { data: null, error: "Package not found" };
 
-  const { data, error } = await supabase
+  const { data, error } = await ctx.supabase
     .from("packages")
     .update({ is_active: !existing.is_active })
     .eq("id", id)
     .eq("gym_id", ctx.gymId)
-    .select("*")
+    .select(PACKAGE_COLUMNS)
     .single();
 
   if (error || !data) {
@@ -215,15 +191,14 @@ export async function reorderPackages(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { error: "Not authenticated" };
   if (!canManagePackages(ctx.role)) {
     return { error: "Only owners and managers can manage packages" };
   }
 
-  const supabase = await createClient();
   const updates = parsed.data.orderedIds.map((id, index) =>
-    supabase
+    ctx.supabase
       .from("packages")
       .update({ sort_order: index })
       .eq("id", id)

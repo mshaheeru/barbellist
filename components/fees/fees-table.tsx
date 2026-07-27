@@ -3,11 +3,10 @@
 import { useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, CreditCard, ShieldOff } from "lucide-react";
-import { Tooltip } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import {
-  sendBulkReminders,
-  sendFeeReminder,
+  prepareBulkReminderDeeplinks,
+  prepareFeeReminderDeeplink,
 } from "@/app/actions/whatsapp";
 import { waiveFeeDue } from "@/app/actions/fees";
 import { useGym } from "@/components/gym-provider";
@@ -21,13 +20,11 @@ import {
   formatCurrency,
   formatShortDate,
 } from "@/lib/members/format";
+import { openWaMeUrl } from "@/lib/whatsapp/deeplink";
 import type { FeeOverviewRow } from "@/lib/types";
 import { MemberAvatar } from "@/components/members/member-avatar";
 import { RecordPaymentModal } from "@/components/modals/record-payment-modal";
 import styles from "./fees.module.css";
-
-const WA_DISABLED_TIP =
-  "WhatsApp is not configured. Add WHATSAPP_API_TOKEN and WHATSAPP_PHONE_NUMBER_ID to enable reminders.";
 
 type FeesTableProps = {
   rows: FeeOverviewRow[];
@@ -35,8 +32,11 @@ type FeesTableProps = {
   hasCursor: boolean;
   total: number;
   showing: number;
-  whatsappConfigured: boolean;
 };
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export function FeesTable({
   rows,
@@ -44,18 +44,17 @@ export function FeesTable({
   hasCursor,
   total,
   showing,
-  whatsappConfigured,
 }: FeesTableProps) {
   const router = useRouter();
   const { role, currencySymbol } = useGym();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [paymentMemberId, setPaymentMemberId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [bulkProgress, setBulkProgress] = useState<string | null>(null);
 
   const canPay = canRecordPayment(role);
   const canRemind = canSendReminder(role);
   const canWaive = canWaiveFee(role);
-  const remindDisabled = pending || !whatsappConfigured;
 
   const toggleRow = (id: string) => {
     setSelected((prev) => {
@@ -75,19 +74,22 @@ export function FeesTable({
   };
 
   const handleReminder = (feeDueId: string) => {
-    if (!whatsappConfigured) return;
     startTransition(async () => {
-      const { error } = await sendFeeReminder(feeDueId);
-      if (error) {
-        notifications.show({ color: "red", title: "Reminder failed", message: error });
-      } else {
+      const { data, error } = await prepareFeeReminderDeeplink(feeDueId);
+      if (error || !data) {
         notifications.show({
-          color: "green",
-          title: "Reminder sent",
-          message: "WhatsApp fee reminder was sent successfully.",
+          color: "red",
+          title: "Reminder failed",
+          message: error ?? "Could not prepare reminder",
         });
-        router.refresh();
+        return;
       }
+      openWaMeUrl(data.url);
+      notifications.show({
+        color: "green",
+        message: `WhatsApp opened with reminder for ${data.memberName}`,
+      });
+      router.refresh();
     });
   };
 
@@ -96,27 +98,53 @@ export function FeesTable({
     startTransition(async () => {
       const { error } = await waiveFeeDue(feeDueId);
       if (error) {
-        notifications.show({ color: "red", title: "Waive failed", message: error });
+        notifications.show({
+          color: "red",
+          title: "Waive failed",
+          message: error,
+        });
       } else {
-        notifications.show({ color: "green", title: "Fee waived", message: "The fee due has been waived." });
+        notifications.show({
+          color: "green",
+          title: "Fee waived",
+          message: "The fee due has been waived.",
+        });
         router.refresh();
       }
     });
   };
 
   const handleBulkReminders = () => {
-    if (!whatsappConfigured) return;
     const ids = [...selected];
     startTransition(async () => {
-      const result = await sendBulkReminders({ ids });
+      setBulkProgress("Preparing…");
+      const result = await prepareBulkReminderDeeplinks({ ids });
       if (result.error) {
-        notifications.show({ color: "red", title: "Bulk send failed", message: result.error });
+        setBulkProgress(null);
+        notifications.show({
+          color: "red",
+          title: "Bulk send failed",
+          message: result.error,
+        });
         return;
       }
+
+      const items = result.data;
+      for (let i = 0; i < items.length; i++) {
+        setBulkProgress(`Sending ${i + 1} of ${items.length}…`);
+        openWaMeUrl(items[i]!.url);
+        if (i < items.length - 1) await sleep(1000);
+      }
+
+      setBulkProgress(null);
       notifications.show({
         color: "green",
-        title: "Reminders sent",
-        message: `${result.sent} sent, ${result.failed} failed, ${result.skipped_no_whatsapp} skipped (no contact).`,
+        title: "Reminders opened",
+        message: `${items.length} WhatsApp chat(s) opened${
+          result.skipped_no_whatsapp
+            ? `, ${result.skipped_no_whatsapp} skipped (no contact)`
+            : ""
+        }.`,
       });
       setSelected(new Set());
       router.refresh();
@@ -129,38 +157,27 @@ export function FeesTable({
     label: ReactNode,
     className: string,
     title: string,
-  ) => {
-    const btn = (
-      <button
-        type="button"
-        className={className}
-        disabled={disabled}
-        onClick={onClick}
-        title={whatsappConfigured ? title : undefined}
-      >
-        {label}
-      </button>
-    );
-
-    if (!whatsappConfigured) {
-      return (
-        <Tooltip label={WA_DISABLED_TIP} withArrow multiline maw={280}>
-          <span style={{ display: "inline-flex" }}>{btn}</span>
-        </Tooltip>
-      );
-    }
-    return btn;
-  };
+  ) => (
+    <button
+      type="button"
+      className={className}
+      disabled={disabled}
+      onClick={onClick}
+      title={title}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <>
       {selected.size > 0 && canRemind ? (
         <div className={styles.bulkBar}>
           <span style={{ fontSize: 14, fontWeight: 600 }}>
-            {selected.size} selected
+            {bulkProgress ?? `${selected.size} selected`}
           </span>
           {remindButton(
-            remindDisabled,
+            pending,
             handleBulkReminders,
             <>
               <Bell size={16} strokeWidth={2} />
@@ -251,7 +268,7 @@ export function FeesTable({
               ) : null}
               {canRemind && row.status !== "paid" && row.status !== "waived"
                 ? remindButton(
-                    remindDisabled,
+                    pending,
                     () => handleReminder(row.id),
                     <Bell size={15} strokeWidth={2} />,
                     styles.actionIconBtn,

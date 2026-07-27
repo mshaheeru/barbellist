@@ -146,6 +146,7 @@ CREATE TABLE public.payments (
   covers_to DATE,
   notes TEXT,
   receipt_sent BOOLEAN DEFAULT FALSE,
+  receipt_generated BOOLEAN DEFAULT FALSE, -- true after first PNG receipt download
   recorded_by UUID REFERENCES public.staff(id) ON DELETE SET NULL,
   paid_at TIMESTAMPTZ DEFAULT NOW(),
   created_at TIMESTAMPTZ DEFAULT NOW()

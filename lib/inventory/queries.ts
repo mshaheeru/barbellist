@@ -14,7 +14,12 @@ import {
   previousMonthStart,
   startOfMonthIso,
 } from "@/lib/inventory/format";
+import { searchMembers } from "@/lib/members/search";
 import type { StockStatusFilter } from "@/lib/validations/inventory";
+
+/** Columns matching InventoryItem — keep in sync with lib/types.ts */
+const INVENTORY_ITEM_COLUMNS =
+  "id, gym_id, name, category, description, photo_url, sku, unit_cost, selling_price, stock_qty, low_stock_threshold, is_active, created_at, updated_at";
 
 export type InventoryListParams = {
   search?: string;
@@ -33,7 +38,7 @@ export async function fetchInventoryOverview(
 
   let query = supabase
     .from("inventory_items")
-    .select("*")
+    .select(INVENTORY_ITEM_COLUMNS)
     .eq("gym_id", gymId)
     .eq("is_active", true)
     .order("name");
@@ -131,26 +136,29 @@ export async function searchMembersForSale(
   gymId: string,
   search: string,
 ): Promise<MemberSalePickerItem[]> {
-  let query = supabase
+  const trimmed = search.trim();
+  if (trimmed) {
+    const hits = await searchMembers(supabase, gymId, trimmed, {
+      status: "not_cancelled",
+      includePhone: false,
+    });
+    return hits.map((m) => ({
+      id: m.id,
+      name: m.name,
+      member_code: m.member_code,
+      photo_url: m.photo_url,
+      package_name: m.package_name,
+    }));
+  }
+
+  const { data, error } = await supabase
     .from("members")
-    .select(
-      `
-      id, name, member_code, photo_url,
-      packages(name)
-    `,
-    )
+    .select("id, name, member_code, photo_url, packages(name)")
     .eq("gym_id", gymId)
     .neq("status", "cancelled")
     .order("name")
     .limit(12);
 
-  if (search.trim()) {
-    query = query.or(
-      `name.ilike.%${search.trim()}%,member_code.ilike.%${search.trim()}%`,
-    );
-  }
-
-  const { data, error } = await query;
   if (error) throw new Error(error.message);
 
   return (data ?? []).map((m) => {
@@ -175,7 +183,7 @@ export async function searchInventoryItems(
 ): Promise<InventoryListRow[]> {
   let query = supabase
     .from("inventory_items")
-    .select("*")
+    .select(INVENTORY_ITEM_COLUMNS)
     .eq("gym_id", gymId)
     .eq("is_active", true)
     .gt("stock_qty", 0)

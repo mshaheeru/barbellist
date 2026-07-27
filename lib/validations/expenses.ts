@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paymentMethodSchema } from "@/lib/validations/common";
 
 export const expenseCategorySchema = z.enum([
   "salary",
@@ -11,14 +12,7 @@ export const expenseCategorySchema = z.enum([
   "miscellaneous",
 ]);
 
-export const expensePaymentMethodSchema = z.enum([
-  "cash",
-  "easypaisa",
-  "jazzcash",
-  "bank_transfer",
-  "card",
-  "other",
-]);
+export const expensePaymentMethodSchema = paymentMethodSchema;
 
 export const expenseStatusSchema = z.enum(["paid", "pending", "cancelled"]);
 

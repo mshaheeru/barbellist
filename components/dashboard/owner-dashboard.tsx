@@ -25,27 +25,28 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Stack, Tooltip } from "@mantine/core";
+import { Stack } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import {
-  sendBulkReminders,
-  sendFeeReminder,
+  prepareBulkReminderDeeplinks,
+  prepareFeeReminderDeeplink,
 } from "@/app/actions/whatsapp";
 import { canRecordPayment } from "@/lib/auth/permissions";
 import type { DashboardData } from "@/lib/dashboard/types";
 import { formatCurrency } from "@/lib/members/format";
+import { openWaMeUrl } from "@/lib/whatsapp/deeplink";
 import { useGym } from "@/components/gym-provider";
 import { DashboardTopBar } from "@/components/dashboard/top-bar";
 import { RecordPaymentModal } from "@/components/modals/record-payment-modal";
 import styles from "./dashboard.module.css";
 
-const WA_DISABLED_TIP =
-  "WhatsApp is not configured. Add WHATSAPP_API_TOKEN and WHATSAPP_PHONE_NUMBER_ID to enable reminders.";
-
 type OwnerDashboardProps = {
   data: DashboardData;
-  whatsappConfigured?: boolean;
 };
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function formatTrend(
   percent: number | null,
@@ -185,11 +186,11 @@ function Avatar({
 
 export function OwnerDashboard({
   data,
-  whatsappConfigured = false,
 }: OwnerDashboardProps) {
   const router = useRouter();
   const { role } = useGym();
   const [pending, startTransition] = useTransition();
+  const [bulkProgress, setBulkProgress] = useState<string | null>(null);
   const [renewMemberId, setRenewMemberId] = useState<string | null>(null);
   const { visibility, kpis, chart, expenseBreakdown, feeAlerts, atRisk, expiring } =
     data;
@@ -210,31 +211,32 @@ export function OwnerDashboard({
   );
 
   const handleRemind = (feeDueId: string) => {
-    if (!whatsappConfigured) return;
     startTransition(async () => {
-      const { error } = await sendFeeReminder(feeDueId);
-      if (error) {
+      const { data: result, error } =
+        await prepareFeeReminderDeeplink(feeDueId);
+      if (error || !result) {
         notifications.show({
           color: "red",
           title: "Reminder failed",
-          message: error,
+          message: error ?? "Could not prepare reminder",
         });
-      } else {
-        notifications.show({
-          color: "green",
-          title: "Reminder sent",
-          message: "WhatsApp fee reminder was sent successfully.",
-        });
-        router.refresh();
+        return;
       }
+      openWaMeUrl(result.url);
+      notifications.show({
+        color: "green",
+        message: `WhatsApp opened with reminder for ${result.memberName}`,
+      });
+      router.refresh();
     });
   };
 
   const handleSendAllOverdue = () => {
-    if (!whatsappConfigured) return;
     startTransition(async () => {
-      const result = await sendBulkReminders("overdue");
+      setBulkProgress("Preparing…");
+      const result = await prepareBulkReminderDeeplinks("overdue");
       if (result.error) {
+        setBulkProgress(null);
         notifications.show({
           color: "red",
           title: "Bulk send failed",
@@ -242,58 +244,50 @@ export function OwnerDashboard({
         });
         return;
       }
+
+      const items = result.data;
+      for (let i = 0; i < items.length; i++) {
+        setBulkProgress(`Sending ${i + 1} of ${items.length}…`);
+        openWaMeUrl(items[i]!.url);
+        if (i < items.length - 1) await sleep(1000);
+      }
+
+      setBulkProgress(null);
       notifications.show({
         color: "green",
-        title: "Overdue reminders sent",
-        message: `${result.sent} sent, ${result.failed} failed, ${result.skipped_no_whatsapp} skipped.`,
+        title: "Reminders opened",
+        message: `${items.length} WhatsApp chat(s) opened${
+          result.skipped_no_whatsapp
+            ? `, ${result.skipped_no_whatsapp} skipped`
+            : ""
+        }.`,
       });
       router.refresh();
     });
   };
 
-  const remindBtn = (feeDueId: string, disabled: boolean) => {
-    const btn = (
-      <button
-        type="button"
-        className={styles.btnRemind}
-        disabled={disabled}
-        onClick={() => handleRemind(feeDueId)}
-      >
-        <MessageCircle size={15} strokeWidth={2} />
-        Remind
-      </button>
-    );
+  const remindBtn = (feeDueId: string, disabled: boolean) => (
+    <button
+      type="button"
+      className={styles.btnRemind}
+      disabled={disabled}
+      onClick={() => handleRemind(feeDueId)}
+    >
+      <MessageCircle size={15} strokeWidth={2} />
+      Remind
+    </button>
+  );
 
-    if (!whatsappConfigured) {
-      return (
-        <Tooltip label={WA_DISABLED_TIP} withArrow multiline maw={280}>
-          <span style={{ display: "inline-flex" }}>{btn}</span>
-        </Tooltip>
-      );
-    }
-    return btn;
-  };
-
-  const sendAllBtn = (() => {
-    const btn = (
-      <button
-        type="button"
-        className={styles.btnSendAll}
-        disabled={pending || !whatsappConfigured || feeAlerts.length === 0}
-        onClick={handleSendAllOverdue}
-      >
-        Send All Overdue Reminders
-      </button>
-    );
-    if (!whatsappConfigured) {
-      return (
-        <Tooltip label={WA_DISABLED_TIP} withArrow multiline maw={280}>
-          <span style={{ display: "inline-flex" }}>{btn}</span>
-        </Tooltip>
-      );
-    }
-    return btn;
-  })();
+  const sendAllBtn = (
+    <button
+      type="button"
+      className={styles.btnSendAll}
+      disabled={pending || feeAlerts.length === 0}
+      onClick={handleSendAllOverdue}
+    >
+      {bulkProgress ?? "Send All Overdue Reminders"}
+    </button>
+  );
 
   const kpiCount =
     Number(visibility.showMembers) +

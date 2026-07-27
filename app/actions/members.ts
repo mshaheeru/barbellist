@@ -1,8 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { getActionContext } from "@/lib/auth/get-action-context";
 import {
+  fetchFilterCounts,
   fetchMemberById,
   fetchMembersList,
   type MembersListParams,
@@ -24,6 +25,7 @@ import {
   type UpdateMemberInput,
 } from "@/lib/validations/members";
 import type { MemberProfile, MembersListResult, Package } from "@/lib/types";
+import { PACKAGE_COLUMNS } from "@/lib/packages/queries";
 import { signMemberQrToken } from "@/lib/qr/sign-member-token";
 import {
   sendPaymentReceipt,
@@ -31,32 +33,14 @@ import {
 } from "@/app/actions/whatsapp";
 import { isWhatsAppConfigured } from "@/lib/whatsapp/cloud";
 
-async function getAuthenticatedContext(): Promise<{
-  gymId: string;
-  userId: string;
-} | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const gymId = user?.user_metadata?.gym_id as string | undefined;
-  if (!gymId || !user) return null;
-  return { gymId, userId: user.id };
-}
-
-async function getAuthenticatedGymId(): Promise<string | null> {
-  const ctx = await getAuthenticatedContext();
-  return ctx?.gymId ?? null;
-}
-
 export async function getMembersList(
   params: MembersListParams = {},
 ): Promise<{ data: MembersListResult | null; error: string | null }> {
   try {
-    const gymId = await getAuthenticatedGymId();
-    if (!gymId) return { data: null, error: "Not authenticated" };
+    const ctx = await getActionContext();
+    if (!ctx) return { data: null, error: "Not authenticated" };
+    const { gymId, supabase } = ctx;
 
-    const supabase = await createClient();
     const result = await fetchMembersList(supabase, gymId, params);
     return { data: result, error: null };
   } catch (e) {
@@ -67,14 +51,33 @@ export async function getMembersList(
   }
 }
 
+export async function getMembersFilterCounts(): Promise<{
+  data: MembersListResult["meta"]["counts"] | null;
+  error: string | null;
+}> {
+  try {
+    const ctx = await getActionContext();
+    if (!ctx) return { data: null, error: "Not authenticated" };
+    const { gymId, supabase } = ctx;
+
+    const counts = await fetchFilterCounts(supabase, gymId);
+    return { data: counts, error: null };
+  } catch (e) {
+    return {
+      data: null,
+      error: e instanceof Error ? e.message : "Failed to load member counts",
+    };
+  }
+}
+
 export async function getMemberById(
   id: string,
 ): Promise<{ data: MemberProfile | null; error: string | null }> {
   try {
-    const gymId = await getAuthenticatedGymId();
-    if (!gymId) return { data: null, error: "Not authenticated" };
+    const ctx = await getActionContext();
+    if (!ctx) return { data: null, error: "Not authenticated" };
+    const { gymId, supabase } = ctx;
 
-    const supabase = await createClient();
     const member = await fetchMemberById(supabase, gymId, id);
     return { data: member, error: null };
   } catch (e) {
@@ -94,10 +97,10 @@ export async function updateMember(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const gymId = await getAuthenticatedGymId();
-  if (!gymId) return { error: "Not authenticated" };
+  const ctx = await getActionContext();
+  if (!ctx) return { error: "Not authenticated" };
+  const { gymId, supabase } = ctx;
 
-  const supabase = await createClient();
   const payload = { ...parsed.data };
   if (payload.email === "") payload.email = null;
 
@@ -117,10 +120,10 @@ export async function updateMember(
 export async function deleteMember(
   id: string,
 ): Promise<{ error: string | null }> {
-  const gymId = await getAuthenticatedGymId();
-  if (!gymId) return { error: "Not authenticated" };
+  const ctx = await getActionContext();
+  if (!ctx) return { error: "Not authenticated" };
+  const { gymId, supabase } = ctx;
 
-  const supabase = await createClient();
   const { error } = await supabase
     .from("members")
     .update({ status: "cancelled" })
@@ -142,10 +145,10 @@ export async function freezeMember(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const gymId = await getAuthenticatedGymId();
-  if (!gymId) return { error: "Not authenticated" };
+  const ctx = await getActionContext();
+  if (!ctx) return { error: "Not authenticated" };
+  const { gymId, supabase } = ctx;
 
-  const supabase = await createClient();
   const { error } = await supabase
     .from("members")
     .update({
@@ -167,10 +170,10 @@ export async function freezeMember(
 export async function unfreezeMember(
   id: string,
 ): Promise<{ error: string | null }> {
-  const gymId = await getAuthenticatedGymId();
-  if (!gymId) return { error: "Not authenticated" };
+  const ctx = await getActionContext();
+  if (!ctx) return { error: "Not authenticated" };
+  const { gymId, supabase } = ctx;
 
-  const supabase = await createClient();
   const { error } = await supabase
     .from("members")
     .update({
@@ -193,10 +196,10 @@ export async function updateMemberNotes(
   id: string,
   notes: MemberNote[],
 ): Promise<{ error: string | null }> {
-  const gymId = await getAuthenticatedGymId();
-  if (!gymId) return { error: "Not authenticated" };
+  const ctx = await getActionContext();
+  if (!ctx) return { error: "Not authenticated" };
+  const { gymId, supabase } = ctx;
 
-  const supabase = await createClient();
   const { error } = await supabase
     .from("members")
     .update({ notes: serializeMemberNotes(notes) })
@@ -264,13 +267,13 @@ export async function getPackagesForGym(): Promise<{
   error: string | null;
 }> {
   try {
-    const gymId = await getAuthenticatedGymId();
-    if (!gymId) return { data: null, error: "Not authenticated" };
+    const ctx = await getActionContext();
+    if (!ctx) return { data: null, error: "Not authenticated" };
+    const { gymId, supabase } = ctx;
 
-    const supabase = await createClient();
     const { data, error } = await supabase
       .from("packages")
-      .select("*")
+      .select(PACKAGE_COLUMNS)
       .eq("gym_id", gymId)
       .eq("is_active", true)
       .order("sort_order", { ascending: true });
@@ -308,16 +311,16 @@ export async function createMemberWithPayment(
     };
   }
 
-  const ctx = await getAuthenticatedContext();
+  const ctx = await getActionContext();
   if (!ctx) return { memberId: null, error: "Not authenticated" };
+  const { gymId, supabase, userId } = ctx;
 
-  const supabase = await createClient();
   const data = parsed.data;
 
   const { data: pkg, error: pkgError } = await supabase
     .from("packages")
     .select("id, price, duration_days, name")
-    .eq("gym_id", ctx.gymId)
+    .eq("gym_id", gymId)
     .eq("id", data.package_id)
     .maybeSingle();
 
@@ -339,7 +342,7 @@ export async function createMemberWithPayment(
   const { data: member, error: memberError } = await supabase
     .from("members")
     .insert({
-      gym_id: ctx.gymId,
+      gym_id: gymId,
       name: data.name,
       phone: data.phone,
       whatsapp: data.whatsapp || null,
@@ -370,9 +373,13 @@ export async function createMemberWithPayment(
 
   let qrToken: string;
   try {
-    qrToken = await signMemberQrToken(member.id, ctx.gymId);
+    qrToken = await signMemberQrToken(member.id, gymId);
   } catch (e) {
-    await supabase.from("members").delete().eq("id", member.id);
+    await supabase
+      .from("members")
+      .delete()
+      .eq("id", member.id)
+      .eq("gym_id", gymId);
     return {
       memberId: null,
       error: e instanceof Error ? e.message : "Failed to sign QR token",
@@ -386,7 +393,7 @@ export async function createMemberWithPayment(
       card_issued_at: new Date().toISOString(),
     })
     .eq("id", member.id)
-    .eq("gym_id", ctx.gymId);
+    .eq("gym_id", gymId);
 
   if (qrUpdateError) {
     return { memberId: null, error: qrUpdateError.message };
@@ -395,7 +402,8 @@ export async function createMemberWithPayment(
   const { data: staffRow } = await supabase
     .from("staff")
     .select("id")
-    .eq("auth_user_id", ctx.userId)
+    .eq("gym_id", gymId)
+    .eq("auth_user_id", userId)
     .maybeSingle();
 
   const feeStatus =
@@ -404,7 +412,7 @@ export async function createMemberWithPayment(
   const { data: payment, error: paymentError } = await supabase
     .from("payments")
     .insert({
-      gym_id: ctx.gymId,
+      gym_id: gymId,
       member_id: member.id,
       amount: data.amount,
       payment_type: "membership",
@@ -427,7 +435,7 @@ export async function createMemberWithPayment(
   }
 
   const { error: feeDueError } = await supabase.from("fee_dues").insert({
-    gym_id: ctx.gymId,
+    gym_id: gymId,
     member_id: member.id,
     amount_due: packagePrice,
     amount_paid: data.amount,
@@ -442,11 +450,15 @@ export async function createMemberWithPayment(
 
   // Best-effort WhatsApp — onboarding succeeds even if send fails / unconfigured
   if (isWhatsAppConfigured()) {
+    const whatsappTasks: Promise<unknown>[] = [];
     if (data.send_whatsapp_receipt && (data.whatsapp || data.phone)) {
-      await sendPaymentReceipt(payment.id);
+      whatsappTasks.push(sendPaymentReceipt(payment.id));
     }
     if (data.whatsapp || data.phone) {
-      await sendWelcomeNewMember(member.id);
+      whatsappTasks.push(sendWelcomeNewMember(member.id));
+    }
+    if (whatsappTasks.length > 0) {
+      await Promise.all(whatsappTasks);
     }
   }
 

@@ -15,14 +15,13 @@ import {
   formatLongDateInTimezone,
   getGymTimezone,
 } from "@/lib/attendance/timezone";
+import { getActionContext } from "@/lib/auth/get-action-context";
 import { canCheckIn, canCheckInSelf } from "@/lib/auth/permissions";
 import { QrTokenError, verifyMemberQrToken } from "@/lib/qr/verify-member-token";
-import { createClient } from "@/lib/supabase/server";
 import type {
   AttendanceFeedPayload,
   CheckInResult,
   LiveGymCounts,
-  StaffRole,
 } from "@/lib/types";
 import {
   attendanceFeedFilterSchema,
@@ -32,40 +31,11 @@ import {
   kioskSearchSchema,
 } from "@/lib/validations/attendance";
 
-async function getAuthenticatedContext(): Promise<{
-  gymId: string;
-  userId: string;
-  role: StaffRole | null;
-  staffId: string | null;
-} | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const gymId = user?.user_metadata?.gym_id as string | undefined;
-  if (!gymId || !user) return null;
-
-  const role = (user.user_metadata?.role as StaffRole | undefined) ?? null;
-
-  const { data: staffRow } = await supabase
-    .from("staff")
-    .select("id")
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
-
-  return {
-    gymId,
-    userId: user.id,
-    role,
-    staffId: staffRow?.id ?? null,
-  };
-}
-
 export async function getAttendanceFeedPage(
   raw: { date_range?: string; person_filter?: string } = {},
 ): Promise<{ data: AttendanceFeedPayload | null; error: string | null }> {
   try {
-    const ctx = await getAuthenticatedContext();
+    const ctx = await getActionContext({ includeStaff: true });
     if (!ctx) return { data: null, error: "Not authenticated" };
 
     const parsed = attendanceFeedFilterSchema.safeParse({
@@ -76,7 +46,7 @@ export async function getAttendanceFeedPage(
       ? parsed.data
       : { date_range: "today" as const, person_filter: "all" as const };
 
-    const supabase = await createClient();
+    const { supabase } = ctx;
 
     const { data: gymRow } = await supabase
       .from("gyms")
@@ -120,11 +90,10 @@ export async function getLiveGymCounts(): Promise<{
   error: string | null;
 }> {
   try {
-    const ctx = await getAuthenticatedContext();
+    const ctx = await getActionContext({ includeStaff: true });
     if (!ctx) return { data: null, error: "Not authenticated" };
 
-    const supabase = await createClient();
-    const data = await fetchLiveGymCounts(supabase, ctx.gymId);
+    const data = await fetchLiveGymCounts(ctx.supabase, ctx.gymId);
     return { data, error: null };
   } catch (e) {
     return {
@@ -138,11 +107,10 @@ export async function getAttendanceFeedItem(
   id: string,
 ): Promise<{ data: import("@/lib/types").AttendanceFeedItem | null; error: string | null }> {
   try {
-    const ctx = await getAuthenticatedContext();
+    const ctx = await getActionContext({ includeStaff: true });
     if (!ctx) return { data: null, error: "Not authenticated" };
 
-    const supabase = await createClient();
-    const data = await fetchAttendanceFeedItemById(supabase, ctx.gymId, id);
+    const data = await fetchAttendanceFeedItemById(ctx.supabase, ctx.gymId, id);
     return { data, error: null };
   } catch (e) {
     return {
@@ -157,7 +125,7 @@ export async function checkInMember(raw: {
   method: "qr" | "fingerprint" | "manual";
 }): Promise<{ data: CheckInResult | null; error: string | null }> {
   try {
-    const ctx = await getAuthenticatedContext();
+    const ctx = await getActionContext({ includeStaff: true });
     if (!ctx) return { data: null, error: "Not authenticated" };
     if (!canCheckIn(ctx.role)) {
       return { data: null, error: "You do not have permission to check in members" };
@@ -168,16 +136,15 @@ export async function checkInMember(raw: {
       return { data: null, error: "Invalid check-in request" };
     }
 
-    const supabase = await createClient();
     const { result, deduped } = await performMemberCheckIn(
-      supabase,
+      ctx.supabase,
       ctx.gymId,
       parsed.data.member_id,
       parsed.data.method,
     );
 
     if (!deduped) {
-      await logAuditAction(supabase, {
+      await logAuditAction(ctx.supabase, {
         gymId: ctx.gymId,
         actorStaffId: ctx.staffId,
         action: "member_check_in",
@@ -206,7 +173,7 @@ export async function checkInStaff(raw: {
   method: "qr" | "fingerprint" | "manual";
 }): Promise<{ data: { id: string } | null; error: string | null }> {
   try {
-    const ctx = await getAuthenticatedContext();
+    const ctx = await getActionContext({ includeStaff: true });
     if (!ctx) return { data: null, error: "Not authenticated" };
 
     const isSelf = ctx.staffId === raw.staff_id;
@@ -221,15 +188,14 @@ export async function checkInStaff(raw: {
       return { data: null, error: "Invalid check-in request" };
     }
 
-    const supabase = await createClient();
     const attendance = await performStaffCheckIn(
-      supabase,
+      ctx.supabase,
       ctx.gymId,
       parsed.data.staff_id,
       parsed.data.method,
     );
 
-    await logAuditAction(supabase, {
+    await logAuditAction(ctx.supabase, {
       gymId: ctx.gymId,
       actorStaffId: ctx.staffId,
       action: "staff_check_in",
@@ -252,7 +218,7 @@ export async function checkInByQrToken(raw: {
   token: string;
 }): Promise<{ data: CheckInResult | null; error: string | null }> {
   try {
-    const ctx = await getAuthenticatedContext();
+    const ctx = await getActionContext({ includeStaff: true });
     if (!ctx) return { data: null, error: "Not authenticated" };
     if (!canCheckIn(ctx.role)) {
       return { data: null, error: "You do not have permission to check in members" };
@@ -276,8 +242,7 @@ export async function checkInByQrToken(raw: {
       return { data: null, error: "This card belongs to another gym" };
     }
 
-    const supabase = await createClient();
-    const { data: member } = await supabase
+    const { data: member } = await ctx.supabase
       .from("members")
       .select("id, card_qr_token")
       .eq("gym_id", ctx.gymId)
@@ -311,7 +276,7 @@ export async function searchMembersForKiosk(raw: {
   error: string | null;
 }> {
   try {
-    const ctx = await getAuthenticatedContext();
+    const ctx = await getActionContext({ includeStaff: true });
     if (!ctx) return { data: null, error: "Not authenticated" };
     if (!canCheckIn(ctx.role)) {
       return { data: null, error: "You do not have permission to check in members" };
@@ -322,9 +287,8 @@ export async function searchMembersForKiosk(raw: {
       return { data: [], error: null };
     }
 
-    const supabase = await createClient();
     const data = await searchMembersForCheckIn(
-      supabase,
+      ctx.supabase,
       ctx.gymId,
       parsed.data.query,
     );

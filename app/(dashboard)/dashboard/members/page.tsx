@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getMembersList } from "@/app/actions/members";
+import { getMembersFilterCounts } from "@/app/actions/members";
 import {
   MembersList,
   MembersPageHeader,
@@ -20,9 +20,9 @@ type PageProps = {
 };
 
 async function HeaderWithCounts() {
-  const { data } = await getMembersList({ filter: "all" });
+  const { data } = await getMembersFilterCounts();
   return (
-    <MembersPageHeader counts={data?.meta.counts} />
+    <MembersPageHeader counts={data ?? undefined} />
   );
 }
 

@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { getActionContext } from "@/lib/auth/get-action-context";
 import { canSendReminder } from "@/lib/auth/permissions";
 import { fetchFeeDueForReminder } from "@/lib/fees/queries";
-import { formatCurrency, formatShortDate } from "@/lib/members/format";
-import { createClient } from "@/lib/supabase/server";
-import type { StaffRole } from "@/lib/types";
+import { formatAmountOnly, formatCurrency, formatShortDate } from "@/lib/members/format";
 import {
   buildTemplateMessageBody,
   isWhatsAppConfigured,
@@ -14,39 +14,15 @@ import {
   type WhatsAppTemplateName,
 } from "@/lib/whatsapp/cloud";
 import {
+  buildWaMeUrl,
+  fillTemplate,
+  WHATSAPP_MESSAGE_TEMPLATES,
+} from "@/lib/whatsapp/deeplink";
+import {
   DEFAULT_REMINDER_SCHEDULE,
   type BulkReminderFilter,
   type ReminderScheduleSettings,
 } from "@/lib/whatsapp/schedule";
-
-async function getAuthenticatedContext(): Promise<{
-  gymId: string;
-  userId: string;
-  role: StaffRole | null;
-  staffId: string | null;
-} | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const gymId = user?.user_metadata?.gym_id as string | undefined;
-  if (!gymId || !user) return null;
-
-  const role = (user.user_metadata?.role as StaffRole | undefined) ?? null;
-
-  const { data: staffRow } = await supabase
-    .from("staff")
-    .select("id")
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
-
-  return {
-    gymId,
-    userId: user.id,
-    role,
-    staffId: staffRow?.id ?? null,
-  };
-}
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -85,29 +61,31 @@ function unwrapMember(
   };
 }
 
-async function getGymName(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+async function getGymNameAndCurrency(
+  supabase: SupabaseClient,
   gymId: string,
-): Promise<string> {
+): Promise<{ name: string; currency: string }> {
   const { data } = await supabase
     .from("gyms")
     .select("name, currency_symbol")
     .eq("id", gymId)
     .maybeSingle();
-  return data?.name ?? "Your Gym";
+  return {
+    name: data?.name ?? "Your Gym",
+    currency: data?.currency_symbol ?? "Rs.",
+  };
 }
 
-async function getGymCurrency(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  gymId: string,
-): Promise<string> {
-  const { data } = await supabase
-    .from("gyms")
-    .select("currency_symbol")
-    .eq("id", gymId)
-    .maybeSingle();
-  return data?.currency_symbol ?? "Rs.";
-}
+export type DeeplinkResult = {
+  data: { url: string; memberName: string } | null;
+  error: string | null;
+};
+
+export type BulkDeeplinkItem = {
+  feeDueId: string;
+  url: string;
+  memberName: string;
+};
 
 export async function getWhatsAppStatus(): Promise<{ configured: boolean }> {
   return { configured: isWhatsAppConfigured() };
@@ -116,7 +94,7 @@ export async function getWhatsAppStatus(): Promise<{ configured: boolean }> {
 export async function updateReminderSchedule(
   settings: Partial<ReminderScheduleSettings>,
 ): Promise<{ error: string | null }> {
-  const ctx = await getAuthenticatedContext();
+  const ctx = await getActionContext({ includeStaff: true });
   if (!ctx) return { error: "Not authenticated" };
   if (ctx.role !== "owner" && ctx.role !== "manager") {
     return { error: "Only owners and managers can update reminder settings" };
@@ -142,7 +120,7 @@ export async function updateReminderSchedule(
     return { error: "max_per_due must be between 1 and 20" };
   }
 
-  const supabase = await createClient();
+  const { supabase } = ctx;
   const { data: gym } = await supabase
     .from("gyms")
     .select("settings")
@@ -169,10 +147,408 @@ export async function updateReminderSchedule(
   return { error: null };
 }
 
+/** Prepare a wa.me deep link for a fee reminder (no Cloud API). */
+export async function prepareFeeReminderDeeplink(
+  feeDueId: string,
+): Promise<DeeplinkResult> {
+  const ctx = await getActionContext({ includeStaff: true });
+  if (!ctx) return { data: null, error: "Not authenticated" };
+  if (!canSendReminder(ctx.role)) {
+    return {
+      data: null,
+      error: "You do not have permission to send reminders",
+    };
+  }
+
+  const { supabase } = ctx;
+  const due = await fetchFeeDueForReminder(supabase, ctx.gymId, feeDueId);
+  if (!due) return { data: null, error: "Fee due not found" };
+
+  if (due.status === "paid" || due.status === "waived") {
+    return { data: null, error: "This fee does not need a reminder" };
+  }
+
+  const member = unwrapMember(due.members);
+  if (!member) return { data: null, error: "Member not found" };
+
+  const contact = member.whatsapp || member.phone;
+  if (!contact || !normalizeWhatsAppNumber(contact)) {
+    return {
+      data: null,
+      error: `No WhatsApp number on file for ${member.name}. Add it in their profile.`,
+    };
+  }
+
+  const { name: gymName, currency } = await getGymNameAndCurrency(
+    supabase,
+    ctx.gymId,
+  );
+  const balance = Number(due.amount_due) - Number(due.amount_paid ?? 0);
+  const amount = formatAmountOnly(balance);
+  const isOverdue = due.status === "overdue";
+
+  const message = isOverdue
+    ? fillTemplate(WHATSAPP_MESSAGE_TEMPLATES.OVERDUE, {
+        name: member.name,
+        currency: `${currency} `,
+        amount,
+        days: daysOverdue(due.due_date),
+        gym_name: gymName,
+      })
+    : fillTemplate(WHATSAPP_MESSAGE_TEMPLATES.DUE_SOON, {
+        name: member.name,
+        currency: `${currency} `,
+        amount,
+        date: formatShortDate(due.due_date),
+        gym_name: gymName,
+      });
+
+  const url = buildWaMeUrl(contact, message);
+  if (!url) {
+    return {
+      data: null,
+      error: `No WhatsApp number on file for ${member.name}. Add it in their profile.`,
+    };
+  }
+
+  const { error: reminderError } = await supabase.from("reminders").insert({
+    gym_id: ctx.gymId,
+    member_id: due.member_id,
+    fee_due_id: due.id,
+    channel: "whatsapp",
+    template: "manual_deeplink",
+    message_body: message,
+    status: "sent",
+    external_id: null,
+    sent_at: new Date().toISOString(),
+  });
+
+  if (reminderError) return { data: null, error: reminderError.message };
+
+  await supabase
+    .from("fee_dues")
+    .update({
+      last_reminder_sent_at: new Date().toISOString(),
+      reminder_count: (due.reminder_count ?? 0) + 1,
+    })
+    .eq("id", feeDueId)
+    .eq("gym_id", ctx.gymId);
+
+  revalidatePath("/dashboard/fees");
+  revalidatePath(`/dashboard/members/${due.member_id}`);
+  revalidatePath("/dashboard");
+
+  return { data: { url, memberName: member.name }, error: null };
+}
+
+/** Prepare a wa.me deep link for a payment receipt (no Cloud API). */
+export async function preparePaymentReceiptDeeplink(
+  paymentId: string,
+): Promise<DeeplinkResult> {
+  const ctx = await getActionContext({ includeStaff: true });
+  if (!ctx) return { data: null, error: "Not authenticated" };
+  if (!canSendReminder(ctx.role)) {
+    return {
+      data: null,
+      error: "You do not have permission to send receipts",
+    };
+  }
+
+  const { supabase } = ctx;
+  const { data: payment, error: payError } = await supabase
+    .from("payments")
+    .select(
+      `
+      id, member_id, amount, covers_from, covers_to, receipt_sent,
+      members!inner(name, whatsapp, phone, membership_end)
+    `,
+    )
+    .eq("gym_id", ctx.gymId)
+    .eq("id", paymentId)
+    .maybeSingle();
+
+  if (payError) return { data: null, error: payError.message };
+  if (!payment) return { data: null, error: "Payment not found" };
+
+  const member = unwrapMember(payment.members);
+  if (!member) return { data: null, error: "Member not found" };
+
+  const memberJoined = payment.members;
+  const memberRaw = Array.isArray(memberJoined)
+    ? memberJoined[0]
+    : memberJoined;
+  const membershipEnd =
+    memberRaw && typeof memberRaw === "object"
+      ? ((memberRaw as { membership_end?: string | null }).membership_end ??
+        null)
+      : null;
+
+  const contact = member.whatsapp || member.phone;
+  if (!contact || !normalizeWhatsAppNumber(contact)) {
+    return {
+      data: null,
+      error: `No WhatsApp number on file for ${member.name}. Add it in their profile.`,
+    };
+  }
+
+  const { name: gymName, currency } = await getGymNameAndCurrency(
+    supabase,
+    ctx.gymId,
+  );
+  const amount = formatAmountOnly(Number(payment.amount));
+
+  const period =
+    payment.covers_from && payment.covers_to
+      ? `${formatShortDate(payment.covers_from)} – ${formatShortDate(payment.covers_to)}`
+      : "membership";
+
+  const expiry = formatShortDate(
+    payment.covers_to ?? membershipEnd ?? payment.covers_from,
+  );
+
+  const message = fillTemplate(WHATSAPP_MESSAGE_TEMPLATES.RECEIPT, {
+    name: member.name,
+    currency: `${currency} `,
+    amount,
+    period,
+    expiry,
+    gym_name: gymName,
+  });
+
+  const url = buildWaMeUrl(contact, message);
+  if (!url) {
+    return {
+      data: null,
+      error: `No WhatsApp number on file for ${member.name}. Add it in their profile.`,
+    };
+  }
+
+  const { error: reminderError } = await supabase.from("reminders").insert({
+    gym_id: ctx.gymId,
+    member_id: payment.member_id,
+    fee_due_id: null,
+    channel: "whatsapp",
+    template: "manual_deeplink",
+    message_body: message,
+    status: "sent",
+    external_id: null,
+    sent_at: new Date().toISOString(),
+  });
+
+  if (reminderError) return { data: null, error: reminderError.message };
+
+  await supabase
+    .from("payments")
+    .update({ receipt_sent: true })
+    .eq("id", paymentId)
+    .eq("gym_id", ctx.gymId);
+
+  revalidatePath("/dashboard/fees");
+  revalidatePath(`/dashboard/members/${payment.member_id}`);
+
+  return { data: { url, memberName: member.name }, error: null };
+}
+
+/** Resolve fee due IDs and prepare wa.me links for each (client opens with delay). */
+export async function prepareBulkReminderDeeplinks(
+  filter: BulkReminderFilter,
+): Promise<{
+  data: BulkDeeplinkItem[];
+  skipped_no_whatsapp: number;
+  error: string | null;
+}> {
+  const empty = {
+    data: [] as BulkDeeplinkItem[],
+    skipped_no_whatsapp: 0,
+    error: null as string | null,
+  };
+
+  const ctx = await getActionContext({ includeStaff: true });
+  if (!ctx) {
+    return { ...empty, error: "Not authenticated" };
+  }
+  if (!canSendReminder(ctx.role)) {
+    return {
+      ...empty,
+      error: "You do not have permission to send reminders",
+    };
+  }
+
+  const { supabase } = ctx;
+  let feeDueIds: string[] = [];
+
+  if (typeof filter === "object" && "ids" in filter) {
+    feeDueIds = filter.ids;
+  } else if (filter === "overdue") {
+    const { data, error } = await supabase
+      .from("fee_dues")
+      .select("id")
+      .eq("gym_id", ctx.gymId)
+      .eq("status", "overdue");
+    if (error) return { ...empty, error: error.message };
+    feeDueIds = (data ?? []).map((r) => r.id);
+  } else {
+    const { data: gym } = await supabase
+      .from("gyms")
+      .select("settings")
+      .eq("id", ctx.gymId)
+      .maybeSingle();
+
+    const settingsRaw =
+      gym?.settings &&
+      typeof gym.settings === "object" &&
+      !Array.isArray(gym.settings)
+        ? (gym.settings as Record<string, unknown>).reminders
+        : null;
+    const daysBefore =
+      settingsRaw &&
+      typeof settingsRaw === "object" &&
+      !Array.isArray(settingsRaw) &&
+      typeof (settingsRaw as ReminderScheduleSettings).days_before_due ===
+        "number"
+        ? (settingsRaw as ReminderScheduleSettings).days_before_due
+        : DEFAULT_REMINDER_SCHEDULE.days_before_due;
+
+    const today = new Date();
+    const until = new Date(today);
+    until.setDate(until.getDate() + daysBefore);
+    const todayStr = today.toISOString().slice(0, 10);
+    const untilStr = until.toISOString().slice(0, 10);
+
+    const { data, error } = await supabase
+      .from("fee_dues")
+      .select("id")
+      .eq("gym_id", ctx.gymId)
+      .in("status", ["pending", "partial"])
+      .gte("due_date", todayStr)
+      .lte("due_date", untilStr);
+
+    if (error) return { ...empty, error: error.message };
+    feeDueIds = (data ?? []).map((r) => r.id);
+  }
+
+  if (feeDueIds.length === 0) {
+    return empty;
+  }
+
+  const [{ name: gymName, currency }, duesResult] = await Promise.all([
+    getGymNameAndCurrency(supabase, ctx.gymId),
+    supabase
+      .from("fee_dues")
+      .select(
+        `
+        id, member_id, amount_due, amount_paid, due_date, status, reminder_count,
+        members!inner(name, whatsapp, phone)
+      `,
+      )
+      .eq("gym_id", ctx.gymId)
+      .in("id", feeDueIds)
+      .not("status", "in", '("paid","waived")'),
+  ]);
+
+  if (duesResult.error) {
+    return { ...empty, error: duesResult.error.message };
+  }
+
+  const items: BulkDeeplinkItem[] = [];
+  let skipped_no_whatsapp = 0;
+  const reminderRows: Array<Record<string, unknown>> = [];
+  const dueUpdates: Array<{ id: string; reminder_count: number }> = [];
+  const sentAt = new Date().toISOString();
+
+  for (const due of duesResult.data ?? []) {
+    const member = unwrapMember(due.members);
+    if (!member) continue;
+
+    const contact = member.whatsapp || member.phone;
+    if (!contact || !normalizeWhatsAppNumber(contact)) {
+      skipped_no_whatsapp += 1;
+      continue;
+    }
+
+    const balance = Number(due.amount_due) - Number(due.amount_paid ?? 0);
+    const amount = formatAmountOnly(balance);
+    const isOverdue = due.status === "overdue";
+
+    const message = isOverdue
+      ? fillTemplate(WHATSAPP_MESSAGE_TEMPLATES.OVERDUE, {
+          name: member.name,
+          currency: `${currency} `,
+          amount,
+          days: daysOverdue(due.due_date),
+          gym_name: gymName,
+        })
+      : fillTemplate(WHATSAPP_MESSAGE_TEMPLATES.DUE_SOON, {
+          name: member.name,
+          currency: `${currency} `,
+          amount,
+          date: formatShortDate(due.due_date),
+          gym_name: gymName,
+        });
+
+    const url = buildWaMeUrl(contact, message);
+    if (!url) {
+      skipped_no_whatsapp += 1;
+      continue;
+    }
+
+    reminderRows.push({
+      gym_id: ctx.gymId,
+      member_id: due.member_id,
+      fee_due_id: due.id,
+      channel: "whatsapp",
+      template: "manual_deeplink",
+      message_body: message,
+      status: "sent",
+      external_id: null,
+      sent_at: sentAt,
+    });
+
+    dueUpdates.push({
+      id: due.id,
+      reminder_count: (due.reminder_count ?? 0) + 1,
+    });
+
+    items.push({
+      feeDueId: due.id,
+      url,
+      memberName: member.name,
+    });
+  }
+
+  if (reminderRows.length > 0) {
+    const { error: reminderError } = await supabase
+      .from("reminders")
+      .insert(reminderRows);
+    if (reminderError) {
+      return { ...empty, error: reminderError.message };
+    }
+
+    await Promise.all(
+      dueUpdates.map((u) =>
+        supabase
+          .from("fee_dues")
+          .update({
+            last_reminder_sent_at: sentAt,
+            reminder_count: u.reminder_count,
+          })
+          .eq("id", u.id)
+          .eq("gym_id", ctx.gymId),
+      ),
+    );
+  }
+
+  revalidatePath("/dashboard/fees");
+  revalidatePath("/dashboard");
+
+  return { data: items, skipped_no_whatsapp, error: null };
+}
+
+/** Cloud API send — used by cron / auto-receipt when credentials exist. */
 export async function sendFeeReminder(
   feeDueId: string,
 ): Promise<{ error: string | null }> {
-  const ctx = await getAuthenticatedContext();
+  const ctx = await getActionContext({ includeStaff: true });
   if (!ctx) return { error: "Not authenticated" };
   if (!canSendReminder(ctx.role)) {
     return { error: "You do not have permission to send reminders" };
@@ -185,7 +561,7 @@ export async function sendFeeReminder(
     };
   }
 
-  const supabase = await createClient();
+  const { supabase } = ctx;
   const due = await fetchFeeDueForReminder(supabase, ctx.gymId, feeDueId);
   if (!due) return { error: "Fee due not found" };
 
@@ -201,8 +577,10 @@ export async function sendFeeReminder(
     return { error: "Member has no WhatsApp or phone number on file" };
   }
 
-  const gymName = await getGymName(supabase, ctx.gymId);
-  const currency = await getGymCurrency(supabase, ctx.gymId);
+  const { name: gymName, currency } = await getGymNameAndCurrency(
+    supabase,
+    ctx.gymId,
+  );
   const balance = Number(due.amount_due) - Number(due.amount_paid ?? 0);
   const amountStr = formatCurrency(balance, currency);
 
@@ -260,7 +638,7 @@ export async function sendFeeReminder(
 export async function sendPaymentReceipt(
   paymentId: string,
 ): Promise<{ error: string | null }> {
-  const ctx = await getAuthenticatedContext();
+  const ctx = await getActionContext({ includeStaff: true });
   if (!ctx) return { error: "Not authenticated" };
   if (!canSendReminder(ctx.role)) {
     return { error: "You do not have permission to send receipts" };
@@ -273,7 +651,7 @@ export async function sendPaymentReceipt(
     };
   }
 
-  const supabase = await createClient();
+  const { supabase } = ctx;
   const { data: payment, error: payError } = await supabase
     .from("payments")
     .select(
@@ -307,8 +685,10 @@ export async function sendPaymentReceipt(
     return { error: "Member has no WhatsApp or phone number on file" };
   }
 
-  const gymName = await getGymName(supabase, ctx.gymId);
-  const currency = await getGymCurrency(supabase, ctx.gymId);
+  const { name: gymName, currency } = await getGymNameAndCurrency(
+    supabase,
+    ctx.gymId,
+  );
   const amountStr = formatCurrency(Number(payment.amount), currency);
 
   const period =
@@ -358,7 +738,7 @@ export async function sendPaymentReceipt(
 export async function sendWelcomeNewMember(
   memberId: string,
 ): Promise<{ error: string | null }> {
-  const ctx = await getAuthenticatedContext();
+  const ctx = await getActionContext({ includeStaff: true });
   if (!ctx) return { error: "Not authenticated" };
 
   if (!isWhatsAppConfigured()) {
@@ -368,7 +748,7 @@ export async function sendWelcomeNewMember(
     };
   }
 
-  const supabase = await createClient();
+  const { supabase } = ctx;
   const { data: member, error } = await supabase
     .from("members")
     .select("id, name, member_code, whatsapp, phone")
@@ -384,7 +764,7 @@ export async function sendWelcomeNewMember(
     return { error: "Member has no WhatsApp or phone number on file" };
   }
 
-  const gymName = await getGymName(supabase, ctx.gymId);
+  const { name: gymName } = await getGymNameAndCurrency(supabase, ctx.gymId);
   const template: WhatsAppTemplateName = "welcome_new_member";
   const params = [gymName, member.name, member.member_code ?? member.id];
   const messageBody = buildTemplateMessageBody(template, params);
@@ -424,7 +804,7 @@ export async function sendBulkReminders(
     error: null as string | null,
   };
 
-  const ctx = await getAuthenticatedContext();
+  const ctx = await getActionContext({ includeStaff: true });
   if (!ctx) {
     return { ...empty, error: "Not authenticated" };
   }
@@ -443,7 +823,7 @@ export async function sendBulkReminders(
     };
   }
 
-  const supabase = await createClient();
+  const { supabase } = ctx;
   let feeDueIds: string[] = [];
 
   if (typeof filter === "object" && "ids" in filter) {

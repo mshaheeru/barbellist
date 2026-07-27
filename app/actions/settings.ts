@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getActionContextWithRole } from "@/lib/auth/get-action-context";
 import {
   canAccessDangerZone,
   canAccessSettings,
@@ -40,26 +40,6 @@ import {
 } from "@/lib/whatsapp/cloud";
 import type { StaffRole } from "@/lib/types";
 
-type AuthContext = {
-  gymId: string;
-  userId: string;
-  role: StaffRole;
-};
-
-async function getAuthContext(): Promise<AuthContext | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const gymId = user.user_metadata?.gym_id as string | undefined;
-  const role = user.user_metadata?.role as StaffRole | undefined;
-  if (!gymId || !role) return null;
-
-  return { gymId, userId: user.id, role };
-}
-
 function revalidateSettings() {
   revalidatePath("/dashboard/settings");
   revalidatePath("/dashboard");
@@ -70,14 +50,13 @@ export async function getSettingsPageData(): Promise<{
   error: string | null;
 }> {
   try {
-    const ctx = await getAuthContext();
+    const ctx = await getActionContextWithRole();
     if (!ctx) return { data: null, error: "Not authenticated" };
     if (!canAccessSettings(ctx.role)) {
       return { data: null, error: "You do not have access to settings" };
     }
 
-    const supabase = await createClient();
-    const data = await fetchSettingsPageData(supabase, ctx.gymId, ctx.role);
+    const data = await fetchSettingsPageData(ctx.supabase, ctx.gymId, ctx.role);
     return { data, error: null };
   } catch (e) {
     return {
@@ -95,15 +74,14 @@ export async function updateGymProfile(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { error: "Not authenticated" };
   if (!canAccessSettings(ctx.role)) {
     return { error: "You do not have permission to update gym profile" };
   }
 
   const data = parsed.data;
-  const supabase = await createClient();
-  const { error } = await supabase
+  const { error } = await ctx.supabase
     .from("gyms")
     .update({
       name: data.name.trim(),
@@ -127,7 +105,7 @@ export async function updateGymProfile(
 export async function uploadGymLogo(
   formData: FormData,
 ): Promise<{ data: { logo_url: string } | null; error: string | null }> {
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { data: null, error: "Not authenticated" };
   if (!canAccessSettings(ctx.role)) {
     return { data: null, error: "You do not have permission to upload a logo" };
@@ -146,10 +124,9 @@ export async function uploadGymLogo(
 
   const ext = file.name.split(".").pop()?.toLowerCase() || "png";
   const path = `${ctx.gymId}/logo.${ext}`;
-  const supabase = await createClient();
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await ctx.supabase.storage
     .from("gym-assets")
     .upload(path, buffer, {
       contentType: file.type,
@@ -162,12 +139,12 @@ export async function uploadGymLogo(
 
   const {
     data: { publicUrl },
-  } = supabase.storage.from("gym-assets").getPublicUrl(path);
+  } = ctx.supabase.storage.from("gym-assets").getPublicUrl(path);
 
   // Cache-bust so clients refresh the image
   const logo_url = `${publicUrl}?t=${Date.now()}`;
 
-  const { error } = await supabase
+  const { error } = await ctx.supabase
     .from("gyms")
     .update({ logo_url })
     .eq("id", ctx.gymId);
@@ -182,7 +159,7 @@ export async function updateGymSettings(
   key: "card_template" | "reminders" | "whatsapp",
   value: unknown,
 ): Promise<{ error: string | null }> {
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { error: "Not authenticated" };
   if (!canAccessSettings(ctx.role)) {
     return { error: "You do not have permission to update settings" };
@@ -200,8 +177,9 @@ export async function updateGymSettings(
     return { error: "Only the owner can update WhatsApp credentials" };
   }
 
-  const supabase = await createClient();
-  const result = await mergeGymSettings(supabase, ctx.gymId, { [key]: value });
+  const result = await mergeGymSettings(ctx.supabase, ctx.gymId, {
+    [key]: value,
+  });
   if (result.error) return result;
 
   revalidateSettings();
@@ -242,14 +220,13 @@ export async function updateWhatsAppCredentials(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { error: "Not authenticated" };
   if (!canEditWhatsAppCredentials(ctx.role)) {
     return { error: "Only the owner can update WhatsApp credentials" };
   }
 
-  const supabase = await createClient();
-  const { data: gym } = await supabase
+  const { data: gym } = await ctx.supabase
     .from("gyms")
     .select("settings")
     .eq("id", ctx.gymId)
@@ -276,7 +253,7 @@ export async function updateWhatsAppCredentials(
       parsed.data.phone_number_id?.trim() || currentWa.phone_number_id || "",
   };
 
-  const result = await mergeGymSettings(supabase, ctx.gymId, {
+  const result = await mergeGymSettings(ctx.supabase, ctx.gymId, {
     whatsapp: next,
   });
   if (result.error) return result;
@@ -288,14 +265,13 @@ export async function updateWhatsAppCredentials(
 export async function testWhatsAppConnection(): Promise<{
   error: string | null;
 }> {
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { error: "Not authenticated" };
   if (!canAccessSettings(ctx.role)) {
     return { error: "You do not have permission to test WhatsApp" };
   }
 
-  const supabase = await createClient();
-  const { data: gym } = await supabase
+  const { data: gym } = await ctx.supabase
     .from("gyms")
     .select("name, whatsapp, settings")
     .eq("id", ctx.gymId)
@@ -316,7 +292,7 @@ export async function testWhatsAppConnection(): Promise<{
     };
   }
 
-  const { data: ownerStaff } = await supabase
+  const { data: ownerStaff } = await ctx.supabase
     .from("staff")
     .select("whatsapp, phone, name")
     .eq("gym_id", ctx.gymId)
@@ -360,7 +336,7 @@ export async function updateStaffRole(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { error: "Not authenticated" };
   if (!canManageStaff(ctx.role)) {
     return { error: "Only owners and managers can change roles" };
@@ -369,8 +345,7 @@ export async function updateStaffRole(
     return { error: "Only the owner can assign the owner role" };
   }
 
-  const supabase = await createClient();
-  const { data: target } = await supabase
+  const { data: target } = await ctx.supabase
     .from("staff")
     .select("id, role, auth_user_id")
     .eq("id", staffId)
@@ -379,7 +354,7 @@ export async function updateStaffRole(
 
   if (!target) return { error: "Staff member not found" };
   if (target.role === "owner" && role !== "owner") {
-    const { count } = await supabase
+    const { count } = await ctx.supabase
       .from("staff")
       .select("id", { count: "exact", head: true })
       .eq("gym_id", ctx.gymId)
@@ -389,7 +364,7 @@ export async function updateStaffRole(
     }
   }
 
-  const { error } = await supabase
+  const { error } = await ctx.supabase
     .from("staff")
     .update({ role })
     .eq("id", staffId)
@@ -433,7 +408,7 @@ export async function inviteStaffMember(
     };
   }
 
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { data: null, error: "Not authenticated" };
   if (!canManageStaff(ctx.role)) {
     return { data: null, error: "Only owners and managers can invite staff" };
@@ -461,8 +436,7 @@ export async function inviteStaffMember(
     }
     authUserId = invited.user.id;
 
-    const supabase = await createClient();
-    const { data: row, error } = await supabase
+    const { data: row, error } = await ctx.supabase
       .from("staff")
       .insert({
         gym_id: ctx.gymId,
@@ -499,14 +473,13 @@ export async function inviteStaffMember(
 export async function removeStaffAccess(
   staffId: string,
 ): Promise<{ error: string | null }> {
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { error: "Not authenticated" };
   if (!canManageStaff(ctx.role)) {
     return { error: "Only owners and managers can remove access" };
   }
 
-  const supabase = await createClient();
-  const { data: target } = await supabase
+  const { data: target } = await ctx.supabase
     .from("staff")
     .select("id, role, auth_user_id, name")
     .eq("id", staffId)
@@ -533,7 +506,7 @@ export async function removeStaffAccess(
     };
   }
 
-  const { error } = await supabase
+  const { error } = await ctx.supabase
     .from("staff")
     .update({ auth_user_id: null })
     .eq("id", staffId)
@@ -550,14 +523,13 @@ export async function exportAllData(): Promise<{
   data: { base64: string; filename: string } | null;
   error: string | null;
 }> {
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { data: null, error: "Not authenticated" };
   if (!canAccessDangerZone(ctx.role)) {
     return { data: null, error: "Only the owner can export data" };
   }
 
-  const supabase = await createClient();
-  const result = await buildGymDataZip(supabase, ctx.gymId);
+  const result = await buildGymDataZip(ctx.supabase, ctx.gymId);
   if ("error" in result) return { data: null, error: result.error };
   return { data: result, error: null };
 }
@@ -570,14 +542,13 @@ export async function deleteGym(
     return { error: "Confirmation name is required" };
   }
 
-  const ctx = await getAuthContext();
+  const ctx = await getActionContextWithRole();
   if (!ctx) return { error: "Not authenticated" };
   if (!canAccessDangerZone(ctx.role)) {
     return { error: "Only the owner can delete the gym" };
   }
 
-  const supabase = await createClient();
-  const { data: gym } = await supabase
+  const { data: gym } = await ctx.supabase
     .from("gyms")
     .select("id, name")
     .eq("id", ctx.gymId)
@@ -588,7 +559,7 @@ export async function deleteGym(
     return { error: "Gym name does not match" };
   }
 
-  const { data: staffRows } = await supabase
+  const { data: staffRows } = await ctx.supabase
     .from("staff")
     .select("auth_user_id")
     .eq("gym_id", ctx.gymId)
@@ -614,6 +585,6 @@ export async function deleteGym(
     };
   }
 
-  await supabase.auth.signOut();
+  await ctx.supabase.auth.signOut();
   redirect("/");
 }

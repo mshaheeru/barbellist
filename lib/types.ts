@@ -196,6 +196,7 @@ export type Payment = {
   covers_to: string | null;
   notes: string | null;
   receipt_sent: boolean;
+  receipt_generated: boolean;
   recorded_by: string | null;
   paid_at: string;
   created_at: string;

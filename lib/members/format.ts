@@ -6,10 +6,15 @@ export function getInitials(name: string | null | undefined) {
 }
 
 export function formatCurrency(amount: number, symbol = "Rs.") {
-  const formatted = new Intl.NumberFormat("en-PK", {
+  const formatted = formatAmountOnly(amount);
+  return `${symbol} ${formatted}`;
+}
+
+/** Numeric amount without currency symbol (WhatsApp templates, etc.). */
+export function formatAmountOnly(amount: number): string {
+  return new Intl.NumberFormat("en-PK", {
     maximumFractionDigits: 0,
   }).format(amount);
-  return `${symbol} ${formatted}`;
 }
 
 export function formatShortDate(iso: string | null | undefined) {
@@ -27,6 +32,38 @@ export function formatMonthYear(iso: string | null | undefined) {
     month: "short",
     year: "numeric",
   }).format(new Date(iso));
+}
+
+/** Period covered for receipts, e.g. "July 2026" or "Jul 2026 – Aug 2026". */
+export function formatReceiptPeriod(
+  coversFrom: string | null | undefined,
+  coversTo: string | null | undefined,
+) {
+  if (!coversFrom && !coversTo) return "Membership";
+
+  const from = coversFrom ? new Date(coversFrom) : null;
+  const to = coversTo ? new Date(coversTo) : null;
+
+  if (from && to) {
+    const sameMonth =
+      from.getUTCFullYear() === to.getUTCFullYear() &&
+      from.getUTCMonth() === to.getUTCMonth();
+    if (sameMonth) {
+      return new Intl.DateTimeFormat("en-GB", {
+        month: "long",
+        year: "numeric",
+        timeZone: "UTC",
+      }).format(from);
+    }
+    return `${formatMonthYear(coversFrom)} – ${formatMonthYear(coversTo)}`;
+  }
+
+  return formatMonthYear(coversFrom ?? coversTo);
+}
+
+export function formatReceiptNumber(paymentId: string) {
+  const short = paymentId.replace(/-/g, "").slice(0, 8).toUpperCase();
+  return `RCP-${short}`;
 }
 
 export function formatTime(iso: string) {

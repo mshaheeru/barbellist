@@ -4,6 +4,7 @@ import type {
   CardMemberSearchResult,
   UnissuedCardMember,
 } from "@/lib/cards/types";
+import { searchMembers } from "@/lib/members/search";
 
 function mapPackage(
   pkg: { id: string; name: string; color: string } | { id: string; name: string; color: string }[] | null,
@@ -56,31 +57,9 @@ export async function searchMembersForCards(
   gymId: string,
   query: string,
 ): Promise<CardMemberSearchResult[]> {
-  const trimmed = query.trim();
-  if (trimmed.length < 1) return [];
-
-  const { data, error } = await supabase
-    .from("members")
-    .select("id, name, photo_url, member_code, packages(name)")
-    .eq("gym_id", gymId)
-    .neq("status", "cancelled")
-    .or(
-      `name.ilike.%${trimmed}%,phone.ilike.%${trimmed}%,member_code.ilike.%${trimmed}%`,
-    )
-    .order("name")
-    .limit(12);
-
-  if (error) throw new Error(error.message);
-
-  return (data ?? []).map((m) => {
-    const pkg = Array.isArray(m.packages) ? m.packages[0] : m.packages;
-    return {
-      id: m.id as string,
-      name: m.name as string,
-      photo_url: m.photo_url as string | null,
-      member_code: m.member_code as string,
-      package_name: (pkg as { name: string } | null)?.name ?? null,
-    };
+  return searchMembers(supabase, gymId, query, {
+    status: "not_cancelled",
+    includePhone: true,
   });
 }
 

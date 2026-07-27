@@ -1,5 +1,6 @@
 "use server";
 
+import { getActionContext } from "@/lib/auth/get-action-context";
 import {
   canManageExpenses,
   getDashboardVisibility,
@@ -13,57 +14,39 @@ import {
   fetchFeeAlerts,
 } from "@/lib/dashboard/queries";
 import type { DashboardData } from "@/lib/dashboard/types";
-import { createClient } from "@/lib/supabase/server";
-import type { StaffRole } from "@/lib/types";
-
-async function getAuthenticatedContext(): Promise<{
-  gymId: string;
-  role: StaffRole | null;
-} | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const gymId = user?.user_metadata?.gym_id as string | undefined;
-  if (!gymId || !user) return null;
-
-  const role = (user.user_metadata?.role as StaffRole | undefined) ?? null;
-  return { gymId, role };
-}
 
 export async function getDashboardData(): Promise<{
   data: DashboardData | null;
   error: string | null;
 }> {
   try {
-    const ctx = await getAuthenticatedContext();
+    const ctx = await getActionContext();
     if (!ctx) return { data: null, error: "Not authenticated" };
 
     const visibility = getDashboardVisibility(ctx.role);
     const includeExpenses = canManageExpenses(ctx.role);
     const includeAttendance = visibility.showAttendanceStats;
-    const supabase = await createClient();
 
     const [kpis, chart, expenseBreakdown, feeAlerts, atRisk, expiring] =
       await Promise.all([
-        fetchDashboardKpis(supabase, ctx.gymId, {
+        fetchDashboardKpis(ctx.supabase, ctx.gymId, {
           includeExpenses,
           includeAttendance,
         }),
         visibility.showChart
-          ? fetchDashboardChart(supabase, ctx.gymId, includeExpenses)
+          ? fetchDashboardChart(ctx.supabase, ctx.gymId, includeExpenses)
           : Promise.resolve([]),
         visibility.showExpenseBreakdown && includeExpenses
-          ? fetchExpenseBreakdown(supabase, ctx.gymId)
+          ? fetchExpenseBreakdown(ctx.supabase, ctx.gymId)
           : Promise.resolve([]),
         visibility.showFeeAlerts
-          ? fetchFeeAlerts(supabase, ctx.gymId, 10)
+          ? fetchFeeAlerts(ctx.supabase, ctx.gymId, 10)
           : Promise.resolve([]),
         visibility.showAtRisk
-          ? fetchAtRiskMembers(supabase, ctx.gymId, 10)
+          ? fetchAtRiskMembers(ctx.supabase, ctx.gymId, 10)
           : Promise.resolve([]),
         visibility.showExpiring
-          ? fetchExpiringMembers(supabase, ctx.gymId)
+          ? fetchExpiringMembers(ctx.supabase, ctx.gymId)
           : Promise.resolve([]),
       ]);
 

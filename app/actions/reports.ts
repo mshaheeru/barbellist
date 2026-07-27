@@ -1,5 +1,6 @@
 "use server";
 
+import { getActionContext } from "@/lib/auth/get-action-context";
 import {
   canViewReports,
   getReportsVisibility,
@@ -17,23 +18,6 @@ import {
   profitTrendMonths,
 } from "@/lib/reports/queries";
 import type { ReportsData, ReportsDateRange } from "@/lib/reports/types";
-import { createClient } from "@/lib/supabase/server";
-import type { StaffRole } from "@/lib/types";
-
-async function getAuthenticatedContext(): Promise<{
-  gymId: string;
-  role: StaffRole | null;
-} | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const gymId = user?.user_metadata?.gym_id as string | undefined;
-  if (!gymId || !user) return null;
-
-  const role = (user.user_metadata?.role as StaffRole | undefined) ?? null;
-  return { gymId, role };
-}
 
 function parseRange(
   from?: string | null,
@@ -57,7 +41,7 @@ export async function getReportsData(
   error: string | null;
 }> {
   try {
-    const ctx = await getAuthenticatedContext();
+    const ctx = await getActionContext();
     if (!ctx) return { data: null, error: "Not authenticated" };
 
     if (!canViewReports(ctx.role)) {
@@ -66,7 +50,6 @@ export async function getReportsData(
 
     const visibility = getReportsVisibility(ctx.role);
     const range = parseRange(from, to);
-    const supabase = await createClient();
     const includeExpenses = visibility.showExpenses;
 
     const [
@@ -77,19 +60,19 @@ export async function getReportsData(
       expenseBreakdown,
       heatmap,
     ] = await Promise.all([
-      fetchReportsKpis(supabase, ctx.gymId, range),
+      fetchReportsKpis(ctx.supabase, ctx.gymId, range),
       visibility.showPackages
-        ? fetchPackageDistribution(supabase, ctx.gymId)
+        ? fetchPackageDistribution(ctx.supabase, ctx.gymId)
         : Promise.resolve({ slices: [], total: 0 }),
       visibility.showPaymentMethods
-        ? fetchPaymentMethodBreakdown(supabase, ctx.gymId, range)
+        ? fetchPaymentMethodBreakdown(ctx.supabase, ctx.gymId, range)
         : Promise.resolve([]),
-      fetchMonthlySeries(supabase, ctx.gymId, range, includeExpenses),
+      fetchMonthlySeries(ctx.supabase, ctx.gymId, range, includeExpenses),
       visibility.showExpenses
-        ? fetchExpenseBreakdownForRange(supabase, ctx.gymId, range)
+        ? fetchExpenseBreakdownForRange(ctx.supabase, ctx.gymId, range)
         : Promise.resolve({ bars: [], total: 0 }),
       visibility.showHeatmap
-        ? fetchAttendanceHeatmap(supabase, ctx.gymId, range)
+        ? fetchAttendanceHeatmap(ctx.supabase, ctx.gymId, range)
         : Promise.resolve({ cells: [], maxCount: 0, peakLabel: null }),
     ]);
 
@@ -166,7 +149,7 @@ export async function exportReportsCsv(
   to?: string | null,
 ): Promise<{ csv: string | null; error: string | null }> {
   try {
-    const ctx = await getAuthenticatedContext();
+    const ctx = await getActionContext();
     if (!ctx) return { csv: null, error: "Not authenticated" };
 
     const visibility = getReportsVisibility(ctx.role);
@@ -175,9 +158,8 @@ export async function exportReportsCsv(
     }
 
     const range = parseRange(from, to);
-    const supabase = await createClient();
     const monthly = await fetchMonthlySeries(
-      supabase,
+      ctx.supabase,
       ctx.gymId,
       range,
       visibility.showExpenses,

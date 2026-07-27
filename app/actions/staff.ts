@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { getActionContextWithStaff } from "@/lib/auth/get-action-context";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   canManageStaff,
@@ -30,42 +31,7 @@ import {
   type RecordSalaryInput,
   type UpdateStaffInput,
 } from "@/lib/validations/staff";
-import type { StaffListResult, StaffProfile, StaffRole } from "@/lib/types";
-
-type AuthContext = {
-  gymId: string;
-  userId: string;
-  role: StaffRole;
-  staffId: string;
-};
-
-async function getStaffAuthContext(): Promise<AuthContext | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const gymId = user.user_metadata?.gym_id as string | undefined;
-  const role = user.user_metadata?.role as StaffRole | undefined;
-  if (!gymId || !role) return null;
-
-  const { data: staffRow } = await supabase
-    .from("staff")
-    .select("id")
-    .eq("gym_id", gymId)
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
-
-  if (!staffRow) return null;
-
-  return {
-    gymId,
-    userId: user.id,
-    role,
-    staffId: staffRow.id,
-  };
-}
+import type { StaffListResult, StaffProfile } from "@/lib/types";
 
 function revalidateStaff(id?: string) {
   revalidatePath("/dashboard/staff");
@@ -76,15 +42,14 @@ export async function getStaffList(
   params: StaffListParams = {},
 ): Promise<{ data: StaffListResult | null; error: string | null }> {
   try {
-    const ctx = await getStaffAuthContext();
+    const ctx = await getActionContextWithStaff();
     if (!ctx) return { data: null, error: "Not authenticated" };
 
     if (!canViewStaffDirectory(ctx.role)) {
       return { data: null, error: "You do not have access to the staff directory" };
     }
 
-    const supabase = await createClient();
-    const result = await fetchStaffList(supabase, ctx.gymId, params, {
+    const result = await fetchStaffList(ctx.supabase, ctx.gymId, params, {
       canViewSalary: canViewSalary(ctx.role),
     });
     return { data: result, error: null };
@@ -100,7 +65,7 @@ export async function getStaffById(
   id: string,
 ): Promise<{ data: StaffProfile | null; error: string | null }> {
   try {
-    const ctx = await getStaffAuthContext();
+    const ctx = await getActionContextWithStaff();
     if (!ctx) return { data: null, error: "Not authenticated" };
 
     const canDirectory = canViewStaffDirectory(ctx.role);
@@ -108,8 +73,7 @@ export async function getStaffById(
       return { data: null, error: "You can only view your own profile" };
     }
 
-    const supabase = await createClient();
-    const profile = await fetchStaffById(supabase, ctx.gymId, id, {
+    const profile = await fetchStaffById(ctx.supabase, ctx.gymId, id, {
       canViewSalary: canViewSalary(ctx.role),
     });
     if (!profile) return { data: null, error: "Staff member not found" };
@@ -130,7 +94,7 @@ export async function createStaff(
     return { data: null, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const ctx = await getStaffAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) return { data: null, error: "Not authenticated" };
   if (!canManageStaff(ctx.role)) {
     return { data: null, error: "Only owners and managers can add staff" };
@@ -167,7 +131,7 @@ export async function createStaff(
       authUserId = authData.user.id;
     }
 
-    const supabase = await createClient();
+    const { supabase } = ctx;
     const joiningDate =
       data.joining_date?.trim() || new Date().toISOString().slice(0, 10);
 
@@ -229,7 +193,7 @@ export async function updateStaff(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const ctx = await getStaffAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) return { error: "Not authenticated" };
   if (!canManageStaff(ctx.role)) {
     return { error: "Only owners and managers can edit staff" };
@@ -249,8 +213,7 @@ export async function updateStaff(
     delete payload.commission_rate;
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase
+  const { error } = await ctx.supabase
     .from("staff")
     .update(payload)
     .eq("gym_id", ctx.gymId)
@@ -265,7 +228,7 @@ export async function updateStaff(
 export async function deactivateStaff(
   id: string,
 ): Promise<{ error: string | null }> {
-  const ctx = await getStaffAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) return { error: "Not authenticated" };
   if (!canManageStaff(ctx.role)) {
     return { error: "Only owners and managers can deactivate staff" };
@@ -275,7 +238,7 @@ export async function deactivateStaff(
     return { error: "You cannot deactivate your own account" };
   }
 
-  const supabase = await createClient();
+  const { supabase } = ctx;
   const { data: target } = await supabase
     .from("staff")
     .select("role")
@@ -337,10 +300,10 @@ export async function recordSalaryPayment(
 }
 
 async function loadNotes(
+  supabase: SupabaseClient,
   gymId: string,
   staffId: string,
 ): Promise<MemberNote[]> {
-  const supabase = await createClient();
   const { data } = await supabase
     .from("staff")
     .select("notes")
@@ -359,14 +322,17 @@ export async function addStaffNote(
     return { error: parsed.error.issues[0]?.message ?? "Invalid note" };
   }
 
-  const ctx = await getStaffAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) return { error: "Not authenticated" };
   if (!canManageStaff(ctx.role) && ctx.staffId !== staffId) {
     return { error: "Not allowed" };
   }
 
-  const notes = addNote(await loadNotes(ctx.gymId, staffId), parsed.data.text);
-  const supabase = await createClient();
+  const { supabase } = ctx;
+  const notes = addNote(
+    await loadNotes(supabase, ctx.gymId, staffId),
+    parsed.data.text,
+  );
   const { error } = await supabase
     .from("staff")
     .update({ notes: serializeMemberNotes(notes) })
@@ -388,18 +354,18 @@ export async function editStaffNote(
     return { error: parsed.error.issues[0]?.message ?? "Invalid note" };
   }
 
-  const ctx = await getStaffAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) return { error: "Not authenticated" };
   if (!canManageStaff(ctx.role) && ctx.staffId !== staffId) {
     return { error: "Not allowed" };
   }
 
+  const { supabase } = ctx;
   const notes = updateNote(
-    await loadNotes(ctx.gymId, staffId),
+    await loadNotes(supabase, ctx.gymId, staffId),
     noteId,
     parsed.data.text,
   );
-  const supabase = await createClient();
   const { error } = await supabase
     .from("staff")
     .update({ notes: serializeMemberNotes(notes) })
@@ -415,14 +381,14 @@ export async function removeStaffNote(
   staffId: string,
   noteId: string,
 ): Promise<{ error: string | null }> {
-  const ctx = await getStaffAuthContext();
+  const ctx = await getActionContextWithStaff();
   if (!ctx) return { error: "Not authenticated" };
   if (!canManageStaff(ctx.role) && ctx.staffId !== staffId) {
     return { error: "Not allowed" };
   }
 
-  const notes = deleteNote(await loadNotes(ctx.gymId, staffId), noteId);
-  const supabase = await createClient();
+  const { supabase } = ctx;
+  const notes = deleteNote(await loadNotes(supabase, ctx.gymId, staffId), noteId);
   const { error } = await supabase
     .from("staff")
     .update({ notes: serializeMemberNotes(notes) })

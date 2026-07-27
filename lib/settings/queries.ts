@@ -49,7 +49,13 @@ export async function fetchSettingsPageData(
   role: StaffRole,
 ): Promise<SettingsPageData> {
   const [gymRes, staffRes, membersRes] = await Promise.all([
-    supabase.from("gyms").select("*").eq("id", gymId).single(),
+    supabase
+      .from("gyms")
+      .select(
+        "id, name, slug, address, city, country, phone, whatsapp, email, logo_url, timezone, currency, currency_symbol, settings, subscription_plan, subscription_status, trial_ends_at, created_at, updated_at",
+      )
+      .eq("id", gymId)
+      .single(),
     supabase
       .from("staff")
       .select("id, name, email, photo_url, role, status, auth_user_id")

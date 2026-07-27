@@ -2,60 +2,57 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { MessageCircle, Wallet } from "lucide-react";
+import { Bell, Receipt, Wallet } from "lucide-react";
 import { Tooltip } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { sendPaymentReceipt } from "@/app/actions/whatsapp";
+import { prepareFeeReminderDeeplink } from "@/app/actions/whatsapp";
 import { useGym } from "@/components/gym-provider";
+import { ReceiptPreviewModal } from "@/components/receipts/receipt-preview-modal";
 import { canRecordPayment, canSendReminder } from "@/lib/auth/permissions";
 import {
   formatCurrency,
   formatPaymentMethod,
   formatShortDate,
 } from "@/lib/members/format";
-import type { MemberProfile } from "@/lib/types";
+import { openWaMeUrl } from "@/lib/whatsapp/deeplink";
+import type { MemberProfile, PaymentWithStaff } from "@/lib/types";
 import { RecordPaymentModal } from "@/components/modals/record-payment-modal";
 import styles from "../member-profile.module.css";
-
-const WA_DISABLED_TIP =
-  "WhatsApp is not configured. Add WHATSAPP_API_TOKEN and WHATSAPP_PHONE_NUMBER_ID to enable receipts.";
 
 type PaymentsTabProps = {
   member: MemberProfile;
   currencySymbol: string;
-  whatsappConfigured: boolean;
 };
 
-export function PaymentsTab({
-  member,
-  currencySymbol,
-  whatsappConfigured,
-}: PaymentsTabProps) {
+export function PaymentsTab({ member, currencySymbol }: PaymentsTabProps) {
   const router = useRouter();
   const { role } = useGym();
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [receiptPayment, setReceiptPayment] = useState<PaymentWithStaff | null>(
+    null,
+  );
   const [pending, startTransition] = useTransition();
   const canPay = canRecordPayment(role);
   const canReceipt = canSendReminder(role);
+  const showActions = member.recent_payments.length > 0;
 
-  const handleSendReceipt = (paymentId: string) => {
-    if (!whatsappConfigured) return;
+  const handleSendReminder = (feeDueId: string) => {
     startTransition(async () => {
-      const { error } = await sendPaymentReceipt(paymentId);
-      if (error) {
+      const { data, error } = await prepareFeeReminderDeeplink(feeDueId);
+      if (error || !data) {
         notifications.show({
           color: "red",
-          title: "Receipt failed",
-          message: error,
+          title: "Reminder failed",
+          message: error ?? "Could not prepare reminder",
         });
-      } else {
-        notifications.show({
-          color: "green",
-          title: "Receipt sent",
-          message: "WhatsApp payment receipt was sent successfully.",
-        });
-        router.refresh();
+        return;
       }
+      openWaMeUrl(data.url);
+      notifications.show({
+        color: "green",
+        message: `WhatsApp opened with reminder for ${data.memberName}`,
+      });
+      router.refresh();
     });
   };
 
@@ -88,13 +85,37 @@ export function PaymentsTab({
             {member.outstanding_dues.map((due) => {
               const balance =
                 Number(due.amount_due) - Number(due.amount_paid ?? 0);
+              const showRemind =
+                canReceipt &&
+                (due.status === "overdue" ||
+                  due.status === "pending" ||
+                  due.status === "partial");
               return (
                 <div key={due.id} className={styles.infoRow}>
                   <span className={styles.infoLabel}>
                     Due {formatShortDate(due.due_date)} ({due.status})
                   </span>
-                  <span className={`${styles.infoValue} ${styles.num}`}>
+                  <span
+                    className={`${styles.infoValue} ${styles.num}`}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 10,
+                    }}
+                  >
                     {formatCurrency(balance, currencySymbol)}
+                    {showRemind ? (
+                      <button
+                        type="button"
+                        className={styles.receiptBtn}
+                        disabled={pending}
+                        onClick={() => handleSendReminder(due.id)}
+                        title="Send Reminder"
+                      >
+                        <Bell size={14} strokeWidth={2} />
+                        Send Reminder
+                      </button>
+                    ) : null}
                   </span>
                 </div>
               );
@@ -121,7 +142,9 @@ export function PaymentsTab({
       <div className={styles.card}>
         <div className={styles.cardTitle}>Payment History</div>
         {member.recent_payments.length === 0 ? (
-          <p style={{ color: "#8A8A80", fontSize: 14 }}>No payments recorded yet.</p>
+          <p style={{ color: "#8A8A80", fontSize: 14 }}>
+            No payments recorded yet.
+          </p>
         ) : (
           <table className={styles.dataTable}>
             <thead>
@@ -132,29 +155,14 @@ export function PaymentsTab({
                 <th>Type</th>
                 <th>Period</th>
                 <th>Recorded By</th>
-                {canReceipt ? <th>Actions</th> : null}
+                {showActions ? <th>Actions</th> : null}
               </tr>
             </thead>
             <tbody>
               {member.recent_payments.map((p) => {
-                const alreadySent = p.receipt_sent;
-                const disabled =
-                  pending || !whatsappConfigured || alreadySent;
-                let tip = "Send Receipt";
-                if (!whatsappConfigured) tip = WA_DISABLED_TIP;
-                else if (alreadySent) tip = "Receipt already sent";
-
-                const btn = (
-                  <button
-                    type="button"
-                    className={styles.receiptBtn}
-                    disabled={disabled}
-                    onClick={() => handleSendReceipt(p.id)}
-                  >
-                    <MessageCircle size={14} strokeWidth={2} />
-                    {alreadySent ? "Sent" : "Send Receipt"}
-                  </button>
-                );
+                const tip = p.receipt_generated
+                  ? "Receipt downloaded"
+                  : "View / download receipt";
 
                 return (
                   <tr key={p.id}>
@@ -172,22 +180,19 @@ export function PaymentsTab({
                         : "—"}
                     </td>
                     <td>{p.recorded_by_name ?? "—"}</td>
-                    {canReceipt ? (
+                    {showActions ? (
                       <td>
-                        {!whatsappConfigured || alreadySent ? (
-                          <Tooltip
-                            label={tip}
-                            withArrow
-                            multiline
-                            maw={280}
+                        <Tooltip label={tip} withArrow>
+                          <button
+                            type="button"
+                            className={styles.receiptBtn}
+                            onClick={() => setReceiptPayment(p)}
+                            aria-label={tip}
                           >
-                            <span style={{ display: "inline-flex" }}>
-                              {btn}
-                            </span>
-                          </Tooltip>
-                        ) : (
-                          btn
-                        )}
+                            <Receipt size={14} strokeWidth={2} />
+                            Receipt
+                          </button>
+                        </Tooltip>
                       </td>
                     ) : null}
                   </tr>
@@ -203,6 +208,27 @@ export function PaymentsTab({
           opened={paymentOpen}
           onClose={() => setPaymentOpen(false)}
           memberId={member.id}
+        />
+      ) : null}
+
+      {receiptPayment ? (
+        <ReceiptPreviewModal
+          opened
+          onClose={() => setReceiptPayment(null)}
+          payment={{
+            id: receiptPayment.id,
+            amount: Number(receiptPayment.amount),
+            payment_method: receiptPayment.payment_method,
+            paid_at: receiptPayment.paid_at,
+            covers_from: receiptPayment.covers_from,
+            covers_to: receiptPayment.covers_to,
+          }}
+          memberName={member.name}
+          memberCode={member.member_code}
+          memberWhatsapp={member.whatsapp}
+          memberPhone={member.phone}
+          packageName={member.package?.name ?? null}
+          currencySymbol={currencySymbol}
         />
       ) : null}
     </>

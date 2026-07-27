@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getMemberById } from "@/app/actions/members";
-import { getWhatsAppStatus } from "@/app/actions/whatsapp";
 import { createClient } from "@/lib/supabase/server";
 import { MemberProfileHero } from "@/components/members/member-profile-hero";
 import {
@@ -54,14 +53,9 @@ export async function MemberProfileContent({
     ? (tabRaw as ProfileTab)
     : "overview";
 
-  const [
-    { data: member, error },
-    currencySymbol,
-    { configured: whatsappConfigured },
-  ] = await Promise.all([
+  const [{ data: member, error }, currencySymbol] = await Promise.all([
     getMemberById(id),
     getCurrencySymbol(),
-    getWhatsAppStatus(),
   ]);
 
   if (error || !member) {
@@ -92,11 +86,7 @@ export async function MemberProfileContent({
             <AttendanceTab member={member} />
           ) : null}
           {activeTab === "payments" ? (
-            <PaymentsTab
-              member={member}
-              currencySymbol={currencySymbol}
-              whatsappConfigured={whatsappConfigured}
-            />
+            <PaymentsTab member={member} currencySymbol={currencySymbol} />
           ) : null}
           {activeTab === "progress" ? (
             <ProgressTab member={member} />

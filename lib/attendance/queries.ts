@@ -9,6 +9,7 @@ import {
   getTodayStartIso,
   isLateCheckIn,
 } from "@/lib/attendance/timezone";
+import { searchMembers } from "@/lib/members/search";
 import type {
   Attendance,
   AttendanceDateRange,
@@ -23,6 +24,12 @@ import type {
   StaffRole,
 } from "@/lib/types";
 import type { AttendanceDateRange as DateRange } from "@/lib/validations/attendance";
+
+const ATTENDANCE_COLUMNS =
+  "id, gym_id, member_id, staff_id, person_type, check_in_method, check_in_at, check_out_at, fee_status_at_checkin, notes, created_at";
+
+const MEMBER_CHECKIN_COLUMNS =
+  "id, gym_id, member_code, name, phone, whatsapp, email, photo_url, date_of_birth, gender, address, emergency_contact_name, emergency_contact_phone, height_cm, weight_kg, bmi, fitness_goals, package_id, membership_start, membership_end, status, freeze_start, freeze_end, freeze_reason, card_qr_token, card_issued_at, card_printed, referred_by, notes, joined_at, created_at, updated_at";
 
 type RawAttendanceRow = Attendance & {
   members: {
@@ -190,14 +197,25 @@ export async function fetchLiveGymCounts(
   const timeZone = await getGymTimezoneFromDb(supabase, gymId);
   const todayStart = getTodayStartIso(timeZone);
 
-  const { data: openSessions, error: openError } = await supabase
-    .from("attendance")
-    .select("person_type")
-    .eq("gym_id", gymId)
-    .is("check_out_at", null)
-    .gte("check_in_at", todayStart);
+  const [openRes, todayRes] = await Promise.all([
+    supabase
+      .from("attendance")
+      .select("person_type")
+      .eq("gym_id", gymId)
+      .is("check_out_at", null)
+      .gte("check_in_at", todayStart),
+    supabase
+      .from("attendance")
+      .select("check_in_at")
+      .eq("gym_id", gymId)
+      .gte("check_in_at", todayStart),
+  ]);
 
-  if (openError) throw new Error(openError.message);
+  if (openRes.error) throw new Error(openRes.error.message);
+  if (todayRes.error) throw new Error(todayRes.error.message);
+
+  const openSessions = openRes.data;
+  const todayRows = todayRes.data;
 
   let membersInGym = 0;
   let staffInGym = 0;
@@ -205,14 +223,6 @@ export async function fetchLiveGymCounts(
     if (row.person_type === "staff") staffInGym += 1;
     else membersInGym += 1;
   }
-
-  const { data: todayRows, error: todayError } = await supabase
-    .from("attendance")
-    .select("check_in_at")
-    .eq("gym_id", gymId)
-    .gte("check_in_at", todayStart);
-
-  if (todayError) throw new Error(todayError.message);
 
   const checkInsToday = todayRows?.length ?? 0;
   const hourCounts = new Map<number, number>();
@@ -249,17 +259,40 @@ export async function fetchAttendanceSidebarStats(
 ): Promise<AttendanceSidebarStats> {
   const timeZone = await getGymTimezoneFromDb(supabase, gymId);
   const { start, end } = getDateRangeBounds(dateRange, timeZone);
+  const todayStart = getTodayStartIso(timeZone);
 
-  const { data: rows, error } = await supabase
-    .from("attendance")
-    .select("check_in_at, member_id, person_type, staff_id")
-    .eq("gym_id", gymId)
-    .gte("check_in_at", start)
-    .lte("check_in_at", end);
+  const [rangeRes, activeStaffRes, staffTodayRes, openMemberRes] =
+    await Promise.all([
+      supabase
+        .from("attendance")
+        .select("check_in_at, member_id, person_type, staff_id")
+        .eq("gym_id", gymId)
+        .gte("check_in_at", start)
+        .lte("check_in_at", end),
+      supabase
+        .from("staff")
+        .select("id", { count: "exact", head: true })
+        .eq("gym_id", gymId)
+        .eq("status", "active"),
+      supabase
+        .from("attendance")
+        .select("check_in_at, staff_id")
+        .eq("gym_id", gymId)
+        .eq("person_type", "staff")
+        .gte("check_in_at", todayStart)
+        .is("check_out_at", null),
+      supabase
+        .from("attendance")
+        .select("member_id")
+        .eq("gym_id", gymId)
+        .eq("person_type", "member")
+        .is("check_out_at", null)
+        .gte("check_in_at", todayStart),
+    ]);
 
-  if (error) throw new Error(error.message);
+  if (rangeRes.error) throw new Error(rangeRes.error.message);
 
-  const records = rows ?? [];
+  const records = rangeRes.data ?? [];
   const uniqueMembers = new Set(
     records.filter((r) => r.person_type === "member").map((r) => r.member_id),
   );
@@ -284,21 +317,8 @@ export async function fetchAttendanceSidebarStats(
       heightPct: Math.round((b.count / maxCount) * 100),
     }));
 
-  const todayStart = getTodayStartIso(timeZone);
-
-  const { count: activeStaffCount } = await supabase
-    .from("staff")
-    .select("id", { count: "exact", head: true })
-    .eq("gym_id", gymId)
-    .eq("status", "active");
-
-  const { data: staffToday } = await supabase
-    .from("attendance")
-    .select("check_in_at, staff_id")
-    .eq("gym_id", gymId)
-    .eq("person_type", "staff")
-    .gte("check_in_at", todayStart)
-    .is("check_out_at", null);
+  const activeStaffCount = activeStaffRes.count;
+  const staffToday = staffTodayRes.data;
 
   const clockedInStaff = new Set(
     (staffToday ?? []).map((r) => r.staff_id).filter(Boolean),
@@ -311,16 +331,8 @@ export async function fetchAttendanceSidebarStats(
     }
   }
 
-  const { data: openMemberSessions } = await supabase
-    .from("attendance")
-    .select("member_id")
-    .eq("gym_id", gymId)
-    .eq("person_type", "member")
-    .is("check_out_at", null)
-    .gte("check_in_at", todayStart);
-
   const currentlyInside = new Set(
-    (openMemberSessions ?? []).map((r) => r.member_id),
+    (openMemberRes.data ?? []).map((r) => r.member_id),
   ).size;
 
   return {
@@ -341,31 +353,9 @@ export async function searchMembersForCheckIn(
   gymId: string,
   query: string,
 ) {
-  const trimmed = query.trim();
-  if (!trimmed) return [];
-
-  const { data, error } = await supabase
-    .from("members")
-    .select("id, name, photo_url, member_code, status, packages(name)")
-    .eq("gym_id", gymId)
-    .eq("status", "active")
-    .or(
-      `name.ilike.%${trimmed}%,phone.ilike.%${trimmed}%,member_code.ilike.%${trimmed}%`,
-    )
-    .order("name")
-    .limit(12);
-
-  if (error) throw new Error(error.message);
-
-  return (data ?? []).map((m) => {
-    const pkg = Array.isArray(m.packages) ? m.packages[0] : m.packages;
-    return {
-      id: m.id as string,
-      name: m.name as string,
-      photo_url: m.photo_url as string | null,
-      member_code: m.member_code as string,
-      package_name: (pkg as { name: string } | null)?.name ?? null,
-    };
+  return searchMembers(supabase, gymId, query, {
+    status: "active",
+    includePhone: true,
   });
 }
 
@@ -379,7 +369,7 @@ async function findOpenSession(
 
   let query = supabase
     .from("attendance")
-    .select("*")
+    .select(ATTENDANCE_COLUMNS)
     .eq("gym_id", gymId)
     .is("check_out_at", null)
     .gte("check_in_at", todayStart)
@@ -402,7 +392,7 @@ export async function getMemberCheckInContext(
 ) {
   const { data: member, error } = await supabase
     .from("members")
-    .select("*, packages(name)")
+    .select(`${MEMBER_CHECKIN_COLUMNS}, packages(name)`)
     .eq("gym_id", gymId)
     .eq("id", memberId)
     .maybeSingle();
@@ -426,7 +416,7 @@ export async function getMemberCheckInContext(
         .eq("member_id", memberId),
       supabase
         .from("attendance")
-        .select("check_in_at")
+        .select("id", { count: "exact", head: true })
         .eq("gym_id", gymId)
         .eq("member_id", memberId)
         .eq("person_type", "member")
@@ -454,7 +444,7 @@ export async function getMemberCheckInContext(
     member: member as Member,
     package_name: (pkg as { name: string } | null)?.name ?? null,
     feeSnapshot,
-    monthCheckIns: monthAttendanceRes.data?.length ?? 0,
+    monthCheckIns: monthAttendanceRes.count ?? 0,
     streak: computeStreak((streakAttendanceRes.data ?? []) as Attendance[]),
   };
 }
@@ -497,7 +487,7 @@ export async function performMemberCheckIn(
       check_in_method: method,
       fee_status_at_checkin: context.feeSnapshot.snapshot,
     })
-    .select("*")
+    .select(ATTENDANCE_COLUMNS)
     .single();
 
   if (error) throw new Error(error.message);
@@ -544,7 +534,7 @@ export async function performStaffCheckIn(
       check_in_method: method,
       fee_status_at_checkin: null,
     })
-    .select("*")
+    .select(ATTENDANCE_COLUMNS)
     .single();
 
   if (error) throw new Error(error.message);

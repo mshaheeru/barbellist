@@ -4,16 +4,27 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Checkbox, NumberInput, Textarea } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { Check, CreditCard, Landmark, Smartphone, X } from "lucide-react";
+import {
+  Check,
+  CreditCard,
+  Download,
+  Landmark,
+  MessageCircle,
+  Smartphone,
+  X,
+} from "lucide-react";
 import {
   getMemberForPayment,
   recordPayment,
+  type RecordedPaymentSummary,
 } from "@/app/actions/fees";
+import { preparePaymentReceiptDeeplink } from "@/app/actions/whatsapp";
 import { useGym } from "@/components/gym-provider";
+import { ReceiptPreviewModal } from "@/components/receipts/receipt-preview-modal";
 import { feeDueMonthLabel } from "@/lib/fees/fee-due-status-pill";
-import {
-  formatCurrency,
-} from "@/lib/members/format";
+import { canSendReminder } from "@/lib/auth/permissions";
+import { formatCurrency } from "@/lib/members/format";
+import { openWaMeUrl } from "@/lib/whatsapp/deeplink";
 import type { MemberPaymentContext, PaymentMethod } from "@/lib/types";
 import { MemberAvatar } from "@/components/members/member-avatar";
 import styles from "./record-payment-modal.module.css";
@@ -90,7 +101,7 @@ export function RecordPaymentModal({
   memberId,
 }: RecordPaymentModalProps) {
   const router = useRouter();
-  const { currencySymbol } = useGym();
+  const { currencySymbol, role } = useGym();
   const [member, setMember] = useState<MemberPaymentContext | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -102,12 +113,18 @@ export function RecordPaymentModal({
   const [sendReceipt, setSendReceipt] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [successPayment, setSuccessPayment] =
+    useState<RecordedPaymentSummary | null>(null);
+  const [receiptPreviewOpen, setReceiptPreviewOpen] = useState(false);
+  const [waPending, startWaTransition] = useTransition();
 
   useEffect(() => {
     if (!opened || !memberId) return;
 
     setLoading(true);
     setLoadError(null);
+    setSuccessPayment(null);
+    setReceiptPreviewOpen(false);
     void getMemberForPayment(memberId).then(({ data, error }) => {
       setLoading(false);
       if (error || !data) {
@@ -127,23 +144,38 @@ export function RecordPaymentModal({
   useEffect(() => {
     if (!opened) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        if (receiptPreviewOpen) {
+          setReceiptPreviewOpen(false);
+          return;
+        }
+        handleDone();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [opened, onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDone closes modal
+  }, [opened, receiptPreviewOpen, successPayment]);
 
   if (!opened) return null;
 
   const totalBalance = member?.total_balance ?? 0;
   const whatsappContact = member?.whatsapp || member?.phone;
+  const canWhatsApp = canSendReminder(role);
+
+  const handleDone = () => {
+    setSuccessPayment(null);
+    setReceiptPreviewOpen(false);
+    onClose();
+    router.refresh();
+  };
 
   const handleSubmit = () => {
     if (!member) return;
     setSubmitError(null);
 
     startTransition(async () => {
-      const { error } = await recordPayment({
+      const { payment, error } = await recordPayment({
         member_id: member.id,
         payment_method: paymentMethod,
         amount,
@@ -152,8 +184,8 @@ export function RecordPaymentModal({
         send_whatsapp_receipt: sendReceipt,
       });
 
-      if (error) {
-        setSubmitError(error);
+      if (error || !payment) {
+        setSubmitError(error ?? "Failed to record payment");
         return;
       }
 
@@ -162,188 +194,276 @@ export function RecordPaymentModal({
         title: "Payment recorded",
         message: `${formatCurrency(amount, currencySymbol)} received from ${member.name}.`,
       });
+
+      if (sendReceipt) {
+        setSuccessPayment(payment);
+        return;
+      }
+
       onClose();
       router.refresh();
     });
   };
 
-  return (
-    <div className={styles.overlay} role="presentation" onClick={onClose}>
-      <div
-        className={styles.modal}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="record-payment-title"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={styles.modalHeader}>
-          <h2 id="record-payment-title" className={styles.modalTitle}>
-            Record Payment
-          </h2>
-          <button
-            type="button"
-            className={styles.closeBtn}
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <X size={16} strokeWidth={2} />
-          </button>
-        </div>
+  const handleSendConfirmation = () => {
+    if (!successPayment) return;
+    startWaTransition(async () => {
+      const { data, error } = await preparePaymentReceiptDeeplink(
+        successPayment.id,
+      );
+      if (error || !data) {
+        notifications.show({
+          color: "red",
+          title: "Confirmation failed",
+          message: error ?? "Could not prepare WhatsApp message",
+        });
+        return;
+      }
+      openWaMeUrl(data.url);
+      notifications.show({
+        color: "green",
+        message: `WhatsApp opened with confirmation for ${data.memberName}`,
+      });
+    });
+  };
 
-        <div className={styles.modalBody}>
-          {loading ? (
-            <div className={styles.loading}>Loading member…</div>
-          ) : loadError ? (
-            <p className={styles.errorText}>{loadError}</p>
-          ) : member ? (
-            <>
-              <div className={styles.memberCard}>
-                <MemberAvatar
-                  name={member.name}
-                  photoUrl={member.photo_url}
-                />
-                <div className={styles.memberInfo}>
-                  <div className={styles.memberName}>{member.name}</div>
-                  <div className={styles.memberSub}>
-                    {member.package?.name ?? "No package"} ·{" "}
-                    {member.member_code}
+  return (
+    <>
+      <div
+        className={styles.overlay}
+        role="presentation"
+        onClick={receiptPreviewOpen ? undefined : handleDone}
+      >
+        <div
+          className={styles.modal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="record-payment-title"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className={styles.modalHeader}>
+            <h2 id="record-payment-title" className={styles.modalTitle}>
+              {successPayment ? "Payment recorded!" : "Record Payment"}
+            </h2>
+            <button
+              type="button"
+              className={styles.closeBtn}
+              onClick={handleDone}
+              aria-label="Close"
+            >
+              <X size={16} strokeWidth={2} />
+            </button>
+          </div>
+
+          <div className={styles.modalBody}>
+            {successPayment && member ? (
+              <>
+                <p className={styles.successCopy}>
+                  {formatCurrency(successPayment.amount, currencySymbol)}{" "}
+                  received from {member.name}. Download a receipt image or send
+                  a WhatsApp confirmation.
+                </p>
+                <button
+                  type="button"
+                  className={styles.submitBtn}
+                  onClick={() => setReceiptPreviewOpen(true)}
+                >
+                  <Download size={18} strokeWidth={2.2} />
+                  Download Receipt
+                </button>
+                {canWhatsApp && whatsappContact ? (
+                  <button
+                    type="button"
+                    className={styles.secondaryActionBtn}
+                    disabled={waPending}
+                    onClick={handleSendConfirmation}
+                  >
+                    <MessageCircle size={18} strokeWidth={2.2} />
+                    Send Confirmation via WhatsApp
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className={styles.doneBtn}
+                  onClick={handleDone}
+                >
+                  Done
+                </button>
+              </>
+            ) : loading ? (
+              <div className={styles.loading}>Loading member…</div>
+            ) : loadError ? (
+              <p className={styles.errorText}>{loadError}</p>
+            ) : member ? (
+              <>
+                <div className={styles.memberCard}>
+                  <MemberAvatar
+                    name={member.name}
+                    photoUrl={member.photo_url}
+                  />
+                  <div className={styles.memberInfo}>
+                    <div className={styles.memberName}>{member.name}</div>
+                    <div className={styles.memberSub}>
+                      {member.package?.name ?? "No package"} ·{" "}
+                      {member.member_code}
+                    </div>
+                  </div>
+                  {member.fee_status.kind === "overdue" ? (
+                    <span className={styles.overdueBadge}>
+                      Overdue {member.fee_status.days}d
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className={styles.breakdown}>
+                  {member.outstanding_dues.map((due) => {
+                    const balance =
+                      Number(due.amount_due) - Number(due.amount_paid ?? 0);
+                    return (
+                      <div key={due.id} className={styles.breakdownRow}>
+                        <span className={styles.breakdownLabel}>
+                          {feeDueMonthLabel(
+                            due.generated_for_month,
+                            due.due_date,
+                          )}
+                          {balance < Number(due.amount_due)
+                            ? " (partial)"
+                            : ""}
+                        </span>
+                        <span
+                          className={`${styles.breakdownValue} ${styles.num}`}
+                        >
+                          {formatCurrency(balance, currencySymbol)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div className={styles.divider} />
+                  <div className={styles.totalRow}>
+                    <span className={styles.totalLabel}>Total due</span>
+                    <span className={`${styles.totalValue} ${styles.num}`}>
+                      {formatCurrency(totalBalance, currencySymbol)}
+                    </span>
                   </div>
                 </div>
-                {member.fee_status.kind === "overdue" ? (
-                  <span className={styles.overdueBadge}>
-                    Overdue {member.fee_status.days}d
-                  </span>
-                ) : null}
-              </div>
 
-              <div className={styles.breakdown}>
-                {member.outstanding_dues.map((due) => {
-                  const balance =
-                    Number(due.amount_due) - Number(due.amount_paid ?? 0);
-                  return (
-                    <div key={due.id} className={styles.breakdownRow}>
-                      <span className={styles.breakdownLabel}>
-                        {feeDueMonthLabel(
-                          due.generated_for_month,
-                          due.due_date,
-                        )}
-                        {balance < Number(due.amount_due) ? " (partial)" : ""}
-                      </span>
-                      <span className={`${styles.breakdownValue} ${styles.num}`}>
-                        {formatCurrency(balance, currencySymbol)}
-                      </span>
-                    </div>
-                  );
-                })}
-                <div className={styles.divider} />
-                <div className={styles.totalRow}>
-                  <span className={styles.totalLabel}>Total due</span>
-                  <span className={`${styles.totalValue} ${styles.num}`}>
-                    {formatCurrency(totalBalance, currencySymbol)}
-                  </span>
+                <div className={styles.sectionLabel}>Payment Method</div>
+                <div className={styles.paymentMethodGrid}>
+                  {METHODS.map((m) => {
+                    const selected = paymentMethod === m.value;
+                    return (
+                      <button
+                        key={m.value}
+                        type="button"
+                        className={`${styles.paymentPill} ${selected ? styles.paymentPillSelected : ""}`}
+                        onClick={() => setPaymentMethod(m.value)}
+                      >
+                        {m.icon}
+                        {m.label}
+                        {selected ? (
+                          <Check
+                            size={15}
+                            strokeWidth={3}
+                            color="#1B5E3C"
+                            style={{ marginLeft: "auto" }}
+                          />
+                        ) : null}
+                      </button>
+                    );
+                  })}
                 </div>
-              </div>
 
-              <div className={styles.sectionLabel}>Payment Method</div>
-              <div className={styles.paymentMethodGrid}>
-                {METHODS.map((m) => {
-                  const selected = paymentMethod === m.value;
-                  return (
+                <div className={styles.amountRow}>
+                  <div className={styles.amountField}>
+                    <NumberInput
+                      label="Amount"
+                      min={1}
+                      decimalScale={2}
+                      value={amount}
+                      onChange={(val) =>
+                        setAmount(typeof val === "number" ? val : 0)
+                      }
+                      disabled={!isPartial}
+                      prefix={currencySymbol}
+                    />
+                  </div>
+                  <div className={styles.toggleWrap}>
                     <button
-                      key={m.value}
                       type="button"
-                      className={`${styles.paymentPill} ${selected ? styles.paymentPillSelected : ""}`}
-                      onClick={() => setPaymentMethod(m.value)}
+                      className={`${styles.toggleBtn} ${!isPartial ? styles.toggleBtnActive : ""}`}
+                      onClick={() => {
+                        setIsPartial(false);
+                        setAmount(totalBalance);
+                      }}
                     >
-                      {m.icon}
-                      {m.label}
-                      {selected ? (
-                        <Check
-                          size={15}
-                          strokeWidth={3}
-                          color="#1B5E3C"
-                          style={{ marginLeft: "auto" }}
-                        />
-                      ) : null}
+                      Full
                     </button>
-                  );
-                })}
-              </div>
-
-              <div className={styles.amountRow}>
-                <div className={styles.amountField}>
-                  <NumberInput
-                    label="Amount"
-                    min={1}
-                    decimalScale={2}
-                    value={amount}
-                    onChange={(val) =>
-                      setAmount(typeof val === "number" ? val : 0)
-                    }
-                    disabled={!isPartial}
-                    prefix={currencySymbol}
-                  />
+                    <button
+                      type="button"
+                      className={`${styles.toggleBtn} ${isPartial ? styles.toggleBtnActive : ""}`}
+                      onClick={() => setIsPartial(true)}
+                    >
+                      Partial
+                    </button>
+                  </div>
                 </div>
-                <div className={styles.toggleWrap}>
-                  <button
-                    type="button"
-                    className={`${styles.toggleBtn} ${!isPartial ? styles.toggleBtnActive : ""}`}
-                    onClick={() => {
-                      setIsPartial(false);
-                      setAmount(totalBalance);
-                    }}
-                  >
-                    Full
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.toggleBtn} ${isPartial ? styles.toggleBtnActive : ""}`}
-                    onClick={() => setIsPartial(true)}
-                  >
-                    Partial
-                  </button>
-                </div>
-              </div>
 
-              <Textarea
-                placeholder="Add a note (optional)…"
-                value={notes}
-                onChange={(e) => setNotes(e.currentTarget.value)}
-                minRows={2}
-                mb="md"
-              />
+                <Textarea
+                  placeholder="Add a note (optional)…"
+                  value={notes}
+                  onChange={(e) => setNotes(e.currentTarget.value)}
+                  minRows={2}
+                  mb="md"
+                />
 
-              {whatsappContact ? (
-                <label className={styles.checkboxRow}>
-                  <Checkbox
-                    checked={sendReceipt}
-                    onChange={(e) => setSendReceipt(e.currentTarget.checked)}
-                    color="green"
-                  />
-                  <span>
-                    Send WhatsApp receipt to{" "}
-                    <strong>{whatsappContact}</strong>
-                  </span>
-                </label>
-              ) : null}
+                {whatsappContact ? (
+                  <label className={styles.checkboxRow}>
+                    <Checkbox
+                      checked={sendReceipt}
+                      onChange={(e) =>
+                        setSendReceipt(e.currentTarget.checked)
+                      }
+                      color="green"
+                    />
+                    <span>
+                      Send WhatsApp receipt to{" "}
+                      <strong>{whatsappContact}</strong>
+                    </span>
+                  </label>
+                ) : null}
 
-              {submitError ? (
-                <p className={styles.errorText}>{submitError}</p>
-              ) : null}
+                {submitError ? (
+                  <p className={styles.errorText}>{submitError}</p>
+                ) : null}
 
-              <button
-                type="button"
-                className={styles.submitBtn}
-                disabled={pending || totalBalance <= 0 || amount <= 0}
-                onClick={handleSubmit}
-              >
-                <Check size={18} strokeWidth={2.2} />
-                Record Payment · {formatCurrency(amount, currencySymbol)}
-              </button>
-            </>
-          ) : null}
+                <button
+                  type="button"
+                  className={styles.submitBtn}
+                  disabled={pending || totalBalance <= 0 || amount <= 0}
+                  onClick={handleSubmit}
+                >
+                  <Check size={18} strokeWidth={2.2} />
+                  Record Payment · {formatCurrency(amount, currencySymbol)}
+                </button>
+              </>
+            ) : null}
+          </div>
         </div>
       </div>
-    </div>
+
+      {successPayment && member && receiptPreviewOpen ? (
+        <ReceiptPreviewModal
+          opened
+          onClose={() => setReceiptPreviewOpen(false)}
+          payment={successPayment}
+          memberName={member.name}
+          memberCode={member.member_code}
+          memberWhatsapp={member.whatsapp}
+          memberPhone={member.phone}
+          packageName={member.package?.name ?? null}
+          currencySymbol={currencySymbol}
+        />
+      ) : null}
+    </>
   );
 }

@@ -346,7 +346,9 @@ export async function fetchMemberPaymentContext(
 ): Promise<MemberPaymentContext | null> {
   const { data: member, error } = await supabase
     .from("members")
-    .select("*")
+    .select(
+      "id, name, member_code, photo_url, whatsapp, phone, status, package_id",
+    )
     .eq("gym_id", gymId)
     .eq("id", memberId)
     .neq("status", "cancelled")
@@ -360,12 +362,15 @@ export async function fetchMemberPaymentContext(
       ? supabase
           .from("packages")
           .select("name, price")
+          .eq("gym_id", gymId)
           .eq("id", member.package_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
     supabase
       .from("fee_dues")
-      .select("*")
+      .select(
+        "id, gym_id, member_id, amount_due, amount_paid, due_date, status, generated_for_month, last_reminder_sent_at, reminder_count, notes, created_at, updated_at",
+      )
       .eq("gym_id", gymId)
       .eq("member_id", memberId)
       .not("status", "in", '("paid","waived")')
