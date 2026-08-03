@@ -12,6 +12,16 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-build": "opennextjs-cloudflare build"
   },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "sharp": true,
+    "workerd": true,
+    "unrs-resolver": true,
+    "fsevents": true
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
     "@mantine/core": "^9.4.1",
