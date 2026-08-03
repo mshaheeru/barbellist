@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { ChevronUp, LogOut } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/constants";
 import { canAccessNavKey } from "@/lib/auth/permissions";
-import { BarbellMark } from "@/components/auth/barbell-mark";
+import { LogoLockupReversed } from "@/components/brand/logo";
 import { getInitials, useGym } from "@/components/gym-provider";
+import { createClient } from "@/lib/supabase/client";
 import styles from "./sidebar.module.css";
 
 type SidebarProps = {
@@ -26,12 +29,55 @@ export function DashboardSidebar({
   onNavigate,
 }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const active = navKeyFromPath(pathname);
   const { staffName, gymName, role } = useGym();
   const initials = getInitials(staffName);
   const roleLabel = role
     ? role.charAt(0).toUpperCase() + role.slice(1)
     : "Staff";
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    function handlePointerDown(event: MouseEvent) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
+        setMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setMenuOpen(false);
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [menuOpen]);
+
+  async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      setMenuOpen(false);
+      onNavigate?.();
+      router.push("/login");
+      router.refresh();
+    } finally {
+      setLoggingOut(false);
+    }
+  }
 
   const visibilityClass = mobileOpen
     ? styles.sidebarMobileOpen
@@ -40,10 +86,7 @@ export function DashboardSidebar({
   return (
     <aside className={`${styles.sidebar} ${visibilityClass}`}>
       <div className={styles.brandRow}>
-        <div className={styles.brandMark}>
-          <BarbellMark size={21} stroke="#C9861B" />
-        </div>
-        <span className={styles.brandName}>Barbellist</span>
+        <LogoLockupReversed height={30} href="/dashboard" />
       </div>
 
       <nav className={styles.nav}>
@@ -66,15 +109,43 @@ export function DashboardSidebar({
         )}
       </nav>
 
-      <div className={styles.userChip}>
-        <div className={styles.userAvatar}>{initials}</div>
-        <div className={styles.userMeta}>
-          <div className={styles.userName}>{staffName ?? "Loading…"}</div>
-          <div className={styles.userRole}>
-            {roleLabel}
-            {gymName ? ` · ${gymName}` : ""}
+      <div className={styles.userMenu} ref={menuRef}>
+        {menuOpen ? (
+          <div className={styles.userDropdown} role="menu">
+            <button
+              type="button"
+              role="menuitem"
+              className={styles.userDropdownItem}
+              onClick={handleLogout}
+              disabled={loggingOut}
+            >
+              <LogOut size={15} strokeWidth={2} />
+              {loggingOut ? "Logging out…" : "Log out"}
+            </button>
           </div>
-        </div>
+        ) : null}
+        <button
+          type="button"
+          className={styles.userChip}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <div className={styles.userAvatar}>{initials}</div>
+          <div className={styles.userMeta}>
+            <div className={styles.userName}>{staffName ?? "Loading…"}</div>
+            <div className={styles.userRole}>
+              {roleLabel}
+              {gymName ? ` · ${gymName}` : ""}
+            </div>
+          </div>
+          <ChevronUp
+            size={16}
+            strokeWidth={2}
+            className={`${styles.userChevron} ${menuOpen ? styles.userChevronOpen : ""}`}
+            aria-hidden
+          />
+        </button>
       </div>
     </aside>
   );

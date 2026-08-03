@@ -279,8 +279,21 @@
   margin-top: 6px;
   font-size: 8px;
   color: #5a8a6e;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cardBrandMark {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  width: 22px;
+  height: 22px;
+  opacity: 0.85;
+  border-radius: 5px;
 }
 
 /* —— Details panel —— */

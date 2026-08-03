@@ -1,11 +1,19 @@
+import { Logo } from "@/components/brand/logo";
 import styles from "@/components/dashboard/route-states.module.css";
 
 export default function DashboardLoading() {
   return (
     <div className={styles.wrap} aria-busy="true" aria-label="Loading">
-      <div className={styles.skelTop}>
-        <div className={`${styles.skelTitle} ${styles.pulse}`} />
-        <div className={`${styles.skelSub} ${styles.pulse}`} />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          padding: "48px 0 24px",
+        }}
+      >
+        <div className={styles.pulse}>
+          <Logo variant="icon" height={48} href={null} />
+        </div>
       </div>
       <div className={styles.skelKpiGrid}>
         {Array.from({ length: 4 }).map((_, i) => (

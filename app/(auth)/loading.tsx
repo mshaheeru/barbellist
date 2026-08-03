@@ -1,3 +1,5 @@
+import { Logo } from "@/components/brand/logo";
+
 export default function AuthLoading() {
   return (
     <div
@@ -5,10 +7,8 @@ export default function AuthLoading() {
       aria-busy="true"
       aria-label="Loading"
     >
-      <div className="w-full max-w-md space-y-4">
-        <div className="h-8 w-40 animate-pulse rounded bg-[#E8E4DC]" />
-        <div className="h-48 w-full animate-pulse rounded-lg bg-[#E8E4DC]" />
-        <div className="h-10 w-full animate-pulse rounded bg-[#E8E4DC]" />
+      <div className="animate-pulse">
+        <Logo variant="icon" height={56} href={null} />
       </div>
     </div>
   );

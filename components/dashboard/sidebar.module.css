@@ -26,7 +26,9 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 0 24px 20px;
+  padding: 0 20px 18px;
+  margin: 0 12px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .brandMark {
@@ -79,14 +81,31 @@
   font-weight: 600;
 }
 
-.userChip {
+.userMenu {
+  position: relative;
   margin: 8px 14px 0;
+}
+
+.userChip {
+  width: 100%;
   padding: 11px 14px;
+  border: none;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
   gap: 11px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.userChip:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.userChip[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .userAvatar {
@@ -105,6 +124,7 @@
 
 .userMeta {
   min-width: 0;
+  flex: 1;
 }
 
 .userName {
@@ -122,6 +142,56 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.userChevron {
+  color: #88a596;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.userChevronOpen {
+  transform: rotate(180deg);
+  color: #fff;
+}
+
+.userDropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 6px);
+  padding: 6px;
+  border-radius: 12px;
+  background: #0f3221;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  z-index: 20;
+}
+
+.userDropdownItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #f2d4a8;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.userDropdownItem:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.userDropdownItem:disabled {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 .mobileOverlay {

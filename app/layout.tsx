@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Space_Grotesk } from "next/font/google";
+import { Geist, Saira, Space_Grotesk } from "next/font/google";
 import {
   ColorSchemeScript,
   mantineHtmlProps,
@@ -19,6 +19,12 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
   variable: "--font-space-grotesk",
+});
+
+const saira = Saira({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-saira",
 });
 
 export const metadata: Metadata = {
@@ -76,7 +82,12 @@ export const metadata: Metadata = {
     follow: true,
   },
   icons: {
-    icon: "/icon.svg",
+    icon: [
+      { url: "/logo/icon.svg", type: "image/svg+xml" },
+      { url: "/logo/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/logo/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/logo/icon-192.png", sizes: "192x192", type: "image/png" }],
   },
 };
 
@@ -98,7 +109,7 @@ export default function RootLayout({
         <ColorSchemeScript defaultColorScheme="light" />
       </head>
       <body
-        className={`${geist.variable} ${spaceGrotesk.variable} ${geist.className}`}
+        className={`${geist.variable} ${spaceGrotesk.variable} ${saira.variable} ${geist.className}`}
       >
         <Providers>{children}</Providers>
       </body>

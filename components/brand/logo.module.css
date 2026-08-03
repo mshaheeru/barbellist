@@ -1,0 +1,103 @@
+.link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.link:hover {
+  opacity: 0.92;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-saira), var(--font-geist), system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.ll {
+  position: relative;
+  display: inline-block;
+  line-height: 1;
+}
+
+.llLetters {
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.barbell {
+  position: absolute;
+  left: 50%;
+  top: 53%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.plate {
+  width: 0.18em;
+  height: 0.18em;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bar {
+  width: 0.72em;
+  height: 0.075em;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.iconBox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #e9e2d6;
+  border-radius: 22%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.lockup {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  user-select: none;
+}
+
+.lockupText {
+  font-family: var(--font-saira), var(--font-geist), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.glyph {
+  position: relative;
+  display: inline-block;
+}
+
+.glyphStem {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 22%;
+}
+
+.glyphBarbell {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}

@@ -36,21 +36,26 @@ const faqPage = {
   })),
 };
 
+/** SoftwareApplication schema for the landing / home page. */
 export function JsonLd() {
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(softwareApplication),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(faqPage),
-        }}
-      />
-    </>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(softwareApplication),
+      }}
+    />
+  );
+}
+
+/** FAQPage schema — use on /faq only. */
+export function FaqJsonLd() {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(faqPage),
+      }}
+    />
   );
 }

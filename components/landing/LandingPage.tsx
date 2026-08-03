@@ -1,16 +1,21 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { buildFaqData } from "./landing-data";
-import { ChartBars, CheckIcon, QrDots } from "./landing-helpers";
+import { CheckIcon, QrDots } from "./landing-helpers";
 import { VideoModal } from "./VideoModal";
-import { OrderModal } from "./OrderModal";
-import { OrderChoiceModal } from "./OrderChoiceModal";
 import { Reveal } from "./Reveal";
 import { CurrencyProvider, useCurrency } from "./CurrencyProvider";
 import { WhatsAppFloat } from "./WhatsAppFloat";
-import { openWhatsApp } from "@/lib/whatsapp";
+import { getWhatsAppUrl, openWhatsApp } from "@/lib/whatsapp";
+import { AnimatedDashboard } from "./AnimatedDashboard";
+import { FoundersSection } from "./FoundersSection";
+import { PricingProofStats } from "./PricingProofStats";
+import { Logo, LogoLockupReversed } from "@/components/brand/logo";
+
+const CTA_URGENCY = "Early Access pricing ends when 50 gyms join.";
+const CONTENT_MAX = 896;
 
 export function LandingPage() {
   return (
@@ -21,15 +26,9 @@ export function LandingPage() {
 }
 
 function LandingInner() {
-  const { demo } = useCurrency();
-  const [openFaq, setOpenFaq] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
-  const [orderOpen, setOrderOpen] = useState(false);
-  const [orderChoiceOpen, setOrderChoiceOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const openOrderChoice = () => setOrderChoiceOpen(true);
 
   useEffect(() => {
     const onScroll = () => {
@@ -55,12 +54,6 @@ function LandingInner() {
     <div className="landing">
       <WhatsAppFloat />
       <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
-      <OrderChoiceModal
-        open={orderChoiceOpen}
-        onClose={() => setOrderChoiceOpen(false)}
-        onChooseForm={() => setOrderOpen(true)}
-      />
-      <OrderModal open={orderOpen} onClose={() => setOrderOpen(false)} />
       {/* NAV — overlays hero so photo covers full top */}
       <nav
         aria-label="Primary"
@@ -83,7 +76,7 @@ function LandingInner() {
         <div
           className="lp-nav-inner"
           style={{
-            maxWidth: 1200,
+            maxWidth: CONTENT_MAX,
             margin: "0 auto",
             padding: "0 32px",
             height: 82,
@@ -96,32 +89,9 @@ function LandingInner() {
             href="#top"
             className="lp-logo"
             onClick={closeMenu}
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: 0,
-              fontWeight: 800,
-              fontSize: 30,
-              letterSpacing: "-0.02em",
-              color: "#1B5E3C",
-            }}
+            style={{ display: "inline-flex", alignItems: "center" }}
           >
-            Barbell
-            <span style={{ position: "relative", paddingBottom: 6 }}>
-              ist
-              <span
-                style={{
-                  position: "absolute",
-                  left: -1,
-                  bottom: 0,
-                  width: "calc(100% + 2px)",
-                  height: 5,
-                  background: "linear-gradient(90deg,#C9861B,#E7B24E)",
-                  borderRadius: 3,
-                  boxShadow: "0 1px 4px rgba(201,134,27,.45)",
-                }}
-              />
-            </span>
+            <Logo variant="lockup" height={32} href={null} />
           </a>
           <div
             className="lp-nav-desktop"
@@ -137,18 +107,6 @@ function LandingInner() {
               }}
             >
               <a
-                href="#features"
-                className="nav-link"
-                style={{
-                  color: "#4A4A46",
-                  padding: "8px 15px",
-                  borderRadius: 8,
-                  transition: "color .18s,background .18s",
-                }}
-              >
-                Features
-              </a>
-              <a
                 href="#pricing"
                 className="nav-link"
                 style={{
@@ -160,8 +118,8 @@ function LandingInner() {
               >
                 Pricing
               </a>
-              <a
-                href="#faq"
+              <Link
+                href="/login"
                 className="nav-link"
                 style={{
                   color: "#4A4A46",
@@ -170,42 +128,32 @@ function LandingInner() {
                   transition: "color .18s,background .18s",
                 }}
               >
-                FAQ
-              </a>
+                Sign In
+              </Link>
             </div>
-            <button
-              type="button"
-              onClick={openOrderChoice}
+            <a
+              href={getWhatsAppUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
               className="nav-cta"
               style={{
                 marginLeft: 8,
-                background: "#1B5E3C",
-                color: "#FAF7F2",
-                padding: "11px 22px",
+                background: "#C9861B",
+                color: "#fff",
+                padding: "11px 18px",
                 borderRadius: 11,
                 fontSize: 14.5,
                 fontWeight: 600,
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 7,
-                boxShadow: "0 2px 8px rgba(27,94,60,.32)",
+                boxShadow: "0 2px 8px rgba(201,134,27,.35)",
                 transition: "transform .18s,box-shadow .18s,background .18s",
-                border: "none",
-                cursor: "pointer",
-                fontFamily: "inherit",
+                textDecoration: "none",
               }}
             >
-              Order Now
-              <span
-                style={{
-                  fontSize: 15,
-                  lineHeight: 1,
-                  transition: "transform .18s",
-                }}
-              >
-                →
-              </span>
-            </button>
+              💬 WhatsApp us
+            </a>
           </div>
           <button
             type="button"
@@ -227,25 +175,25 @@ function LandingInner() {
         </div>
         {menuOpen && (
           <div className="lp-mobile-drawer">
-            <a href="#features" onClick={closeMenu}>
-              Features
-            </a>
             <a href="#pricing" onClick={closeMenu}>
               Pricing
             </a>
-            <a href="#faq" onClick={closeMenu}>
-              FAQ
-            </a>
-            <button
-              type="button"
+            <Link href="/login" onClick={closeMenu}>
+              Sign In
+            </Link>
+            <a
+              href={getWhatsAppUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={closeMenu}
               className="lp-mobile-order"
-              onClick={() => {
-                closeMenu();
-                openOrderChoice();
-              }}
+              style={{ background: "#C9861B", color: "#fff" }}
             >
-              Order Now →
-            </button>
+              💬 WhatsApp us
+            </a>
+            <Link href="/signup" onClick={closeMenu} className="lp-mobile-order">
+              Start free →
+            </Link>
           </div>
         )}
       </nav>
@@ -268,70 +216,79 @@ function LandingInner() {
           />
           <div className="lp-hero-bg-wash" />
           <div className="lp-hero-bg-edge" />
+          <div className="lp-hero-particles" aria-hidden>
+            {Array.from({ length: 16 }).map((_, i) => (
+              <span key={i} className={`lp-particle lp-particle-${i + 1}`} />
+            ))}
+          </div>
         </div>
 
         <div className="lp-hero-content lp-hero-in">
           <h1 className="lp-hero-h1">
-            You opened a gym to run it — not drown in spreadsheets. Barbellist
-            handles the rest. Get your{" "}
-            <strong>weekend</strong> back.
+            <span className="lp-hero-line lp-hero-line-lead">
+              Your gym is <strong>losing money</strong> right now.
+            </span>
+            <span className="lp-hero-line lp-hero-line-support">
+              You just don&apos;t know exactly how much.
+            </span>
           </h1>
           <p className="lp-hero-sub lp-hero-in-delay">
-            Ridiculously low for your first 3 months · Still highly affordable
-            after · Cancel anytime
+            Barbellist shows you every overdue member, every missing payment,
+            and every expense — in one dashboard. Built for independent gyms.
+            Priced so it pays for itself.
           </p>
           <div className="lp-hero-ctas lp-hero-in-delay">
-            <button
-              type="button"
-              onClick={openOrderChoice}
-              className="lp-hero-btn-primary"
-            >
-              Order Now
-            </button>
+            <Link href="/signup" className="lp-hero-btn-primary">
+              Start free — no card required
+            </Link>
             <button
               type="button"
               onClick={() => setVideoOpen(true)}
               className="lp-hero-btn-secondary"
+              style={{
+                background: "transparent",
+                border: "none",
+                boxShadow: "none",
+                textDecoration: "underline",
+                textUnderlineOffset: 4,
+                padding: "15px 8px",
+              }}
             >
-              <span className="lp-hero-play" aria-hidden>
-                <span />
-              </span>
               Watch 2-min demo
             </button>
           </div>
+          <p
+            className="lp-hero-in-delay-2"
+            style={{
+              fontSize: 13,
+              color: "#6B6862",
+              marginTop: 18,
+              maxWidth: "48ch",
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          >
+            Free for 3 months · No setup fee · Cancel anytime · First 50 gyms
+            only at this price
+          </p>
+          <p
+            style={{
+              fontSize: 12,
+              color: "#9A968B",
+              marginTop: 8,
+            }}
+          >
+            {CTA_URGENCY}
+          </p>
         </div>
       </header>
 
-      <section className="lp-after-hero" aria-label="About Barbellist">
+      <section className="lp-after-hero" aria-label="Product preview">
         <div className="lp-after-hero-inner">
-          <Reveal className="lp-proof">
-            <div className="lp-proof-label">Who builds Barbellist</div>
-            <h2 className="lp-proof-title">
-              10+ engineers. One team. Every piece covered.
-            </h2>
-            <p className="lp-proof-body">
-              Barbellist is built by{" "}
-              <a
-                href="https://www.tuspiretech.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="lp-tuspire-link"
-              >
-                TuSpire Tech
-              </a>{" "}
-              — vetted senior engineers who have shipped real products, not a
-              side project learning curve. Product, backend, mobile, and ops
-              under one roof.
-            </p>
-            <p className="lp-proof-body" style={{ marginTop: 12 }}>
-              At the standard gym owners expect. On the timeline we promised.
-            </p>
-          </Reveal>
-
           {/* product visuals */}
           <div
             className="lp-hero-visuals lp-hero-in-delay-2"
-            style={{ position: "relative", marginTop: 48, height: 520 }}
+            style={{ position: "relative", marginTop: 24, height: 520 }}
           >
             {/* secondary floating card (QR kiosk) */}
             <div
@@ -437,432 +394,7 @@ function LandingInner() {
               </div>
             </div>
 
-            {/* main dashboard screenshot */}
-            <div
-              className="lp-dashboard"
-              style={{
-                position: "absolute",
-                left: 0,
-                top: 0,
-                width: 760,
-                transform: "rotate(-2deg)",
-              }}
-            >
-              <div className="lp-dash-scroll">
-              <div
-                className="lp-dash-shell"
-                style={{
-                  background: "#fff",
-                  borderRadius: 22,
-                  boxShadow: "0 40px 80px -28px rgba(23,61,40,.4)",
-                  border: "1px solid #ECE7DC",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "13px 16px",
-                    borderBottom: "1px solid #F0EDE4",
-                    background: "#FBF9F4",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 11,
-                      height: 11,
-                      borderRadius: "50%",
-                      background: "#E6E2D8",
-                    }}
-                  />
-                  <span
-                    style={{
-                      width: 11,
-                      height: 11,
-                      borderRadius: "50%",
-                      background: "#E6E2D8",
-                    }}
-                  />
-                  <span
-                    style={{
-                      width: 11,
-                      height: 11,
-                      borderRadius: "50%",
-                      background: "#E6E2D8",
-                    }}
-                  />
-                  <span
-                    style={{ marginLeft: 14, fontSize: 12, color: "#A29E93" }}
-                  >
-                    app.barbellist.com/dashboard
-                  </span>
-                </div>
-                <div style={{ display: "flex", minHeight: 400 }}>
-                  <div
-                    style={{
-                      width: 190,
-                      background: "#173D28",
-                      padding: "20px 16px",
-                      color: "#B9CFC1",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontWeight: 800,
-                        color: "#fff",
-                        fontSize: 16,
-                        letterSpacing: "-0.02em",
-                        marginBottom: 22,
-                      }}
-                    >
-                      Barbell<span style={{ color: "#E7B24E" }}>ist</span>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 3,
-                        fontSize: 13,
-                      }}
-                    >
-                      <div
-                        style={{
-                          background: "rgba(255,255,255,.12)",
-                          color: "#fff",
-                          padding: "8px 11px",
-                          borderRadius: 8,
-                          fontWeight: 600,
-                        }}
-                      >
-                        Dashboard
-                      </div>
-                      <div style={{ padding: "8px 11px" }}>Members</div>
-                      <div style={{ padding: "8px 11px" }}>Attendance</div>
-                      <div style={{ padding: "8px 11px" }}>Payments</div>
-                      <div style={{ padding: "8px 11px" }}>Expenses</div>
-                      <div style={{ padding: "8px 11px" }}>Inventory</div>
-                      <div style={{ padding: "8px 11px" }}>Staff</div>
-                    </div>
-                  </div>
-                  <div style={{ flex: 1, padding: "22px 24px", background: "#fff" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        marginBottom: 20,
-                      }}
-                    >
-                      <div>
-                        <div
-                          style={{
-                            fontSize: 18,
-                            fontWeight: 700,
-                            color: "#1F1F1F",
-                          }}
-                        >
-                          Good morning, Bilal
-                        </div>
-                        <div style={{ fontSize: 13, color: "#9A968B" }}>
-                          Iron Republic · Karachi · August 2026
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          width: 34,
-                          height: 34,
-                          borderRadius: "50%",
-                          background: "#EDE8DD",
-                        }}
-                      />
-                    </div>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr 1fr",
-                        gap: 12,
-                        marginBottom: 18,
-                      }}
-                    >
-                      <div
-                        style={{
-                          background: "#F7F5EF",
-                          border: "1px solid #EEEAE0",
-                          borderRadius: 12,
-                          padding: 14,
-                        }}
-                      >
-                        <div style={{ fontSize: 12, color: "#8E8A7F" }}>
-                          Revenue
-                        </div>
-                        <div
-                          className="num"
-                          style={{
-                            fontSize: 24,
-                            fontWeight: 700,
-                            color: "#1B5E3C",
-                            marginTop: 4,
-                          }}
-                        >
-                          {demo(8420)}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 11,
-                            color: "#1B5E3C",
-                            fontWeight: 600,
-                            marginTop: 2,
-                          }}
-                        >
-                          ▲ 12%
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          background: "#F7F5EF",
-                          border: "1px solid #EEEAE0",
-                          borderRadius: 12,
-                          padding: 14,
-                        }}
-                      >
-                        <div style={{ fontSize: 12, color: "#8E8A7F" }}>
-                          Expenses
-                        </div>
-                        <div
-                          className="num"
-                          style={{
-                            fontSize: 24,
-                            fontWeight: 700,
-                            color: "#1F1F1F",
-                            marginTop: 4,
-                          }}
-                        >
-                          {demo(3180)}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 11,
-                            color: "#9A968B",
-                            fontWeight: 600,
-                            marginTop: 2,
-                          }}
-                        >
-                          — utilities
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          background: "#173D28",
-                          borderRadius: 12,
-                          padding: 14,
-                        }}
-                      >
-                        <div style={{ fontSize: 12, color: "#9DBBAB" }}>
-                          Net profit
-                        </div>
-                        <div
-                          className="num"
-                          style={{
-                            fontSize: 24,
-                            fontWeight: 700,
-                            color: "#fff",
-                            marginTop: 4,
-                          }}
-                        >
-                          {demo(5240)}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 11,
-                            color: "#E7B24E",
-                            fontWeight: 600,
-                            marginTop: 2,
-                          }}
-                        >
-                          ▲ 18%
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1.5fr 1fr",
-                        gap: 14,
-                      }}
-                    >
-                      <div
-                        style={{
-                          border: "1px solid #EEEAE0",
-                          borderRadius: 12,
-                          padding: 16,
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: "#54524B",
-                            marginBottom: 14,
-                          }}
-                        >
-                          Revenue vs expenses
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "flex-end",
-                            gap: 10,
-                            height: 120,
-                          }}
-                        >
-                          <ChartBars />
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          border: "1px solid #EEEAE0",
-                          borderRadius: 12,
-                          padding: 16,
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: "#54524B",
-                            marginBottom: 12,
-                          }}
-                        >
-                          At-risk members
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 10,
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                              }}
-                            >
-                              <div
-                                style={{
-                                  width: 24,
-                                  height: 24,
-                                  borderRadius: "50%",
-                                  background: "#EDE8DD",
-                                }}
-                              />
-                              <div style={{ fontSize: 12 }}>Adnan R.</div>
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 11,
-                                color: "#B4451F",
-                                fontWeight: 600,
-                                background: "#FBEBE4",
-                                padding: "2px 8px",
-                                borderRadius: 100,
-                              }}
-                            >
-                              7d overdue
-                            </div>
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                              }}
-                            >
-                              <div
-                                style={{
-                                  width: 24,
-                                  height: 24,
-                                  borderRadius: "50%",
-                                  background: "#EDE8DD",
-                                }}
-                              />
-                              <div style={{ fontSize: 12 }}>Sana K.</div>
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 11,
-                                color: "#B4451F",
-                                fontWeight: 600,
-                                background: "#FBEBE4",
-                                padding: "2px 8px",
-                                borderRadius: 100,
-                              }}
-                            >
-                              3d overdue
-                            </div>
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                              }}
-                            >
-                              <div
-                                style={{
-                                  width: 24,
-                                  height: 24,
-                                  borderRadius: "50%",
-                                  background: "#EDE8DD",
-                                }}
-                              />
-                              <div style={{ fontSize: 12 }}>Usman T.</div>
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 11,
-                                color: "#9A6A12",
-                                fontWeight: 600,
-                                background: "#F7EBD3",
-                                padding: "2px 8px",
-                                borderRadius: 100,
-                              }}
-                            >
-                              expires 2d
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              </div>
-            </div>
+            <AnimatedDashboard />
           </div>
         </div>
       </section>
@@ -871,7 +403,7 @@ function LandingInner() {
       <Reveal
         as="section"
         className="lp-section-lg"
-        style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 32px" }}
+        style={{ maxWidth: CONTENT_MAX, margin: "0 auto", padding: "96px 32px" }}
       >
         <div
           className="lp-grid-2"
@@ -915,10 +447,10 @@ function LandingInner() {
                 marginTop: 18,
               }}
             >
-              Overdue payments go unnoticed for weeks. Members forget renewal
-              dates. Cash goes untracked. Expenses live in a drawer. And when
-              you want to know if the gym is actually profitable this month,
-              you&apos;re doing math on a napkin.
+              Overdue members go unnoticed for weeks. You find out only when
+              they show up at the front desk. Cash is untracked. Expenses are
+              in a WhatsApp chat or a drawer. And when someone asks if the gym
+              is profitable — you genuinely don&apos;t know.
             </p>
           </div>
           <div
@@ -969,17 +501,13 @@ function LandingInner() {
         </div>
       </Reveal>
 
-      {/* FEATURE BENTO - continued in part 2 */}
+      {/* FEATURE BENTO */}
       <FeaturesSection />
       <RoiSection />
-      <DeepDiveSection />
-      <PricingSection
-        onOrder={openOrderChoice}
-        onTalkToSales={() => openWhatsApp()}
-      />
+      <FoundersSection />
+      <PricingSection onTalkToSales={() => openWhatsApp()} />
       <TestimonialsSection />
-      <FaqSection openFaq={openFaq} setOpenFaq={setOpenFaq} />
-      <FinalCtaSection onOrder={openOrderChoice} />
+      <FinalCtaSection />
       </main>
       <FooterSection />
     </div>
@@ -993,7 +521,7 @@ function FeaturesSection() {
       as="section"
       id="features"
       className="lp-section"
-      style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 32px 96px" }}
+      style={{ maxWidth: CONTENT_MAX, margin: "0 auto", padding: "36px 32px 96px" }}
     >
       <div style={{ maxWidth: 640, marginBottom: 44 }}>
         <div
@@ -1018,7 +546,7 @@ function FeaturesSection() {
             color: "#173D28",
           }}
         >
-          One platform for the entire gym.
+          Everything that used to take your weekend — automated.
         </h2>
       </div>
 
@@ -1043,7 +571,7 @@ function FeaturesSection() {
           }}
         >
           <h3 style={{ fontSize: 20, fontWeight: 700, color: "#1F1F1F" }}>
-            Member Management
+            Members
           </h3>
           <p style={{ fontSize: 15, color: "#6B6862", marginTop: 6 }}>
             Digital profiles that replace the register.
@@ -1136,7 +664,7 @@ function FeaturesSection() {
           }}
         >
           <h3 style={{ fontSize: 20, fontWeight: 700, color: "#1F1F1F" }}>
-            Automated Fee Reminders
+            Fee Reminders
           </h3>
           <p style={{ fontSize: 15, color: "#6B6862", marginTop: 6 }}>
             WhatsApp reminders that collect for you.
@@ -1542,7 +1070,7 @@ function RoiSection() {
       <Reveal
         className="lp-section-lg"
         style={{
-          maxWidth: 900,
+          maxWidth: CONTENT_MAX,
           margin: "0 auto",
           padding: "104px 32px",
           position: "relative",
@@ -1588,23 +1116,24 @@ function RoiSection() {
               style={{ display: "flex", gap: 18, alignItems: "flex-start" }}
             >
               <span
+                aria-hidden
                 style={{
                   flex: "0 0 auto",
-                  marginTop: 3,
-                  width: 22,
-                  height: 26,
-                  display: "inline-block",
-                  background: "#C9861B",
-                  borderRadius: "0 50% 50% 50%",
-                  transform: "rotate(45deg)",
-                  boxShadow: "0 3px 8px rgba(201,134,27,.35)",
+                  marginTop: 2,
+                  fontSize: 22,
+                  fontWeight: 800,
+                  lineHeight: 1,
+                  color: "#B4451F",
                 }}
-              />
+              >
+                ❌
+              </span>
               <p
                 style={{
                   fontSize: 19,
                   lineHeight: 1.5,
                   color: "#3A3A38",
+                  fontWeight: 700,
                 }}
               >
                 {text}
@@ -1660,469 +1189,15 @@ function RoiSection() {
             Barbellist doesn&apos;t cost you money. It rescues the money you are
             already losing.
           </p>
-        </div>
-      </Reveal>
-    </section>
-  );
-}
-
-function DeepDiveSection() {
-  const { demo } = useCurrency();
-  const checklistItems = [
-    "Real-time revenue vs. expenses",
-    "At-risk member alerts",
-    "Expiring memberships this week",
-  ];
-
-  return (
-    <section
-      id="deepdive"
-      className="lp-section-lg"
-      style={{
-        maxWidth: 1200,
-        margin: "0 auto",
-        padding: "100px 32px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 110,
-      }}
-    >
-      {/* Row A */}
-      <Reveal
-        variant="left"
-        className="lp-grid-deep"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.05fr .95fr",
-          gap: 64,
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            background: "#fff",
-            border: "1px solid #ECE7DC",
-            borderRadius: 18,
-            padding: 20,
-            boxShadow: "0 30px 66px -34px rgba(23,61,40,.4)",
-          }}
-        >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              gap: 12,
-              marginBottom: 14,
-            }}
-          >
-            <div
-              style={{
-                background: "#F7F5EF",
-                border: "1px solid #EEEAE0",
-                borderRadius: 12,
-                padding: 14,
-              }}
-            >
-              <div style={{ fontSize: 11, color: "#8E8A7F" }}>Revenue</div>
-              <div
-                className="num"
-                style={{ fontSize: 22, fontWeight: 700, color: "#1B5E3C" }}
-              >
-                {demo(8420)}
-              </div>
-            </div>
-            <div
-              style={{
-                background: "#F7F5EF",
-                border: "1px solid #EEEAE0",
-                borderRadius: 12,
-                padding: 14,
-              }}
-            >
-              <div style={{ fontSize: 11, color: "#8E8A7F" }}>Expenses</div>
-              <div
-                className="num"
-                style={{ fontSize: 22, fontWeight: 700, color: "#1F1F1F" }}
-              >
-                {demo(3180)}
-              </div>
-            </div>
-            <div
-              style={{
-                background: "#173D28",
-                borderRadius: 12,
-                padding: 14,
-              }}
-            >
-              <div style={{ fontSize: 11, color: "#9DBBAB" }}>Net profit</div>
-              <div
-                className="num"
-                style={{ fontSize: 22, fontWeight: 700, color: "#fff" }}
-              >
-                {demo(5240)}
-              </div>
-            </div>
-          </div>
-          <div
-            style={{
-              border: "1px solid #EEEAE0",
-              borderRadius: 12,
-              padding: 16,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: "#54524B",
-                marginBottom: 12,
-              }}
-            >
-              Revenue vs expenses · 6 months
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-end",
-                gap: 12,
-                height: 130,
-              }}
-            >
-              <ChartBars />
-            </div>
-          </div>
-        </div>
-        <div>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#C9861B",
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-              marginBottom: 14,
-            }}
-          >
-            Owner Dashboard
-          </div>
-          <h2
-            style={{
-              fontSize: 36,
-              lineHeight: 1.12,
-              letterSpacing: "-0.03em",
-              fontWeight: 800,
-              color: "#173D28",
-            }}
-          >
-            Your gym, in one glance.
-          </h2>
           <p
             style={{
               fontSize: 17,
-              lineHeight: 1.6,
-              color: "#6B6862",
-              marginTop: 16,
-            }}
-          >
-            Revenue, expenses, net profit, overdue fees, at-risk members — all
-            live, all in one place. No more monthly guessing games.
-          </p>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-              marginTop: 24,
-            }}
-          >
-            {checklistItems.map((item) => (
-              <div
-                key={item}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  fontSize: 15,
-                  color: "#3A3A38",
-                }}
-              >
-                <span
-                  style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: 6,
-                    background: "#E7F3EC",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 9,
-                      height: 5,
-                      borderLeft: "2px solid #1B5E3C",
-                      borderBottom: "2px solid #1B5E3C",
-                      transform: "rotate(-45deg)",
-                      marginTop: -2,
-                    }}
-                  />
-                </span>
-                {item}
-              </div>
-            ))}
-          </div>
-        </div>
-      </Reveal>
-
-      {/* Row B */}
-      <Reveal
-        variant="right"
-        className="lp-grid-deep-rev"
-        style={{
-          display: "grid",
-          gridTemplateColumns: ".95fr 1.05fr",
-          gap: 64,
-          alignItems: "center",
-        }}
-      >
-        <div>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
               color: "#C9861B",
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-              marginBottom: 14,
-            }}
-          >
-            Attendance &amp; Cards
-          </div>
-          <h2
-            style={{
-              fontSize: 36,
-              lineHeight: 1.12,
-              letterSpacing: "-0.03em",
-              fontWeight: 800,
-              color: "#173D28",
-            }}
-          >
-            Check-in that feels like a product, not a punishment.
-          </h2>
-          <p
-            style={{
-              fontSize: 17,
-              lineHeight: 1.6,
-              color: "#6B6862",
-              marginTop: 16,
-            }}
-          >
-            Every member gets an auto-generated smart card with a signed QR
-            code. Tap at the kiosk. Fee status shown instantly. No lines, no
-            register, no awkward conversations.
-          </p>
-        </div>
-        <div
-          style={{
-            position: "relative",
-            background: "#173D28",
-            borderRadius: 18,
-            padding: 44,
-            boxShadow: "0 30px 66px -34px rgba(23,61,40,.5)",
-            minHeight: 300,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 14,
-              padding: 26,
-              width: 280,
-              textAlign: "center",
-              boxShadow: "0 20px 40px -18px rgba(0,0,0,.4)",
-            }}
-          >
-            <div
-              style={{
-                width: 52,
-                height: 52,
-                borderRadius: "50%",
-                background: "#E7F3EC",
-                margin: "0 auto 12px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <span
-                style={{
-                  width: 20,
-                  height: 11,
-                  borderLeft: "3px solid #1B5E3C",
-                  borderBottom: "3px solid #1B5E3C",
-                  transform: "rotate(-45deg)",
-                  marginTop: -5,
-                }}
-              />
-            </div>
-            <div
-              style={{
-                fontSize: 17,
-                fontWeight: 700,
-                color: "#173D28",
-              }}
-            >
-              Welcome back, Hamza
-            </div>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                marginTop: 8,
-                background: "#E7F3EC",
-                color: "#1B5E3C",
-                fontSize: 12,
-                fontWeight: 600,
-                padding: "5px 12px",
-                borderRadius: 100,
-              }}
-            >
-              Fees paid · valid to 30 Aug
-            </div>
-          </div>
-          <div
-            style={{
-              position: "absolute",
-              right: 26,
-              bottom: 26,
-              background: "#E7B24E",
-              color: "#3A2A08",
-              fontSize: 12,
-              fontWeight: 700,
-              padding: "8px 14px",
-              borderRadius: 100,
-              transform: "rotate(-4deg)",
-            }}
-          >
-            Signed QR · tamper-proof
-          </div>
-        </div>
-      </Reveal>
-
-      {/* Row C */}
-      <Reveal
-        variant="left"
-        className="lp-grid-deep"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.05fr .95fr",
-          gap: 64,
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            background: "#fff",
-            border: "1px solid #ECE7DC",
-            borderRadius: 18,
-            padding: 22,
-            boxShadow: "0 30px 66px -34px rgba(23,61,40,.4)",
-          }}
-        >
-          <div
-            style={{
-              fontSize: 13,
               fontWeight: 600,
-              color: "#54524B",
-              marginBottom: 14,
+              marginTop: 18,
             }}
           >
-            This month&apos;s outgoings
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {[
-              { label: "Staff salaries", amount: demo(1850), highlight: false },
-              { label: "Electricity", amount: demo(640), highlight: false },
-              { label: "Equipment repair", amount: demo(290), highlight: false },
-              { label: "Inventory restock", amount: demo(400), highlight: true },
-            ].map((row) => (
-              <div
-                key={row.label}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  fontSize: 14,
-                  padding: "12px 15px",
-                  background: row.highlight ? "#EBF1EC" : "#FBF9F4",
-                  border: `1px solid ${row.highlight ? "#D9E5DC" : "#F0EDE4"}`,
-                  borderRadius: 10,
-                }}
-              >
-                <span style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                  <span
-                    style={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: 7,
-                      background: "#EDE8DD",
-                    }}
-                  />
-                  {row.label}
-                </span>
-                <span
-                  className="num"
-                  style={{
-                    fontWeight: row.highlight ? 700 : 600,
-                    color: row.highlight ? "#1B5E3C" : undefined,
-                  }}
-                >
-                  {row.amount}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#C9861B",
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-              marginBottom: 14,
-            }}
-          >
-            Expenses · Staff · Inventory
-          </div>
-          <h2
-            style={{
-              fontSize: 36,
-              lineHeight: 1.12,
-              letterSpacing: "-0.03em",
-              fontWeight: 800,
-              color: "#173D28",
-            }}
-          >
-            Run the whole business, not just memberships.
-          </h2>
-          <p
-            style={{
-              fontSize: 17,
-              lineHeight: 1.6,
-              color: "#6B6862",
-              marginTop: 16,
-            }}
-          >
-            Track staff salaries, utility bills, cleaning supplies, and
-            equipment repairs alongside your inventory sales. Because a gym
-            isn&apos;t just members — it&apos;s a business.
+            Join the first 50 gyms. Lock in early pricing before it changes.
           </p>
         </div>
       </Reveal>
@@ -2131,13 +1206,11 @@ function DeepDiveSection() {
 }
 
 function PricingSection({
-  onOrder,
   onTalkToSales,
 }: {
-  onOrder: () => void;
   onTalkToSales: () => void;
 }) {
-  const { earlyRate, standardRate, earlyMin, standardMin, barbellist200, demo, profile } =
+  const { earlyRate, standardRate, earlyMin, standardMin, demo, profile } =
     useCurrency();
   const earlyFeatures = [
     "All features included",
@@ -2160,8 +1233,8 @@ function PricingSection({
   const comparisons = [
     {
       name: "Barbellist",
-      price: `${barbellist200}/mo`,
-      sub: "· 200 members",
+      price: `${earlyMin}/mo minimum`,
+      sub: "· scales per member",
       highlight: true,
     },
     {
@@ -2194,7 +1267,7 @@ function PricingSection({
       <div
         className="lp-section-lg"
         style={{
-          maxWidth: 1100,
+          maxWidth: CONTENT_MAX,
           margin: "0 auto",
           padding: "96px 32px",
         }}
@@ -2203,7 +1276,7 @@ function PricingSection({
           style={{
             textAlign: "center",
             maxWidth: 640,
-            margin: "0 auto 52px",
+            margin: "0 auto 40px",
           }}
         >
           <h2
@@ -2223,6 +1296,8 @@ function PricingSection({
           </p>
         </div>
 
+        <PricingProofStats />
+
         <div
           className="lp-grid-2"
           style={{
@@ -2232,7 +1307,6 @@ function PricingSection({
             alignItems: "stretch",
           }}
         >
-          {/* Early Access */}
           <div
             style={{
               background: "#fff",
@@ -2305,9 +1379,8 @@ function PricingSection({
             <div style={{ fontSize: 13, color: "#8A877E", marginTop: 20 }}>
               {earlyMin}/month minimum
             </div>
-            <button
-              type="button"
-              onClick={onOrder}
+            <Link
+              href="/signup"
               style={{
                 marginTop: 20,
                 textAlign: "center",
@@ -2318,17 +1391,26 @@ function PricingSection({
                 fontSize: 16,
                 fontWeight: 600,
                 boxShadow: "0 6px 16px rgba(27,94,60,.26)",
-                border: "none",
-                cursor: "pointer",
-                fontFamily: "inherit",
+                textDecoration: "none",
+                display: "block",
                 width: "100%",
+                boxSizing: "border-box",
               }}
             >
-              Order Now
-            </button>
+              Start free
+            </Link>
+            <p
+              style={{
+                fontSize: 12,
+                color: "#9A968B",
+                marginTop: 10,
+                textAlign: "center",
+              }}
+            >
+              {CTA_URGENCY}
+            </p>
           </div>
 
-          {/* Standard */}
           <div
             style={{
               position: "relative",
@@ -2442,10 +1524,55 @@ function PricingSection({
           </div>
         </div>
 
-        {/* Comparison strip */}
         <div
           style={{
-            marginTop: 56,
+            marginTop: 28,
+            background: "rgba(201,134,27,.12)",
+            border: "1px solid rgba(201,134,27,.35)",
+            borderRadius: 12,
+            padding: "14px 20px",
+            textAlign: "center",
+            fontSize: 14,
+            fontWeight: 600,
+            color: "#9A6A12",
+          }}
+        >
+          ⚡ Early Access — First 50 gyms only. Lock in $1/member before
+          standard pricing applies.
+        </div>
+
+        <p
+          style={{
+            marginTop: 20,
+            textAlign: "center",
+            fontSize: 14,
+            color: "#6B6862",
+          }}
+        >
+          Running more than 3 locations?{" "}
+          <button
+            type="button"
+            onClick={onTalkToSales}
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              color: "#1B5E3C",
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: "inherit",
+              fontSize: 14,
+              textDecoration: "underline",
+              textUnderlineOffset: 3,
+            }}
+          >
+            Talk to us about custom pricing.
+          </button>
+        </p>
+
+        <div
+          style={{
+            marginTop: 48,
             background: "#fff",
             border: "1px solid #EAE5D9",
             borderRadius: 18,
@@ -2504,17 +1631,18 @@ function PricingSection({
         </div>
         <p
           style={{
-            fontSize: 12,
-            color: "#9A968B",
-            marginTop: 14,
+            fontSize: 14,
+            color: "#6B6862",
+            marginTop: 18,
             textAlign: "center",
-            maxWidth: "70ch",
+            maxWidth: "52ch",
             marginLeft: "auto",
             marginRight: "auto",
+            lineHeight: 1.5,
           }}
         >
-          Comparison based on publicly listed pricing pages of major gym
-          software platforms in 2026, for a 200-member gym.
+          A fraction of what US platforms charge — and built for how your gym
+          actually works.
         </p>
         <p
           style={{
@@ -2558,7 +1686,7 @@ function TestimonialsSection() {
     <section
       aria-label="Customer testimonials"
       className="lp-section-lg"
-      style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 32px" }}
+      style={{ maxWidth: CONTENT_MAX, margin: "0 auto", padding: "96px 32px" }}
     >
       <Reveal>
         <h2
@@ -2657,138 +1785,21 @@ function TestimonialsSection() {
           </Reveal>
         ))}
       </div>
-    </section>
-  );
-}
-
-function FaqSection({
-  openFaq,
-  setOpenFaq,
-}: {
-  openFaq: number;
-  setOpenFaq: (fn: (s: number) => number) => void;
-}) {
-  const { profile } = useCurrency();
-  const faqs = buildFaqData(profile);
-  return (
-    <section id="faq" aria-label="Frequently asked questions" style={{ background: "#FAF7F2" }}>
-      <Reveal
-        className="lp-section"
+      <p
         style={{
-          maxWidth: 760,
-          margin: "0 auto",
-          padding: "40px 32px 96px",
+          textAlign: "center",
+          fontSize: 13,
+          color: "#8A877E",
+          marginTop: 28,
         }}
       >
-        <h2
-          className="lp-heading-md"
-          style={{
-            fontSize: 36,
-            lineHeight: 1.12,
-            letterSpacing: "-0.03em",
-            fontWeight: 800,
-            color: "#173D28",
-            textAlign: "center",
-            marginBottom: 44,
-          }}
-        >
-          Questions, answered.
-        </h2>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          {faqs.map((faq, i) => (
-            <div key={faq.q} style={{ borderBottom: "1px solid #E8E5DF" }}>
-              <button
-                type="button"
-                onClick={() =>
-                  setOpenFaq((s) => (s === i ? -1 : i))
-                }
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 20,
-                  padding: "22px 4px",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  fontFamily: "inherit",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 600,
-                    color: "#1F1F1F",
-                  }}
-                >
-                  {faq.q}
-                </span>
-                <span
-                  style={{
-                    flex: "0 0 auto",
-                    width: 26,
-                    height: 26,
-                    position: "relative",
-                    color: "#1B5E3C",
-                  }}
-                >
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      width: 14,
-                      height: 2,
-                      background: "currentColor",
-                      transform: "translate(-50%, -50%)",
-                      borderRadius: 2,
-                    }}
-                  />
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      width: 2,
-                      height: 14,
-                      background: "currentColor",
-                      transform: `translate(-50%, -50%) scaleY(${openFaq === i ? 0 : 1})`,
-                      borderRadius: 2,
-                      transition: "transform .2s",
-                    }}
-                  />
-                </span>
-              </button>
-              <div
-                style={{
-                  maxHeight: openFaq === i ? 240 : 0,
-                  overflow: "hidden",
-                  transition: "max-height .3s ease",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: 16,
-                    lineHeight: 1.6,
-                    color: "#6B6862",
-                    padding: "0 4px 24px",
-                    maxWidth: "64ch",
-                  }}
-                >
-                  {faq.a}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Reveal>
+        Real gym owners. Real results. No actors.
+      </p>
     </section>
   );
 }
 
-function FinalCtaSection({ onOrder }: { onOrder: () => void }) {
+function FinalCtaSection() {
   return (
     <section
       aria-label="Get started"
@@ -2801,7 +1812,7 @@ function FinalCtaSection({ onOrder }: { onOrder: () => void }) {
         variant="scale"
         className="lp-section-lg"
         style={{
-          maxWidth: 760,
+          maxWidth: CONTENT_MAX,
           margin: "0 auto",
           padding: "100px 32px",
           textAlign: "center",
@@ -2822,9 +1833,8 @@ function FinalCtaSection({ onOrder }: { onOrder: () => void }) {
         <p style={{ fontSize: 19, color: "#4C5A50", marginTop: 18 }}>
           Start free. Onboard your gym in under an hour.
         </p>
-        <button
-          type="button"
-          onClick={onOrder}
+        <Link
+          href="/signup"
           style={{
             display: "inline-block",
             marginTop: 30,
@@ -2835,13 +1845,25 @@ function FinalCtaSection({ onOrder }: { onOrder: () => void }) {
             fontSize: 17,
             fontWeight: 600,
             boxShadow: "0 10px 26px rgba(27,94,60,.32)",
-            border: "none",
-            cursor: "pointer",
-            fontFamily: "inherit",
+            textDecoration: "none",
           }}
         >
-          Order Now — no card required
-        </button>
+          Start free — no card required
+        </Link>
+        <p style={{ fontSize: 12, color: "#7C8A80", marginTop: 12 }}>
+          {CTA_URGENCY}
+        </p>
+        <p style={{ fontSize: 15, color: "#4C5A50", marginTop: 16 }}>
+          or{" "}
+          <a
+            href={getWhatsAppUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#1B5E3C", fontWeight: 600, textDecoration: "none" }}
+          >
+            💬 WhatsApp us first → +92 336 7808477
+          </a>
+        </p>
         <p style={{ fontSize: 14, color: "#7C8A80", marginTop: 18 }}>
           Trusted by gym owners across three continents.
         </p>
@@ -2873,7 +1895,7 @@ function FooterSection() {
     {
       title: "Resources",
       links: [
-        { label: "FAQ", href: "#faq" },
+        { label: "FAQ", href: "/faq" },
         { label: "Support", href: "#top" },
         { label: "API", href: "#top" },
         { label: "Status", href: "#top" },
@@ -2894,7 +1916,7 @@ function FooterSection() {
       <div
         className="lp-footer-grid"
         style={{
-          maxWidth: 1200,
+          maxWidth: CONTENT_MAX,
           margin: "0 auto",
           padding: "64px 32px 40px",
           display: "grid",
@@ -2903,16 +1925,7 @@ function FooterSection() {
         }}
       >
         <div className="lp-footer-brand">
-          <div
-            style={{
-              fontWeight: 800,
-              fontSize: 22,
-              letterSpacing: "-0.02em",
-              color: "#fff",
-            }}
-          >
-            Barbell<span style={{ color: "#E7B24E" }}>ist</span>
-          </div>
+          <LogoLockupReversed height={32} href="/home" />
           <p
             style={{
               fontSize: 14,
@@ -2926,9 +1939,24 @@ function FooterSection() {
             worldwide.
           </p>
           <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-            {["X", "IG"].map((label) => (
-              <span
-                key={label}
+            {[
+              {
+                label: "IG",
+                href: "https://www.instagram.com/_barbellist/",
+                aria: "Barbellist on Instagram",
+              },
+              {
+                label: "FB",
+                href: "https://www.facebook.com/profile.php?id=61592842377915",
+                aria: "Barbellist on Facebook",
+              },
+            ].map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.aria}
                 style={{
                   width: 34,
                   height: 34,
@@ -2937,13 +1965,14 @@ function FooterSection() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: label === "X" ? 13 : 12,
+                  fontSize: 12,
                   fontWeight: 600,
                   color: "#CFE0D6",
+                  textDecoration: "none",
                 }}
               >
-                {label}
-              </span>
+                {social.label}
+              </a>
             ))}
           </div>
         </div>
@@ -2981,7 +2010,7 @@ function FooterSection() {
       <div style={{ borderTop: "1px solid rgba(255,255,255,.1)" }}>
         <div
           style={{
-            maxWidth: 1200,
+            maxWidth: CONTENT_MAX,
             margin: "0 auto",
             padding: "20px 32px",
             fontSize: 13,
@@ -2994,16 +2023,7 @@ function FooterSection() {
           }}
         >
           <span>© 2026 Barbellist. All rights reserved.</span>
-          <span className="lp-footer-powered">
-            Powered by{" "}
-            <a
-              href="https://www.tuspiretech.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              TuspireTech
-            </a>
-          </span>
+          <span>Made with ❤️ in Karachi</span>
         </div>
       </div>
     </footer>

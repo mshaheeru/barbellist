@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 96" fill="none" role="img" aria-label="Barbellist">
+  <!-- Reversed wordmark: cream text + amber barbell for dark/green backgrounds -->
+  <text
+    x="0"
+    y="68"
+    font-family="Outfit, Saira, Geist, system-ui, sans-serif"
+    font-weight="700"
+    font-size="72"
+    fill="#FAF7F2"
+    letter-spacing="-2.2"
+  >Barbe</text>
+  <g transform="translate(188 12)">
+    <rect x="4" y="6" width="14" height="60" rx="3" fill="#FAF7F2"/>
+    <rect x="28" y="6" width="14" height="60" rx="3" fill="#FAF7F2"/>
+    <circle cx="-2" cy="36" r="7" fill="#C9861B"/>
+    <rect x="3" y="32.5" width="40" height="7" rx="3.5" fill="#C9861B"/>
+    <circle cx="48" cy="36" r="7" fill="#C9861B"/>
+  </g>
+  <text
+    x="250"
+    y="68"
+    font-family="Outfit, Saira, Geist, system-ui, sans-serif"
+    font-weight="700"
+    font-size="72"
+    fill="#FAF7F2"
+    letter-spacing="-2.2"
+  >ist</text>
+</svg>

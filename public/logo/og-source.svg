@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#1B5E3C"/>
+  <!-- Wordmark centered (geometric Barbe + ll + ist) -->
+  <g transform="translate(210 230)">
+    <!-- Barbe as paths approximated with bold text fallback + LL geometry -->
+    <text
+      x="0"
+      y="95"
+      font-family="system-ui, -apple-system, Segoe UI, sans-serif"
+      font-weight="700"
+      font-size="110"
+      fill="#FAF7F2"
+      letter-spacing="-3.5"
+    >Barbe</text>
+    <g transform="translate(298 8)">
+      <rect x="6" y="10" width="22" height="92" rx="5" fill="#FAF7F2"/>
+      <rect x="44" y="10" width="22" height="92" rx="5" fill="#FAF7F2"/>
+      <circle cx="-4" cy="56" r="11" fill="#C9861B"/>
+      <rect x="4" y="50" width="64" height="12" rx="6" fill="#C9861B"/>
+      <circle cx="76" cy="56" r="11" fill="#C9861B"/>
+    </g>
+    <text
+      x="400"
+      y="95"
+      font-family="system-ui, -apple-system, Segoe UI, sans-serif"
+      font-weight="700"
+      font-size="110"
+      fill="#FAF7F2"
+      letter-spacing="-3.5"
+    >ist</text>
+  </g>
+  <text
+    x="600"
+    y="420"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, Segoe UI, sans-serif"
+    font-weight="600"
+    font-size="28"
+    fill="#C9861B"
+    letter-spacing="0.2"
+  >The calm, all-in-one gym management platform</text>
+</svg>

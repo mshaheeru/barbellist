@@ -127,6 +127,14 @@ export function MembershipCardFront({
           </div>
         ) : null}
       </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/logo/icon.svg"
+        alt=""
+        className={styles.cardBrandMark}
+        width={22}
+        height={22}
+      />
     </div>
   );
 }
@@ -177,7 +185,11 @@ export function MembershipCardBack({
           <div className={styles.backHint}>
             Scan QR code at kiosk for check-in
           </div>
-          <div className={styles.watermark}>Barbellist</div>
+          <div className={styles.watermark}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo/icon.svg" alt="" width={12} height={12} />
+            Powered by Barbellist
+          </div>
         </div>
       </div>
     </div>

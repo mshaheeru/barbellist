@@ -6,10 +6,10 @@ import {
   Fingerprint,
   QrCode,
   Search,
-  Dumbbell,
 } from "lucide-react";
 import { getLiveGymCounts } from "@/app/actions/attendance";
 import { useGym } from "@/components/gym-provider";
+import { Logo } from "@/components/brand/logo";
 import {
   formatLongDateInTimezone,
   formatTimeInTimezone,
@@ -94,9 +94,7 @@ export function KioskPageClient() {
   return (
     <div className={styles.shell}>
       <div className={styles.logoBlock}>
-        <div className={styles.logoIcon}>
-          <Dumbbell size={32} color="#C9861B" strokeWidth={2.2} />
-        </div>
+        <Logo variant="reversed" height={42} href={null} />
         <div className={styles.gymName}>{displayName}</div>
         <div className={styles.gymTagline}>Fitness · {city}</div>
       </div>

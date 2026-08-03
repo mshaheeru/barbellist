@@ -1,3 +1,5 @@
+import { Logo } from "@/components/brand/logo";
+
 export default function KioskLoading() {
   return (
     <div
@@ -5,10 +7,8 @@ export default function KioskLoading() {
       aria-busy="true"
       aria-label="Loading"
     >
-      <div className="w-full max-w-lg space-y-4">
-        <div className="mx-auto h-10 w-48 animate-pulse rounded bg-[#1C2420]" />
-        <div className="h-64 w-full animate-pulse rounded-xl bg-[#1C2420]" />
-        <div className="mx-auto h-12 w-56 animate-pulse rounded bg-[#1C2420]" />
+      <div className="animate-pulse opacity-90">
+        <Logo variant="icon" height={56} href={null} />
       </div>
     </div>
   );

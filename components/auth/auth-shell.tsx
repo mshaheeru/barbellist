@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Paper, Stack, Text, Title } from "@mantine/core";
-import { BarbellistLogo } from "@/components/brand/barbellist-logo";
+import { Logo } from "@/components/brand/logo";
 import styles from "./auth-shell.module.css";
 
 type AuthShellProps = {
@@ -35,13 +35,7 @@ export function AuthShell({
           gap={20}
           className={`auth-fade-in ${styles.brandInner}`}
         >
-          <BarbellistLogo
-            layout="stacked"
-            variant="light"
-            markSize={96}
-            wordmarkSize={56}
-            gap={28}
-          />
+          <Logo variant="reversed" height={52} href="/home" />
 
           <Text
             className="auth-display-title auth-brand-tagline"
@@ -70,12 +64,7 @@ export function AuthShell({
           }}
         >
           <div className={styles.logoRow}>
-            <BarbellistLogo
-              layout="horizontal"
-              variant="dark"
-              markSize={38}
-              wordmarkSize={26}
-            />
+            <Logo variant="wordmark" height={40} href="/home" />
           </div>
 
           <Text size="xs" c="dimmed" ta="center" mb={20}>
