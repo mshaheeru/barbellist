@@ -14,6 +14,7 @@ import {
   formatReportsRangeLabel,
 } from "@/lib/reports/queries";
 import type { ReportsData } from "@/lib/reports/types";
+import { getUserRole } from "@/lib/auth/claims";
 import { createClient } from "@/lib/supabase/server";
 import type { StaffRole } from "@/lib/types";
 
@@ -61,7 +62,7 @@ async function ReportsContent({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const role = (user?.user_metadata?.role as StaffRole | undefined) ?? null;
+  const role = getUserRole(user);
 
   if (!canViewReports(role)) {
     redirect("/dashboard");

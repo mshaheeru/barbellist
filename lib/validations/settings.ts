@@ -67,3 +67,21 @@ export const updateStaffRoleSchema = z.object({
 export const deleteGymSchema = z.object({
   confirmationName: z.string().min(1),
 });
+
+export const createBranchSchema = z.object({
+  name: z.string().min(1, "Branch name is required"),
+  city: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  phone: z.string().optional().nullable(),
+});
+
+export type CreateBranchInput = z.infer<typeof createBranchSchema>;
+
+export const updateBranchSchema = z.object({
+  gymId: z.string().uuid(),
+  name: z.string().min(1, "Branch name is required"),
+  city: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+});
+
+export type UpdateBranchInput = z.infer<typeof updateBranchSchema>;

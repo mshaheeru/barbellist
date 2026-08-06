@@ -49,7 +49,7 @@ export function DeleteGymModal({
       <div className={styles.deleteModal}>
         <div className={styles.modalHeader}>
           <h2 id="delete-gym-title" className={styles.modalTitle}>
-            Delete Gym
+            Delete Branch
           </h2>
           <button
             type="button"
@@ -63,12 +63,12 @@ export function DeleteGymModal({
         </div>
         <div className={styles.deleteBody}>
           <p className={styles.deleteText}>
-            This will permanently delete <strong>{gymName}</strong> and all
-            members, payments, attendance, and staff data. Type the gym name to
-            confirm.
+            This will permanently delete branch <strong>{gymName}</strong> and
+            all of its members, payments, attendance, and staff data. You cannot
+            delete your only branch. Type the branch name to confirm.
           </p>
           <TextInput
-            label="Gym name"
+            label="Branch name"
             value={confirm}
             onChange={(e) => setConfirm(e.currentTarget.value)}
             placeholder={gymName}
@@ -89,7 +89,7 @@ export function DeleteGymModal({
               onClick={handleDelete}
               disabled={pending || !matched}
             >
-              {pending ? "Deleting…" : "Delete Gym"}
+              {pending ? "Deleting…" : "Delete Branch"}
             </button>
           </div>
         </div>

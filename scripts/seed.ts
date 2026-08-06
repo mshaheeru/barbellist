@@ -282,9 +282,25 @@ async function main() {
     process.exit(0);
   }
 
+  const { data: org, error: orgError } = await admin
+    .from("organizations")
+    .insert({
+      name: "Iron Republic",
+      slug: GYM_SLUG,
+      subscription_plan: "early_bird",
+      subscription_status: "active",
+    })
+    .select("id")
+    .single();
+
+  if (orgError || !org) {
+    throw new Error(orgError?.message ?? "Failed to create organization");
+  }
+
   const { data: gym, error: gymError } = await admin
     .from("gyms")
     .insert({
+      organization_id: org.id,
       name: "Iron Republic",
       slug: GYM_SLUG,
       address: "12 Gulberg Main Boulevard",
@@ -296,8 +312,6 @@ async function main() {
       timezone: "Asia/Karachi",
       currency: "PKR",
       currency_symbol: "Rs.",
-      subscription_plan: "early_bird",
-      subscription_status: "active",
       settings: {
         reminders: {
           days_before_due: 3,
@@ -315,7 +329,8 @@ async function main() {
   }
 
   const gymId = gym.id;
-  console.log("Gym:", gymId);
+  const organizationId = org.id;
+  console.log("Org:", organizationId, "Gym:", gymId);
 
   const staffIdsByEmail: Record<string, string> = {};
   let ownerStaffId = "";
@@ -328,9 +343,12 @@ async function main() {
         email: s.email,
         password: DEMO_PASSWORD,
         email_confirm: true,
-        user_metadata: {
+        app_metadata: {
+          organization_id: organizationId,
           gym_id: gymId,
           role: s.role,
+        },
+        user_metadata: {
           name: s.name,
         },
       });
@@ -339,6 +357,19 @@ async function main() {
       throw new Error(
         `Auth user ${s.email}: ${authError?.message ?? "failed"}`,
       );
+    }
+
+    if (s.role === "owner") {
+      const { error: memberError } = await admin
+        .from("organization_members")
+        .insert({
+          organization_id: organizationId,
+          auth_user_id: authData.user.id,
+          role: "owner",
+        });
+      if (memberError) {
+        throw new Error(`Org member ${s.email}: ${memberError.message}`);
+      }
     }
 
     const { data: staffRow, error: staffError } = await admin

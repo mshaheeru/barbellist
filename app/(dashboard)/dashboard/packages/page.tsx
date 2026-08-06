@@ -6,8 +6,8 @@ import {
   PackagesSkeleton,
 } from "@/components/packages/packages-page";
 import { canManagePackages } from "@/lib/auth/permissions";
+import { getUserGymId, getUserRole } from "@/lib/auth/claims";
 import { createClient } from "@/lib/supabase/server";
-import type { StaffRole } from "@/lib/types";
 import styles from "@/components/packages/packages.module.css";
 
 export const dynamic = "force-dynamic";
@@ -17,8 +17,8 @@ async function PackagesContent() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const role = (user?.user_metadata?.role as StaffRole | undefined) ?? null;
-  const gymId = user?.user_metadata?.gym_id as string | undefined;
+  const role = getUserRole(user);
+  const gymId = getUserGymId(user);
 
   if (!canManagePackages(role)) {
     redirect("/dashboard");

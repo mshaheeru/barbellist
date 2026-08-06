@@ -1,6 +1,6 @@
 import type { ReminderScheduleSettings } from "@/lib/whatsapp/schedule";
 import { DEFAULT_REMINDER_SCHEDULE } from "@/lib/whatsapp/schedule";
-import type { Gym, StaffRole, SubscriptionPlan } from "@/lib/types";
+import type { Gym, Organization, StaffRole, SubscriptionPlan } from "@/lib/types";
 
 export type CardTemplateSettings = {
   background_color: string;
@@ -38,6 +38,14 @@ export type SettingsStaffRow = {
 
 export type SettingsPageData = {
   gym: Gym;
+  organization: Organization | null;
+  branches: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    city: string | null;
+    address: string | null;
+  }>;
   reminders: ReminderScheduleSettings;
   cardTemplate: CardTemplateSettings;
   whatsappConfigured: boolean;

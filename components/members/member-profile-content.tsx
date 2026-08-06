@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getMemberById } from "@/app/actions/members";
+import { getUserGymId } from "@/lib/auth/claims";
 import { createClient } from "@/lib/supabase/server";
 import { MemberProfileHero } from "@/components/members/member-profile-hero";
 import {
@@ -33,7 +34,7 @@ async function getCurrencySymbol() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const gymId = user?.user_metadata?.gym_id as string | undefined;
+  const gymId = getUserGymId(user);
   if (!gymId) return "Rs.";
 
   const { data } = await supabase

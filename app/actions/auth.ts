@@ -14,7 +14,24 @@ function slugify(input: string) {
   return base || "gym";
 }
 
-async function uniqueSlug(base: string) {
+async function uniqueOrgSlug(base: string) {
+  const admin = createAdminClient();
+  let slug = base;
+  let i = 0;
+  while (i < 20) {
+    const { data } = await admin
+      .from("organizations")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (!data) return slug;
+    i += 1;
+    slug = `${base}-${i + 1}`;
+  }
+  return `${base}-${Date.now().toString(36)}`;
+}
+
+async function uniqueGymSlug(base: string) {
   const admin = createAdminClient();
   let slug = base;
   let i = 0;
@@ -32,7 +49,7 @@ async function uniqueSlug(base: string) {
 }
 
 /**
- * Creates gym + auth user + owner staff row.
+ * Creates organization + first branch gym + auth user + owner staff row.
  * Uses service role when SUPABASE_SERVICE_ROLE_KEY is set;
  * otherwise signs up via auth + register_gym RPC.
  */
@@ -59,22 +76,38 @@ async function signUpWithAdmin(
 ): Promise<{ error: string | null }> {
   const admin = createAdminClient();
   const baseSlug = slugify(data.gymName);
-  const slug = await uniqueSlug(baseSlug);
+  const orgSlug = await uniqueOrgSlug(baseSlug);
+  const gymSlug = await uniqueGymSlug(baseSlug);
+
+  const { data: org, error: orgError } = await admin
+    .from("organizations")
+    .insert({
+      name: data.gymName,
+      slug: orgSlug,
+    })
+    .select("id")
+    .single();
+
+  if (orgError || !org) {
+    return { error: orgError?.message ?? "Failed to create organization" };
+  }
 
   const { data: gym, error: gymError } = await admin
     .from("gyms")
     .insert({
       name: data.gymName,
-      slug,
+      slug: gymSlug,
       email: data.email,
       phone: data.phone,
       city: data.city,
       country: data.country,
+      organization_id: org.id,
     })
     .select("id")
     .single();
 
   if (gymError || !gym) {
+    await admin.from("organizations").delete().eq("id", org.id);
     return { error: gymError?.message ?? "Failed to create gym" };
   }
 
@@ -83,16 +116,35 @@ async function signUpWithAdmin(
       email: data.email,
       password: data.password,
       email_confirm: true,
-      user_metadata: {
+      app_metadata: {
+        organization_id: org.id,
         gym_id: gym.id,
         role: "owner",
+      },
+      user_metadata: {
         name: data.ownerName,
       },
     });
 
   if (authError || !authData.user) {
     await admin.from("gyms").delete().eq("id", gym.id);
+    await admin.from("organizations").delete().eq("id", org.id);
     return { error: authError?.message ?? "Failed to create account" };
+  }
+
+  const { error: memberError } = await admin
+    .from("organization_members")
+    .insert({
+      organization_id: org.id,
+      auth_user_id: authData.user.id,
+      role: "owner",
+    });
+
+  if (memberError) {
+    await admin.auth.admin.deleteUser(authData.user.id);
+    await admin.from("gyms").delete().eq("id", gym.id);
+    await admin.from("organizations").delete().eq("id", org.id);
+    return { error: memberError.message };
   }
 
   const { error: staffError } = await admin.from("staff").insert({
@@ -108,6 +160,7 @@ async function signUpWithAdmin(
   if (staffError) {
     await admin.auth.admin.deleteUser(authData.user.id);
     await admin.from("gyms").delete().eq("id", gym.id);
+    await admin.from("organizations").delete().eq("id", org.id);
     return { error: staffError.message };
   }
 

@@ -78,10 +78,10 @@ export function DangerZoneSection({ gymName }: DangerZoneSectionProps) {
 
       <div className={styles.dangerRow}>
         <div>
-          <p className={styles.dangerTitle}>Delete Gym</p>
+          <p className={styles.dangerTitle}>Delete Branch</p>
           <p className={styles.dangerDesc}>
-            Permanently delete your gym and all associated data. This cannot be
-            undone.
+            Permanently delete this branch and all its data. You cannot delete
+            your only branch. This cannot be undone.
           </p>
         </div>
         <button
@@ -89,7 +89,7 @@ export function DangerZoneSection({ gymName }: DangerZoneSectionProps) {
           className={styles.dangerBtn}
           onClick={() => setDeleteOpen(true)}
         >
-          Delete Gym
+          Delete Branch
         </button>
       </div>
 

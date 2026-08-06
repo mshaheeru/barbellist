@@ -23,6 +23,7 @@ import { RoleGate } from "@/components/auth/role-gate";
 import { CardTemplateSection } from "./card-template-section";
 import { StaffAccessSection } from "./staff-access-section";
 import { BillingSection } from "./billing-section";
+import { BranchesSection } from "./branches-section";
 import { DangerZoneSection } from "./danger-zone-section";
 import { DemoDataSection } from "./demo-data-section";
 import styles from "./settings.module.css";
@@ -219,9 +220,17 @@ export function SettingsPage({ initial }: SettingsPageProps) {
         />
 
         <RoleGate allow="owner">
-          {initial.canViewBilling ? (
+          <BranchesSection
+            branches={initial.branches}
+            currentGymId={gym.id}
+          />
+        </RoleGate>
+
+        <RoleGate allow="owner">
+          {initial.canViewBilling && initial.organization ? (
             <BillingSection
               gym={gym}
+              organization={initial.organization}
               activeMemberCount={initial.activeMemberCount}
             />
           ) : null}

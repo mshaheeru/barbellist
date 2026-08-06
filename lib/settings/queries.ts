@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Gym, StaffRole } from "@/lib/types";
+import type { Gym, Organization, StaffRole } from "@/lib/types";
 import {
   DEFAULT_REMINDER_SCHEDULE,
   type ReminderScheduleSettings,
@@ -43,19 +43,42 @@ function parseReminders(raw: unknown): ReminderScheduleSettings {
   };
 }
 
+const GYM_SELECT =
+  "id, organization_id, name, slug, address, city, country, phone, whatsapp, email, logo_url, timezone, currency, currency_symbol, settings, created_at, updated_at";
+
+const ORG_SELECT =
+  "id, name, slug, subscription_plan, subscription_status, trial_ends_at, created_at, updated_at";
+
 export async function fetchSettingsPageData(
   supabase: SupabaseClient,
   gymId: string,
   role: StaffRole,
 ): Promise<SettingsPageData> {
-  const [gymRes, staffRes, membersRes] = await Promise.all([
+  const gymRes = await supabase
+    .from("gyms")
+    .select(GYM_SELECT)
+    .eq("id", gymId)
+    .single();
+
+  if (gymRes.error || !gymRes.data) {
+    throw new Error(gymRes.error?.message ?? "Gym not found");
+  }
+
+  const gym = gymRes.data as Gym;
+
+  const [orgRes, branchesRes, staffRes, membersRes] = await Promise.all([
     supabase
-      .from("gyms")
-      .select(
-        "id, name, slug, address, city, country, phone, whatsapp, email, logo_url, timezone, currency, currency_symbol, settings, subscription_plan, subscription_status, trial_ends_at, created_at, updated_at",
-      )
-      .eq("id", gymId)
-      .single(),
+      .from("organizations")
+      .select(ORG_SELECT)
+      .eq("id", gym.organization_id)
+      .maybeSingle(),
+    role === "owner"
+      ? supabase
+          .from("gyms")
+          .select("id, name, slug, city, address")
+          .eq("organization_id", gym.organization_id)
+          .order("created_at", { ascending: true })
+      : Promise.resolve({ data: [] as SettingsPageData["branches"], error: null }),
     supabase
       .from("staff")
       .select("id, name, email, photo_url, role, status, auth_user_id")
@@ -68,11 +91,7 @@ export async function fetchSettingsPageData(
       .eq("status", "active"),
   ]);
 
-  if (gymRes.error || !gymRes.data) {
-    throw new Error(gymRes.error?.message ?? "Gym not found");
-  }
-
-  const gym = gymRes.data as Gym;
+  const organization = (orgRes.data as Organization | null) ?? null;
   const settings =
     gym.settings && typeof gym.settings === "object" && !Array.isArray(gym.settings)
       ? (gym.settings as Record<string, unknown>)
@@ -100,6 +119,8 @@ export async function fetchSettingsPageData(
 
   return {
     gym,
+    organization,
+    branches: (branchesRes.data ?? []) as SettingsPageData["branches"],
     reminders,
     cardTemplate,
     whatsappConfigured: resolved.configured,

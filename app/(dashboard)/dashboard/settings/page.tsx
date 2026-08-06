@@ -6,8 +6,8 @@ import {
   SettingsSkeleton,
 } from "@/components/settings/settings-page";
 import { canAccessSettings } from "@/lib/auth/permissions";
+import { getUserRole } from "@/lib/auth/claims";
 import { createClient } from "@/lib/supabase/server";
-import type { StaffRole } from "@/lib/types";
 import styles from "@/components/settings/settings.module.css";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ async function SettingsContent() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const role = (user?.user_metadata?.role as StaffRole | undefined) ?? null;
+  const role = getUserRole(user);
 
   if (!canAccessSettings(role)) {
     redirect("/dashboard");

@@ -2,7 +2,7 @@
 
 import { Receipt } from "lucide-react";
 import { formatMoney, profileFromCountry } from "@/lib/currency";
-import type { Gym, SubscriptionPlan } from "@/lib/types";
+import type { Gym, Organization, SubscriptionPlan } from "@/lib/types";
 import styles from "./settings.module.css";
 
 const PLAN_LABELS: Record<SubscriptionPlan, string> = {
@@ -13,22 +13,27 @@ const PLAN_LABELS: Record<SubscriptionPlan, string> = {
 
 type BillingSectionProps = {
   gym: Gym;
+  organization: Organization;
   activeMemberCount: number;
 };
 
-export function BillingSection({ gym, activeMemberCount }: BillingSectionProps) {
+export function BillingSection({
+  gym,
+  organization,
+  activeMemberCount,
+}: BillingSectionProps) {
   const profile = profileFromCountry(gym.country);
   const isEarly =
-    gym.subscription_plan === "early_bird" ||
-    gym.subscription_status === "trial";
+    organization.subscription_plan === "early_bird" ||
+    organization.subscription_status === "trial";
   const rate = isEarly ? profile.earlyRate : profile.standardRate;
   const monthlyCost = Math.max(
     activeMemberCount * rate,
     isEarly ? profile.earlyMin : profile.standardMin,
   );
 
-  const trialEnds = gym.trial_ends_at
-    ? new Date(gym.trial_ends_at)
+  const trialEnds = organization.trial_ends_at
+    ? new Date(organization.trial_ends_at)
     : null;
   const daysLeft =
     trialEnds != null
@@ -46,33 +51,38 @@ export function BillingSection({ gym, activeMemberCount }: BillingSectionProps) 
         </h2>
       </div>
 
+      <p className={styles.dangerDesc} style={{ marginBottom: "1rem" }}>
+        Plan for {organization.name} — shared across all branches.
+      </p>
+
       <div className={styles.billingCard}>
         <div className={styles.billingRow}>
           <span className={styles.billingLabel}>Current plan</span>
           <span className={styles.planPill}>
-            {PLAN_LABELS[gym.subscription_plan] ?? gym.subscription_plan}
+            {PLAN_LABELS[organization.subscription_plan] ??
+              organization.subscription_plan}
           </span>
         </div>
         <div className={styles.billingRow}>
           <span className={styles.billingLabel}>Status</span>
           <span
             className={
-              gym.subscription_status === "trial"
+              organization.subscription_status === "trial"
                 ? styles.statusTrial
                 : styles.statusActive
             }
           >
-            {gym.subscription_status === "trial" ? "Trial" : "Active"}
+            {organization.subscription_status === "trial" ? "Trial" : "Active"}
           </span>
         </div>
         <div className={styles.billingRow}>
-          <span className={styles.billingLabel}>Active members</span>
+          <span className={styles.billingLabel}>Active members (this branch)</span>
           <span className={styles.billingValue}>
             {activeMemberCount} active members
           </span>
         </div>
         <div className={styles.billingRow}>
-          <span className={styles.billingLabel}>Current monthly cost</span>
+          <span className={styles.billingLabel}>Estimate for this branch</span>
           <span className={styles.billingValue}>
             {formatMoney(monthlyCost, profile)}
           </span>

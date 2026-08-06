@@ -9,7 +9,7 @@ type AuthShellProps = {
   children: ReactNode;
   title: string;
   subtitle: string;
-  footer: ReactNode;
+  footer?: ReactNode;
 };
 
 export function AuthShell({
@@ -89,7 +89,7 @@ export function AuthShell({
 
           {children}
 
-          <div className={styles.footer}>{footer}</div>
+          {footer ? <div className={styles.footer}>{footer}</div> : null}
         </Paper>
       </main>
     </div>

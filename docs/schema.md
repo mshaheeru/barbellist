@@ -15,10 +15,34 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ============================================================
--- 1. GYMS (tenant table — no gym_id on itself)
+-- 0. ORGANIZATIONS (billing tenant — one or more branch gyms)
+-- ============================================================
+CREATE TABLE public.organizations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  subscription_plan TEXT DEFAULT 'early_bird', -- early_bird | standard | pro
+  subscription_status TEXT DEFAULT 'active', -- active | trial | suspended | cancelled
+  trial_ends_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE public.organization_members (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+  auth_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL DEFAULT 'owner' CHECK (role IN ('owner')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (organization_id, auth_user_id)
+);
+
+-- ============================================================
+-- 1. GYMS (branches under an organization)
 -- ============================================================
 CREATE TABLE public.gyms (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL, -- used in URLs, e.g. "iron-republic"
   address TEXT,
@@ -32,12 +56,10 @@ CREATE TABLE public.gyms (
   currency TEXT DEFAULT 'PKR',
   currency_symbol TEXT DEFAULT 'Rs.',
   settings JSONB DEFAULT '{}', -- flexible config: card template, reminder schedules, etc.
-  subscription_plan TEXT DEFAULT 'early_bird', -- early_bird | standard | pro
-  subscription_status TEXT DEFAULT 'active', -- active | trial | suspended | cancelled
-  trial_ends_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+CREATE INDEX idx_gyms_organization ON public.gyms(organization_id);
 
 -- ============================================================
 -- 2. STAFF / USERS (gym employees — linked to Supabase Auth)
@@ -45,7 +67,7 @@ CREATE TABLE public.gyms (
 CREATE TABLE public.staff (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   gym_id UUID NOT NULL REFERENCES public.gyms(id) ON DELETE CASCADE,
-  auth_user_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE SET NULL, -- nullable if staff doesn't have app login
+  auth_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- nullable if staff doesn't have app login
   name TEXT NOT NULL,
   phone TEXT,
   whatsapp TEXT,
@@ -61,6 +83,9 @@ CREATE TABLE public.staff (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX idx_staff_gym ON public.staff(gym_id);
+-- Owners may have one staff row per branch; non-owners one login globally
+CREATE UNIQUE INDEX staff_gym_auth_user_unique ON public.staff (gym_id, auth_user_id) WHERE auth_user_id IS NOT NULL;
+CREATE UNIQUE INDEX staff_non_owner_auth_user_unique ON public.staff (auth_user_id) WHERE auth_user_id IS NOT NULL AND role <> 'owner';
 
 -- ============================================================
 -- 3. PACKAGES (membership packages a gym offers)
@@ -351,13 +376,27 @@ CREATE INDEX idx_audit_date ON public.audit_log(gym_id, created_at);
 -- Get current user's gym_id from JWT metadata
 CREATE OR REPLACE FUNCTION public.get_current_gym_id()
 RETURNS UUID AS $$
-  SELECT (auth.jwt() -> 'user_metadata' ->> 'gym_id')::UUID;
+  SELECT COALESCE(
+    (auth.jwt() -> 'app_metadata' ->> 'gym_id'),
+    (auth.jwt() -> 'user_metadata' ->> 'gym_id')
+  )::UUID;
 $$ LANGUAGE SQL STABLE SECURITY DEFINER;
 
 -- Get current user's role
 CREATE OR REPLACE FUNCTION public.get_current_role()
 RETURNS TEXT AS $$
-  SELECT auth.jwt() -> 'user_metadata' ->> 'role';
+  SELECT COALESCE(
+    auth.jwt() -> 'app_metadata' ->> 'role',
+    auth.jwt() -> 'user_metadata' ->> 'role'
+  );
+$$ LANGUAGE SQL STABLE SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.get_current_organization_id()
+RETURNS UUID AS $$
+  SELECT COALESCE(
+    (auth.jwt() -> 'app_metadata' ->> 'organization_id'),
+    (auth.jwt() -> 'user_metadata' ->> 'organization_id')
+  )::UUID;
 $$ LANGUAGE SQL STABLE SECURITY DEFINER;
 
 -- Auto-generate member code
@@ -454,6 +493,13 @@ ALTER TABLE public.audit_log ENABLE ROW LEVEL SECURITY;
 -- Gym: users can only see their own gym
 CREATE POLICY "gym_isolation" ON public.gyms
   FOR ALL USING (id = public.get_current_gym_id());
+CREATE POLICY "gyms_org_member_select" ON public.gyms
+  FOR SELECT USING (
+    organization_id IN (
+      SELECT om.organization_id FROM public.organization_members om
+      WHERE om.auth_user_id = auth.uid()
+    )
+  );
 
 -- All other tables: filter by gym_id
 -- (Repeat this pattern for every table with gym_id)

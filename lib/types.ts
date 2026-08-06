@@ -90,8 +90,29 @@ export type LeadStage =
   | "converted"
   | "lost";
 
+export type Organization = {
+  id: string;
+  name: string;
+  slug: string;
+  subscription_plan: SubscriptionPlan;
+  subscription_status: SubscriptionStatus;
+  trial_ends_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type OrganizationMember = {
+  id: string;
+  organization_id: string;
+  auth_user_id: string;
+  role: "owner";
+  created_at: string;
+};
+
+/** A gym row is a branch under an organization. */
 export type Gym = {
   id: string;
+  organization_id: string;
   name: string;
   slug: string;
   address: string | null;
@@ -105,11 +126,17 @@ export type Gym = {
   currency: string;
   currency_symbol: string;
   settings: Record<string, unknown>;
-  subscription_plan: SubscriptionPlan;
-  subscription_status: SubscriptionStatus;
-  trial_ends_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+/** Lightweight branch row for pickers / switchers. */
+export type BranchSummary = {
+  id: string;
+  name: string;
+  slug: string;
+  city: string | null;
+  address: string | null;
 };
 
 export type Staff = {

@@ -17,6 +17,7 @@ import { notifications } from "@mantine/notifications";
 import { Lock, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
+import { resolvePostLoginDestination } from "@/lib/auth/branches";
 import { AuthShell } from "@/components/auth/auth-shell";
 
 export default function LoginPage() {
@@ -45,12 +46,30 @@ export default function LoginPage() {
         });
         return;
       }
+
+      const dest = await resolvePostLoginDestination();
+      if (dest.destination === "/login") {
+        notifications.show({
+          color: "red",
+          title: "Sign in failed",
+          message: dest.error,
+        });
+        await supabase.auth.signOut();
+        return;
+      }
+
+      // Refresh so JWT picks up any app_metadata updates
+      await supabase.auth.refreshSession();
+
       notifications.show({
         color: "forest",
         title: "Welcome back",
-        message: "Opening your dashboard…",
+        message:
+          dest.destination === "/select-branch"
+            ? "Choose a branch to continue…"
+            : "Opening your dashboard…",
       });
-      router.push("/dashboard");
+      router.push(dest.destination);
       router.refresh();
     } finally {
       setLoading(false);

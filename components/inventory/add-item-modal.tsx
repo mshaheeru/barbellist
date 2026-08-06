@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { createItem } from "@/app/actions/inventory";
+import { getUserGymId } from "@/lib/auth/claims";
 import { createClient } from "@/lib/supabase/client";
 import { INVENTORY_CATEGORY_LABELS } from "@/lib/inventory/format";
 import type { InventoryCategory } from "@/lib/types";
@@ -63,7 +64,7 @@ export function AddItemModal({ opened, onClose }: AddItemModalProps) {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      const gymId = user?.user_metadata?.gym_id as string | undefined;
+      const gymId = getUserGymId(user);
       if (!gymId) throw new Error("Missing gym");
 
       const path = `${gymId}/${crypto.randomUUID()}.webp`;

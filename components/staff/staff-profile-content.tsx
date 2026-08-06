@@ -7,6 +7,7 @@ import {
   canRecordSalary,
   canViewSalary,
 } from "@/lib/auth/permissions";
+import { getUserGymId, getUserRole } from "@/lib/auth/claims";
 import type { StaffRole } from "@/lib/types";
 import { StaffProfileHero } from "./staff-profile-hero";
 import {
@@ -37,8 +38,8 @@ async function getProfileContext() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const role = (user?.user_metadata?.role as StaffRole | undefined) ?? null;
-  const gymId = user?.user_metadata?.gym_id as string | undefined;
+  const role = getUserRole(user);
+  const gymId = getUserGymId(user);
 
   let currencySymbol = "Rs.";
   if (gymId) {

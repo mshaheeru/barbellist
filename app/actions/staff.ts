@@ -115,9 +115,12 @@ export async function createStaff(
           email: data.email,
           password: data.password,
           email_confirm: true,
-          user_metadata: {
+          app_metadata: {
             gym_id: ctx.gymId,
+            organization_id: ctx.organizationId,
             role: data.role,
+          },
+          user_metadata: {
             name: data.name,
           },
         });

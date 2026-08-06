@@ -1,17 +1,23 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import type { StaffRole } from "@/lib/types";
+import {
+  getUserGymId,
+  getUserOrganizationId,
+  getUserRole,
+} from "@/lib/auth/claims";
 
 export type ActionContext = {
   supabase: SupabaseClient;
   gymId: string;
+  organizationId: string | null;
   userId: string;
   role: StaffRole | null;
   staffId: string | null;
 };
 
 export type GetActionContextOptions = {
-  /** Require role in user metadata (default false). */
+  /** Require role in auth metadata (default false). */
   requireRole?: boolean;
   /** Fetch staff row; if true, staffId is required. */
   requireStaff?: boolean;
@@ -42,16 +48,28 @@ export async function getActionContext(
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const gymId = user.user_metadata?.gym_id as string | undefined;
+  const gymId = getUserGymId(user);
   if (!gymId) return null;
 
-  const role = (user.user_metadata?.role as StaffRole | undefined) ?? null;
+  let organizationId = getUserOrganizationId(user) ?? null;
+  const role = getUserRole(user);
 
   if (requireRole && !role) return null;
   if (requireOwner && role !== "owner") return null;
 
   let staffId: string | null = null;
   const shouldLoadStaff = requireStaff || includeStaff || requireOwner;
+
+  if (shouldLoadStaff || !organizationId) {
+    if (!organizationId) {
+      const { data: gymRow } = await supabase
+        .from("gyms")
+        .select("organization_id")
+        .eq("id", gymId)
+        .maybeSingle();
+      organizationId = gymRow?.organization_id ?? null;
+    }
+  }
 
   if (shouldLoadStaff) {
     const { data: staffRow } = await supabase
@@ -68,6 +86,7 @@ export async function getActionContext(
   return {
     supabase,
     gymId,
+    organizationId,
     userId: user.id,
     role,
     staffId,

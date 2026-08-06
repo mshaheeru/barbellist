@@ -21,14 +21,18 @@ import {
 } from "@/lib/settings/types";
 import {
   cardTemplateSchema,
+  createBranchSchema,
   deleteGymSchema,
   gymProfileSchema,
   inviteStaffSchema,
+  updateBranchSchema,
   updateStaffRoleSchema,
   whatsappCredentialsSchema,
   type CardTemplateInput,
+  type CreateBranchInput,
   type GymProfileInput,
   type InviteStaffInput,
+  type UpdateBranchInput,
   type WhatsAppCredentialsInput,
 } from "@/lib/validations/settings";
 import { updateReminderSchedule } from "@/app/actions/whatsapp";
@@ -38,7 +42,35 @@ import {
   resolveWhatsAppCredentials,
   sendWhatsAppMessage,
 } from "@/lib/whatsapp/cloud";
-import type { StaffRole } from "@/lib/types";
+import type { BranchSummary, StaffRole } from "@/lib/types";
+import { selectBranch } from "@/lib/auth/branches";
+
+function slugify(input: string) {
+  const base = input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+  return base || "branch";
+}
+
+async function uniqueGymSlug(base: string) {
+  const admin = createAdminClient();
+  let slug = base;
+  let i = 0;
+  while (i < 20) {
+    const { data } = await admin
+      .from("gyms")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (!data) return slug;
+    i += 1;
+    slug = `${base}-${i + 1}`;
+  }
+  return `${base}-${Date.now().toString(36)}`;
+}
 
 function revalidateSettings() {
   revalidatePath("/dashboard/settings");
@@ -380,10 +412,13 @@ export async function updateStaffRole(
       );
       if (userData.user) {
         await admin.auth.admin.updateUserById(target.auth_user_id, {
-          user_metadata: {
-            ...userData.user.user_metadata,
+          app_metadata: {
+            ...userData.user.app_metadata,
             role,
             gym_id: ctx.gymId,
+            organization_id:
+              ctx.organizationId ??
+              userData.user.app_metadata?.organization_id,
           },
         });
       }
@@ -422,8 +457,6 @@ export async function inviteStaffMember(
     const { data: invited, error: inviteError } =
       await admin.auth.admin.inviteUserByEmail(email, {
         data: {
-          gym_id: ctx.gymId,
-          role,
           name,
         },
       });
@@ -435,6 +468,20 @@ export async function inviteStaffMember(
       };
     }
     authUserId = invited.user.id;
+
+    const { data: existingUser } = await admin.auth.admin.getUserById(authUserId);
+    await admin.auth.admin.updateUserById(authUserId, {
+      app_metadata: {
+        ...(existingUser.user?.app_metadata ?? {}),
+        gym_id: ctx.gymId,
+        organization_id: ctx.organizationId,
+        role,
+      },
+      user_metadata: {
+        ...(existingUser.user?.user_metadata ?? {}),
+        name,
+      },
+    });
 
     const { data: row, error } = await ctx.supabase
       .from("staff")
@@ -545,30 +592,52 @@ export async function deleteGym(
   const ctx = await getActionContextWithRole();
   if (!ctx) return { error: "Not authenticated" };
   if (!canAccessDangerZone(ctx.role)) {
-    return { error: "Only the owner can delete the gym" };
+    return { error: "Only the owner can delete a branch" };
   }
 
-  const { data: gym } = await ctx.supabase
+  const admin = createAdminClient();
+
+  const { data: gym } = await admin
     .from("gyms")
-    .select("id, name")
+    .select("id, name, organization_id")
     .eq("id", ctx.gymId)
     .maybeSingle();
 
-  if (!gym) return { error: "Gym not found" };
+  if (!gym) return { error: "Branch not found" };
   if (gym.name.trim() !== parsed.data.confirmationName.trim()) {
-    return { error: "Gym name does not match" };
+    return { error: "Branch name does not match" };
   }
 
-  const { data: staffRows } = await ctx.supabase
+  const { count: branchCount } = await admin
+    .from("gyms")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", gym.organization_id);
+
+  if ((branchCount ?? 0) <= 1) {
+    return {
+      error:
+        "Cannot delete the only branch. Contact support to cancel your organization.",
+    };
+  }
+
+  const { data: staffRows } = await admin
     .from("staff")
-    .select("auth_user_id")
+    .select("auth_user_id, role")
     .eq("gym_id", ctx.gymId)
     .not("auth_user_id", "is", null);
 
   try {
-    const admin = createAdminClient();
+    // Delete non-owner logins that only exist on this branch
     for (const row of staffRows ?? []) {
-      if (row.auth_user_id) {
+      if (!row.auth_user_id || row.role === "owner") continue;
+
+      const { count: otherStaff } = await admin
+        .from("staff")
+        .select("id", { count: "exact", head: true })
+        .eq("auth_user_id", row.auth_user_id)
+        .neq("gym_id", ctx.gymId);
+
+      if ((otherStaff ?? 0) === 0) {
         try {
           await admin.auth.admin.deleteUser(row.auth_user_id);
         } catch {
@@ -577,14 +646,180 @@ export async function deleteGym(
       }
     }
 
+    const { data: sibling } = await admin
+      .from("gyms")
+      .select("id")
+      .eq("organization_id", gym.organization_id)
+      .neq("id", ctx.gymId)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
     const { error } = await admin.from("gyms").delete().eq("id", ctx.gymId);
     if (error) return { error: error.message };
+
+    if (sibling) {
+      const switchResult = await selectBranch(sibling.id);
+      if (switchResult.error) {
+        return { error: switchResult.error };
+      }
+      revalidateSettings();
+      redirect("/dashboard/settings");
+    }
+
+    await ctx.supabase.auth.signOut();
+    redirect("/");
   } catch (e) {
+    // redirect() throws — rethrow NEXT_REDIRECT
+    if (e && typeof e === "object" && "digest" in e) throw e;
     return {
-      error: e instanceof Error ? e.message : "Failed to delete gym",
+      error: e instanceof Error ? e.message : "Failed to delete branch",
+    };
+  }
+}
+
+export async function listBranches(): Promise<{
+  data: BranchSummary[] | null;
+  error: string | null;
+}> {
+  const ctx = await getActionContextWithRole();
+  if (!ctx) return { data: null, error: "Not authenticated" };
+  if (ctx.role !== "owner") {
+    return { data: null, error: "Only owners can manage branches" };
+  }
+
+  const orgId = ctx.organizationId;
+  if (!orgId) return { data: null, error: "Organization not found" };
+
+  const { data, error } = await ctx.supabase
+    .from("gyms")
+    .select("id, name, slug, city, address")
+    .eq("organization_id", orgId)
+    .order("created_at", { ascending: true });
+
+  if (error) return { data: null, error: error.message };
+  return { data: (data ?? []) as BranchSummary[], error: null };
+}
+
+export async function createBranch(
+  raw: CreateBranchInput,
+): Promise<{ data: { id: string } | null; error: string | null }> {
+  const parsed = createBranchSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      data: null,
+      error: parsed.error.issues[0]?.message ?? "Invalid input",
     };
   }
 
-  await ctx.supabase.auth.signOut();
-  redirect("/");
+  const ctx = await getActionContextWithRole();
+  if (!ctx) return { data: null, error: "Not authenticated" };
+  if (ctx.role !== "owner") {
+    return { data: null, error: "Only owners can create branches" };
+  }
+
+  const orgId = ctx.organizationId;
+  if (!orgId) return { data: null, error: "Organization not found" };
+
+  const admin = createAdminClient();
+  const slug = await uniqueGymSlug(slugify(parsed.data.name));
+
+  const { data: currentGym } = await admin
+    .from("gyms")
+    .select("country, timezone, currency, currency_symbol")
+    .eq("id", ctx.gymId)
+    .maybeSingle();
+
+  const { data: gym, error: gymError } = await admin
+    .from("gyms")
+    .insert({
+      organization_id: orgId,
+      name: parsed.data.name.trim(),
+      slug,
+      city: parsed.data.city?.trim() || null,
+      address: parsed.data.address?.trim() || null,
+      phone: parsed.data.phone?.trim() || null,
+      country: currentGym?.country ?? "PK",
+      timezone: currentGym?.timezone ?? "Asia/Karachi",
+      currency: currentGym?.currency ?? "PKR",
+      currency_symbol: currentGym?.currency_symbol ?? "Rs.",
+    })
+    .select("id")
+    .single();
+
+  if (gymError || !gym) {
+    return { data: null, error: gymError?.message ?? "Failed to create branch" };
+  }
+
+  // Owner staff rows for all org owners
+  const { data: owners } = await admin
+    .from("organization_members")
+    .select("auth_user_id")
+    .eq("organization_id", orgId)
+    .eq("role", "owner");
+
+  for (const owner of owners ?? []) {
+    const { data: authUser } = await admin.auth.admin.getUserById(
+      owner.auth_user_id,
+    );
+    const name =
+      (typeof authUser.user?.user_metadata?.name === "string" &&
+        authUser.user.user_metadata.name) ||
+      authUser.user?.email ||
+      "Owner";
+
+    await admin.from("staff").insert({
+      gym_id: gym.id,
+      auth_user_id: owner.auth_user_id,
+      name,
+      email: authUser.user?.email ?? null,
+      role: "owner",
+      status: "active",
+    });
+  }
+
+  revalidateSettings();
+  return { data: { id: gym.id }, error: null };
+}
+
+export async function updateBranch(
+  raw: UpdateBranchInput,
+): Promise<{ error: string | null }> {
+  const parsed = updateBranchSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const ctx = await getActionContextWithRole();
+  if (!ctx) return { error: "Not authenticated" };
+  if (ctx.role !== "owner") {
+    return { error: "Only owners can update branches" };
+  }
+
+  const orgId = ctx.organizationId;
+  if (!orgId) return { error: "Organization not found" };
+
+  const admin = createAdminClient();
+  const { data: gym } = await admin
+    .from("gyms")
+    .select("id, organization_id")
+    .eq("id", parsed.data.gymId)
+    .maybeSingle();
+
+  if (!gym || gym.organization_id !== orgId) {
+    return { error: "Branch not found" };
+  }
+
+  const { error } = await admin
+    .from("gyms")
+    .update({
+      name: parsed.data.name.trim(),
+      city: parsed.data.city?.trim() || null,
+      address: parsed.data.address?.trim() || null,
+    })
+    .eq("id", gym.id);
+
+  if (error) return { error: error.message };
+  revalidateSettings();
+  return { error: null };
 }

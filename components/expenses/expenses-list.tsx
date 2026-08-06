@@ -6,7 +6,8 @@ import {
   canRecordExpense,
   canRecordSalary,
 } from "@/lib/auth/permissions";
-import type { ExpenseCategory, PaymentMethod, StaffRole } from "@/lib/types";
+import { getUserGymId, getUserRole } from "@/lib/auth/claims";
+import type { ExpenseCategory, PaymentMethod } from "@/lib/types";
 import { ExpensesPageHeader } from "./expenses-page-header";
 import { ExpensesSummaryCards } from "./expenses-summary-cards";
 import { ExpensesTable } from "./expenses-table";
@@ -26,8 +27,8 @@ export async function ExpensesList(props: ExpensesListProps) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const role = (user?.user_metadata?.role as StaffRole | undefined) ?? null;
-  const gymId = user?.user_metadata?.gym_id as string | undefined;
+  const role = getUserRole(user);
+  const gymId = getUserGymId(user);
 
   let currentStaffId: string | null = null;
   if (user && gymId) {

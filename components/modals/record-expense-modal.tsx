@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { createExpense } from "@/app/actions/expenses";
 import { useGym } from "@/components/gym-provider";
+import { getUserGymId } from "@/lib/auth/claims";
 import { createClient } from "@/lib/supabase/client";
 import {
   EXPENSE_CATEGORY_LABELS,
@@ -201,7 +202,7 @@ export function RecordExpenseModal({
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      const gymId = user?.user_metadata?.gym_id as string | undefined;
+      const gymId = getUserGymId(user);
       if (!gymId) throw new Error("Missing gym");
 
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";

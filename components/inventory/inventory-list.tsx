@@ -4,8 +4,9 @@ import {
   canManageInventory,
   canRecordSale,
 } from "@/lib/auth/permissions";
+import { getUserRole } from "@/lib/auth/claims";
 import { createClient } from "@/lib/supabase/server";
-import type { InventoryCategory, StaffRole } from "@/lib/types";
+import type { InventoryCategory } from "@/lib/types";
 import type { StockStatusFilter } from "@/lib/validations/inventory";
 import { InventoryPageHeader } from "./inventory-page-header";
 import { InventorySummaryCards } from "./inventory-summary-cards";
@@ -24,7 +25,7 @@ export async function InventoryList(props: InventoryListProps) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const role = (user?.user_metadata?.role as StaffRole | undefined) ?? null;
+  const role = getUserRole(user);
 
   const { data, error } = await getInventoryItems({
     search: props.search,

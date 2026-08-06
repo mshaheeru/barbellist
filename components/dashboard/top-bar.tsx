@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Bell, Menu, Plus } from "lucide-react";
 import { useGym } from "@/components/gym-provider";
 import { useOpenMobileMenu } from "@/components/mobile-menu-context";
+import { BranchSwitcher } from "@/components/dashboard/branch-switcher";
 import styles from "./top-bar.module.css";
 
 type DashboardTopBarProps = {
@@ -56,6 +57,7 @@ export function DashboardTopBar({
       </div>
 
       <div className={styles.actions}>
+        <BranchSwitcher />
         <button type="button" className={styles.bellBtn} aria-label="Notifications">
           <Bell size={19} strokeWidth={1.9} />
           <span className={styles.bellDot} />
