@@ -15,8 +15,8 @@ import {
 import { notifications } from "@mantine/notifications";
 import { Lock, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getUserGymId, getUserRole } from "@/lib/auth/claims";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
-import { resolvePostLoginDestination } from "@/lib/auth/branches";
 import { AuthShell } from "@/components/auth/auth-shell";
 
 export default function LoginPage() {
@@ -24,48 +24,63 @@ export default function LoginPage() {
 
   const form = useForm<LoginInput>({
     mode: "controlled",
+    validateInputOnBlur: true,
     initialValues: { email: "", password: "" },
     validate: zod4Resolver(loginSchema),
   });
 
-  const onSubmit = form.onSubmit(async (values) => {
-    setLoading(true);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
-      if (error) {
+  const onSubmit = form.onSubmit(
+    async (values) => {
+      setLoading(true);
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
+        });
+        if (error) {
+          notifications.show({
+            color: "red",
+            title: "Sign in failed",
+            message: error.message,
+          });
+          return;
+        }
+
+        // Prefer claims already on the session — avoid a Server Action here.
+        // Post-login Server Actions often fail on Workers before cookies settle,
+        // which left users stuck on /login until a full refresh.
+        const user = data.user;
+        const role = getUserRole(user);
+        const gymId = getUserGymId(user);
+        const destination =
+          role === "owner" && !gymId ? "/select-branch" : "/dashboard";
+
+        window.location.assign(destination);
+      } catch (e) {
         notifications.show({
           color: "red",
           title: "Sign in failed",
-          message: error.message,
+          message:
+            e instanceof Error ? e.message : "Something went wrong. Please try again.",
         });
-        return;
+      } finally {
+        setLoading(false);
       }
-
-      const dest = await resolvePostLoginDestination();
-      if (dest.destination === "/login") {
+    },
+    (errors) => {
+      const first = Object.values(errors).find(
+        (v): v is string => typeof v === "string" && v.length > 0,
+      );
+      if (first) {
         notifications.show({
           color: "red",
-          title: "Sign in failed",
-          message: dest.error,
+          title: "Check your details",
+          message: first,
         });
-        await supabase.auth.signOut();
-        return;
       }
-
-      // Refresh so JWT picks up any app_metadata updates
-      await supabase.auth.refreshSession();
-
-      // Full navigation after cookie/session changes — soft router.push +
-      // refresh races middleware (auth pages redirect) and yields empty RSC `{}`.
-      window.location.assign(dest.destination);
-    } finally {
-      setLoading(false);
-    }
-  });
+    },
+  );
 
   return (
     <AuthShell

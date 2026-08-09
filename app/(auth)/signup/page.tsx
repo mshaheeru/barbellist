@@ -24,7 +24,11 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { signUpGym } from "@/app/actions/auth";
-import { signUpSchema, type SignUpInput } from "@/lib/validations/auth";
+import {
+  friendlySignUpError,
+  signUpSchema,
+  type SignUpInput,
+} from "@/lib/validations/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
 
 export default function SignupPage() {
@@ -32,6 +36,7 @@ export default function SignupPage() {
 
   const form = useForm<SignUpInput>({
     mode: "controlled",
+    validateInputOnBlur: true,
     initialValues: {
       gymName: "",
       ownerName: "",
@@ -44,42 +49,61 @@ export default function SignupPage() {
     validate: zod4Resolver(signUpSchema),
   });
 
-  const onSubmit = form.onSubmit(async (values) => {
-    setLoading(true);
-    try {
-      const result = await signUpGym(values);
-      if (result.error) {
+  const onSubmit = form.onSubmit(
+    async (values) => {
+      setLoading(true);
+      try {
+        const result = await signUpGym(values);
+        if (result.error) {
+          notifications.show({
+            color: "red",
+            title: "Registration failed",
+            message: friendlySignUpError(result.error),
+          });
+          return;
+        }
+
+        const supabase = createClient();
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
+        });
+
+        if (signInError) {
+          notifications.show({
+            color: "forest",
+            title: "Account created",
+            message: "Please sign in to continue.",
+          });
+          window.location.assign("/login");
+          return;
+        }
+
+        // Full document navigation after session cookies change.
+        window.location.assign("/dashboard");
+      } catch (e) {
         notifications.show({
           color: "red",
           title: "Registration failed",
-          message: result.error,
+          message: friendlySignUpError(
+            e instanceof Error ? e.message : "Something went wrong. Please try again.",
+          ),
         });
-        return;
+      } finally {
+        setLoading(false);
       }
-
-      const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
+    },
+    (errors) => {
+      const first = Object.values(errors).find(
+        (v): v is string => typeof v === "string" && v.length > 0,
+      );
+      notifications.show({
+        color: "red",
+        title: "Check your details",
+        message: first ?? "Please fix the highlighted fields and try again.",
       });
-
-      if (signInError) {
-        notifications.show({
-          color: "forest",
-          title: "Account created",
-          message: "Please sign in to continue.",
-        });
-        window.location.assign("/login");
-        return;
-      }
-
-      // Full navigation after cookie/session changes — soft router.push +
-      // refresh races middleware (auth pages redirect) and yields empty RSC `{}`.
-      window.location.assign("/dashboard");
-    } finally {
-      setLoading(false);
-    }
-  });
+    },
+  );
 
   return (
     <AuthShell
@@ -94,7 +118,7 @@ export default function SignupPage() {
         </Text>
       }
     >
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} noValidate>
         <Stack gap="sm">
           <TextInput
             label="Gym name"
@@ -135,7 +159,8 @@ export default function SignupPage() {
           </SimpleGrid>
           <PasswordInput
             label="Password"
-            placeholder="At least 8 characters"
+            description="At least 8 characters"
+            placeholder="Create a password"
             autoComplete="new-password"
             required
             leftSection={<Lock size={18} strokeWidth={1.6} />}

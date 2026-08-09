@@ -2,7 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { signUpSchema, type SignUpInput } from "@/lib/validations/auth";
+import {
+  friendlySignUpError,
+  signUpSchema,
+  type SignUpInput,
+} from "@/lib/validations/auth";
 
 function slugify(input: string) {
   const base = input
@@ -58,17 +62,26 @@ export async function signUpGym(
 ): Promise<{ error: string | null }> {
   const parsed = signUpSchema.safeParse(raw);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+    return {
+      error: parsed.error.issues[0]?.message ?? "Please check the form and try again.",
+    };
   }
 
   const data = parsed.data;
   const hasServiceRole = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim());
 
-  if (hasServiceRole) {
-    return signUpWithAdmin(data);
+  try {
+    if (hasServiceRole) {
+      return await signUpWithAdmin(data);
+    }
+    return await signUpWithRpc(data);
+  } catch (e) {
+    return {
+      error: friendlySignUpError(
+        e instanceof Error ? e.message : "Registration failed. Please try again.",
+      ),
+    };
   }
-
-  return signUpWithRpc(data);
 }
 
 async function signUpWithAdmin(
@@ -89,7 +102,11 @@ async function signUpWithAdmin(
     .single();
 
   if (orgError || !org) {
-    return { error: orgError?.message ?? "Failed to create organization" };
+    return {
+      error: friendlySignUpError(
+        orgError?.message ?? "Failed to create organization",
+      ),
+    };
   }
 
   const { data: gym, error: gymError } = await admin
@@ -108,7 +125,9 @@ async function signUpWithAdmin(
 
   if (gymError || !gym) {
     await admin.from("organizations").delete().eq("id", org.id);
-    return { error: gymError?.message ?? "Failed to create gym" };
+    return {
+      error: friendlySignUpError(gymError?.message ?? "Failed to create gym"),
+    };
   }
 
   const { data: authData, error: authError } =
@@ -129,7 +148,11 @@ async function signUpWithAdmin(
   if (authError || !authData.user) {
     await admin.from("gyms").delete().eq("id", gym.id);
     await admin.from("organizations").delete().eq("id", org.id);
-    return { error: authError?.message ?? "Failed to create account" };
+    return {
+      error: friendlySignUpError(
+        authError?.message ?? "Failed to create account",
+      ),
+    };
   }
 
   const { error: memberError } = await admin
@@ -144,7 +167,7 @@ async function signUpWithAdmin(
     await admin.auth.admin.deleteUser(authData.user.id);
     await admin.from("gyms").delete().eq("id", gym.id);
     await admin.from("organizations").delete().eq("id", org.id);
-    return { error: memberError.message };
+    return { error: friendlySignUpError(memberError.message) };
   }
 
   const { error: staffError } = await admin.from("staff").insert({
@@ -161,7 +184,7 @@ async function signUpWithAdmin(
     await admin.auth.admin.deleteUser(authData.user.id);
     await admin.from("gyms").delete().eq("id", gym.id);
     await admin.from("organizations").delete().eq("id", org.id);
-    return { error: staffError.message };
+    return { error: friendlySignUpError(staffError.message) };
   }
 
   return { error: null };
@@ -185,13 +208,13 @@ async function signUpWithRpc(
   });
 
   if (authError) {
-    return { error: authError.message };
+    return { error: friendlySignUpError(authError.message) };
   }
 
   if (!authData.session) {
     return {
       error:
-        "Account created but email confirmation is required. Disable email confirmation in Supabase Auth settings, or confirm your email then contact support.",
+        "Account created but email confirmation is required. Check your inbox, or contact support if you need help.",
     };
   }
 
@@ -206,7 +229,7 @@ async function signUpWithRpc(
   });
 
   if (rpcError) {
-    return { error: rpcError.message };
+    return { error: friendlySignUpError(rpcError.message) };
   }
 
   await supabase.auth.refreshSession();
