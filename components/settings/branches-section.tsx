@@ -115,10 +115,8 @@ export function BranchesSection({
       }
       const supabase = createClient();
       await supabase.auth.refreshSession();
-      await refresh();
       notifications.show({ color: "green", message: "Switched branch" });
-      router.push("/dashboard");
-      router.refresh();
+      window.location.assign("/dashboard");
     });
   };
 

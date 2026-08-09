@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "@mantine/form";
-import { zodResolver } from "mantine-form-zod-resolver";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 import {
   Anchor,
   Button,
@@ -21,13 +20,12 @@ import { resolvePostLoginDestination } from "@/lib/auth/branches";
 import { AuthShell } from "@/components/auth/auth-shell";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<LoginInput>({
     mode: "controlled",
     initialValues: { email: "", password: "" },
-    validate: zodResolver(loginSchema),
+    validate: zod4Resolver(loginSchema),
   });
 
   const onSubmit = form.onSubmit(async (values) => {
@@ -61,16 +59,9 @@ export default function LoginPage() {
       // Refresh so JWT picks up any app_metadata updates
       await supabase.auth.refreshSession();
 
-      notifications.show({
-        color: "forest",
-        title: "Welcome back",
-        message:
-          dest.destination === "/select-branch"
-            ? "Choose a branch to continue…"
-            : "Opening your dashboard…",
-      });
-      router.push(dest.destination);
-      router.refresh();
+      // Full navigation after cookie/session changes — soft router.push +
+      // refresh races middleware (auth pages redirect) and yields empty RSC `{}`.
+      window.location.assign(dest.destination);
     } finally {
       setLoading(false);
     }

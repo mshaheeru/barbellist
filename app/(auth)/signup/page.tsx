@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "@mantine/form";
-import { zodResolver } from "mantine-form-zod-resolver";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 import {
   Anchor,
   Button,
@@ -29,7 +28,6 @@ import { signUpSchema, type SignUpInput } from "@/lib/validations/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
 
 export default function SignupPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<SignUpInput>({
@@ -43,7 +41,7 @@ export default function SignupPage() {
       city: "",
       country: "PK",
     },
-    validate: zodResolver(signUpSchema),
+    validate: zod4Resolver(signUpSchema),
   });
 
   const onSubmit = form.onSubmit(async (values) => {
@@ -71,17 +69,13 @@ export default function SignupPage() {
           title: "Account created",
           message: "Please sign in to continue.",
         });
-        router.push("/login");
+        window.location.assign("/login");
         return;
       }
 
-      notifications.show({
-        color: "forest",
-        title: "Gym registered",
-        message: "Welcome to Barbellist.",
-      });
-      router.push("/dashboard");
-      router.refresh();
+      // Full navigation after cookie/session changes — soft router.push +
+      // refresh races middleware (auth pages redirect) and yields empty RSC `{}`.
+      window.location.assign("/dashboard");
     } finally {
       setLoading(false);
     }

@@ -42,7 +42,7 @@ export default function SelectBranchPage() {
         if (!selectError) {
           const supabase = createClient();
           await supabase.auth.refreshSession();
-          router.replace("/dashboard");
+          window.location.assign("/dashboard");
           return;
         }
       }
@@ -64,8 +64,8 @@ export default function SelectBranchPage() {
       }
       const supabase = createClient();
       await supabase.auth.refreshSession();
-      router.replace("/dashboard");
-      router.refresh();
+      // Full navigation after session refresh — avoids empty RSC responses.
+      window.location.assign("/dashboard");
     });
   };
 
