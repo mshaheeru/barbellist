@@ -1,14 +1,11 @@
 import { SignJWT } from "jose";
+import { getQrSigningSecret } from "@/lib/qr/get-signing-secret";
 
 export async function signMemberQrToken(
   memberId: string,
   gymId: string,
 ): Promise<string> {
-  const secret = process.env.QR_SIGNING_SECRET;
-  if (!secret) {
-    throw new Error("QR_SIGNING_SECRET is not configured");
-  }
-
+  const secret = getQrSigningSecret();
   const key = new TextEncoder().encode(secret);
 
   return new SignJWT({

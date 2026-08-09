@@ -1,4 +1,5 @@
 import { jwtVerify } from "jose";
+import { getQrSigningSecret } from "@/lib/qr/get-signing-secret";
 
 export type VerifiedMemberToken = {
   memberId: string;
@@ -15,8 +16,10 @@ export class QrTokenError extends Error {
 export async function verifyMemberQrToken(
   token: string,
 ): Promise<VerifiedMemberToken> {
-  const secret = process.env.QR_SIGNING_SECRET;
-  if (!secret) {
+  let secret: string;
+  try {
+    secret = getQrSigningSecret();
+  } catch {
     throw new QrTokenError("QR signing is not configured");
   }
 
