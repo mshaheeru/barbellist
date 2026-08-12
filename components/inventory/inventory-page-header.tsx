@@ -38,7 +38,7 @@ export function InventoryPageHeader({
               className={styles.outlineBtn}
               onClick={() => setAddOpen(true)}
             >
-              <Plus size={16} strokeWidth={2.2} color="#1B5E3C" />
+              <Plus size={16} strokeWidth={2.2} color="var(--color-primary)" />
               Add Item
             </button>
           ) : null}

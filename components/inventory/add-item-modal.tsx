@@ -233,7 +233,7 @@ export function AddItemModal({ opened, onClose }: AddItemModalProps) {
               borderRadius: 11,
               padding: "12px 14px",
               background: "#fff",
-              color: photoUrl ? "#1b5e3c" : "#8a8a80",
+              color: photoUrl ? "var(--color-primary)" : "#8a8a80",
               cursor: "pointer",
               fontFamily: "inherit",
               fontSize: 13,
@@ -262,7 +262,7 @@ export function AddItemModal({ opened, onClose }: AddItemModalProps) {
           disabled={pending || uploading}
           style={{
             width: "100%",
-            background: "#1b5e3c",
+            background: "var(--color-primary)",
             color: "#fff",
             border: "none",
             borderRadius: 12,

@@ -77,7 +77,7 @@ export function PackageCard({
       <div className={styles.featureList}>
         {features.map((f) => (
           <span key={f} className={styles.featureItem}>
-            <Check size={15} strokeWidth={2.4} color="#1B5E3C" style={{ flexShrink: 0, marginTop: 2 }} />
+            <Check size={15} strokeWidth={2.4} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: 2 }} />
             {f}
           </span>
         ))}

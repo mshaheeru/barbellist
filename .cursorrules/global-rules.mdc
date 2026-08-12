@@ -84,6 +84,7 @@ This is a multi-tenant SaaS. Every gym is a tenant. NEVER forget this.
 3. Read the relevant skill file for the feature area
 4. Ask: "Does this respect gym_id isolation?"
 5. Ask: "Am I duplicating something that already exists?"
+6. DONT ASK USER QUESTIONS EVERYTIME UNLESS YOU ARE GENUINELY CONFUSED. DONT ASK THE OBVIOUS!
 
 ## Feature Completion Checklist
 **Do NOT mark complete until ALL boxes checked:**

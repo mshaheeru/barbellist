@@ -45,7 +45,7 @@ export function MemberProfileHero({ member }: MemberProfileHeroProps) {
               <h1 className={styles.heroName}>{member.name}</h1>
               {member.package ? (
                 <span className={styles.packageRibbon}>
-                  <Star size={13} fill="#C9861B" stroke="none" />
+                  <Star size={13} fill="var(--color-accent)" stroke="none" />
                   {member.package.name}
                 </span>
               ) : null}

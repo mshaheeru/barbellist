@@ -6,6 +6,7 @@ import {
   DashboardSidebar,
   MobileSidebarOverlay,
 } from "@/components/dashboard/sidebar";
+import { DashboardThemeBridge } from "@/components/dashboard/dashboard-theme-bridge";
 import { MobileMenuContext } from "@/components/mobile-menu-context";
 import shellStyles from "@/components/dashboard/dashboard-shell.module.css";
 
@@ -15,14 +16,14 @@ function DashboardShell({ children }: { children: ReactNode }) {
 
   return (
     <MobileMenuContext.Provider value={openMenu}>
-      <div className={shellStyles.shell}>
+      <DashboardThemeBridge className={shellStyles.shell}>
         <DashboardSidebar />
         <MobileSidebarOverlay
           open={mobileOpen}
           onClose={() => setMobileOpen(false)}
         />
         <main className={shellStyles.main}>{children}</main>
-      </div>
+      </DashboardThemeBridge>
     </MobileMenuContext.Provider>
   );
 }

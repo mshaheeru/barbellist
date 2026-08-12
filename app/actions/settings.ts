@@ -24,6 +24,7 @@ import {
   createBranchSchema,
   deleteGymSchema,
   gymProfileSchema,
+  gymThemeSchema,
   inviteStaffSchema,
   updateBranchSchema,
   updateStaffRoleSchema,
@@ -31,6 +32,7 @@ import {
   type CardTemplateInput,
   type CreateBranchInput,
   type GymProfileInput,
+  type GymThemeInput,
   type InviteStaffInput,
   type UpdateBranchInput,
   type WhatsAppCredentialsInput,
@@ -188,7 +190,7 @@ export async function uploadGymLogo(
 }
 
 export async function updateGymSettings(
-  key: "card_template" | "reminders" | "whatsapp",
+  key: "card_template" | "reminders" | "whatsapp" | "theme",
   value: unknown,
 ): Promise<{ error: string | null }> {
   const ctx = await getActionContextWithRole();
@@ -201,6 +203,14 @@ export async function updateGymSettings(
     const parsed = cardTemplateSchema.safeParse(value);
     if (!parsed.success) {
       return { error: parsed.error.issues[0]?.message ?? "Invalid card template" };
+    }
+    value = parsed.data;
+  }
+
+  if (key === "theme") {
+    const parsed = gymThemeSchema.safeParse(value);
+    if (!parsed.success) {
+      return { error: parsed.error.issues[0]?.message ?? "Invalid theme" };
     }
     value = parsed.data;
   }
@@ -222,6 +232,7 @@ export async function saveSettingsBundle(input: {
   profile: GymProfileInput;
   reminders: ReminderScheduleSettings;
   cardTemplate: CardTemplateInput;
+  theme: GymThemeInput;
   whatsapp?: WhatsAppCredentialsInput | null;
 }): Promise<{ error: string | null }> {
   const profileResult = await updateGymProfile(input.profile);
@@ -235,6 +246,9 @@ export async function saveSettingsBundle(input: {
     input.cardTemplate,
   );
   if (cardResult.error) return cardResult;
+
+  const themeResult = await updateGymSettings("theme", input.theme);
+  if (themeResult.error) return themeResult;
 
   if (input.whatsapp) {
     const waResult = await updateWhatsAppCredentials(input.whatsapp);

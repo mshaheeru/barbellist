@@ -16,6 +16,7 @@ import { notifications } from "@mantine/notifications";
 import { Lock, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getUserGymId, getUserRole } from "@/lib/auth/claims";
+import { queuePostLoginToast } from "@/lib/auth/post-login-toast";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
 
@@ -56,6 +57,9 @@ export default function LoginPage() {
         const destination =
           role === "owner" && !gymId ? "/select-branch" : "/dashboard";
 
+        queuePostLoginToast(
+          destination === "/select-branch" ? "branch" : "dashboard",
+        );
         window.location.assign(destination);
       } catch (e) {
         notifications.show({

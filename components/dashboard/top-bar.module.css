@@ -84,7 +84,7 @@
   display: none;
   align-items: center;
   gap: 9px;
-  background: #1b5e3c;
+  background: var(--color-primary);
   color: #fff;
   padding: 11px 18px;
   border-radius: 11px;

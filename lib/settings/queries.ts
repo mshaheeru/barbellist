@@ -7,6 +7,7 @@ import {
 import {
   maskToken,
   parseCardTemplate,
+  parseGymTheme,
   parseWhatsAppCredentials,
   type SettingsPageData,
   type SettingsStaffRow,
@@ -99,6 +100,7 @@ export async function fetchSettingsPageData(
 
   const reminders = parseReminders(settings.reminders);
   const cardTemplate = parseCardTemplate(settings.card_template);
+  const theme = parseGymTheme(settings.theme);
   const wa = parseWhatsAppCredentials(settings.whatsapp);
   const resolved = resolveWhatsAppCredentials(wa);
 
@@ -123,6 +125,7 @@ export async function fetchSettingsPageData(
     branches: (branchesRes.data ?? []) as SettingsPageData["branches"],
     reminders,
     cardTemplate,
+    theme,
     whatsappConfigured: resolved.configured,
     whatsappHasToken: Boolean(wa.api_token || process.env.WHATSAPP_API_TOKEN),
     whatsappPhoneNumberId:

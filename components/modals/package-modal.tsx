@@ -336,7 +336,7 @@ export function PackageModal({
               checked={showBmi}
               onChange={(e) => setShowBmi(e.currentTarget.checked)}
               size="sm"
-              color="#1B5E3C"
+              color="var(--color-primary)"
             />
           </div>
           {showBmi ? (
@@ -370,7 +370,7 @@ export function PackageModal({
                 label={label}
                 checked={form.recommended_goals.includes(value)}
                 onChange={() => toggleGoal(value)}
-                color="#1B5E3C"
+                color="var(--color-primary)"
               />
             ))}
           </div>
@@ -384,7 +384,7 @@ export function PackageModal({
                   setField("is_active", e.currentTarget.checked)
                 }
                 label={form.is_active ? "Active" : "Inactive"}
-                color="#1B5E3C"
+                color="var(--color-primary)"
               />
             </div>
             <NumberInput

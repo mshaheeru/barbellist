@@ -133,7 +133,7 @@
   gap: 6px;
   border: 1px dashed #dcd6c8;
   background: #faf7f2;
-  color: #1b5e3c;
+  color: var(--color-primary);
   font-size: 13px;
   font-weight: 600;
   padding: 8px 12px;
@@ -166,7 +166,7 @@
 }
 
 .swatchSelected {
-  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1b5e3c;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--color-primary);
 }
 
 .bmiToggle {
@@ -231,7 +231,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #1b5e3c;
+  background: var(--color-primary);
   color: #fff;
   font-size: 14px;
   font-weight: 700;

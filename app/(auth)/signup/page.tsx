@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { signUpGym } from "@/app/actions/auth";
+import { queuePostLoginToast } from "@/lib/auth/post-login-toast";
 import {
   friendlySignUpError,
   signUpSchema,
@@ -70,16 +71,13 @@ export default function SignupPage() {
         });
 
         if (signInError) {
-          notifications.show({
-            color: "forest",
-            title: "Account created",
-            message: "Please sign in to continue.",
-          });
+          queuePostLoginToast("signup-signin");
           window.location.assign("/login");
           return;
         }
 
         // Full document navigation after session cookies change.
+        queuePostLoginToast("signup");
         window.location.assign("/dashboard");
       } catch (e) {
         notifications.show({

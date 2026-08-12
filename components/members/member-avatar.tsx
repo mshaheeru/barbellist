@@ -12,8 +12,8 @@ const sizeMap = {
 };
 
 const toneStyles = {
-  green: { background: "#E7F0EA", color: "#1B5E3C" },
-  amber: { background: "#F7ECD6", color: "#C9861B" },
+  green: { background: "#E7F0EA", color: "var(--color-primary)" },
+  amber: { background: "#F7ECD6", color: "var(--color-accent)" },
   grey: { background: "#EFEDE6", color: "#8A8A80" },
 };
 

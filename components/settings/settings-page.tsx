@@ -10,13 +10,16 @@ import {
 } from "@/app/actions/settings";
 import type {
   CardTemplateSettings,
+  GymThemeSettings,
   SettingsPageData,
   SettingsStaffRow,
 } from "@/lib/settings/types";
+import { DEFAULT_THEME } from "@/lib/theme/tokens";
 import type { GymProfileInput } from "@/lib/validations/settings";
 import { CURRENCY_SYMBOL_MAP } from "@/lib/validations/settings";
 import type { ReminderScheduleSettings } from "@/lib/whatsapp/schedule";
 import { GymProfileSection } from "./gym-profile-section";
+import { BrandingSection } from "./branding-section";
 import { WhatsAppSection } from "./whatsapp-section";
 import { PageHeaderStart } from "@/components/dashboard/page-header-start";
 import { RoleGate } from "@/components/auth/role-gate";
@@ -26,6 +29,7 @@ import { BillingSection } from "./billing-section";
 import { BranchesSection } from "./branches-section";
 import { DangerZoneSection } from "./danger-zone-section";
 import { DemoDataSection } from "./demo-data-section";
+import { useGym } from "@/components/gym-provider";
 import styles from "./settings.module.css";
 
 function profileFromGym(data: SettingsPageData): GymProfileInput {
@@ -50,18 +54,31 @@ function profileFromGym(data: SettingsPageData): GymProfileInput {
   };
 }
 
+function themeFromInitial(
+  theme: GymThemeSettings | null | undefined,
+): GymThemeSettings {
+  return {
+    primary: theme?.primary ?? DEFAULT_THEME.primary,
+    accent: theme?.accent ?? DEFAULT_THEME.accent,
+  };
+}
+
 type SettingsPageProps = {
   initial: SettingsPageData;
 };
 
 export function SettingsPage({ initial }: SettingsPageProps) {
   const router = useRouter();
+  const { refresh: refreshGym } = useGym();
   const [profile, setProfile] = useState(() => profileFromGym(initial));
   const [reminders, setReminders] = useState<ReminderScheduleSettings>(
     initial.reminders,
   );
   const [cardTemplate, setCardTemplate] = useState<CardTemplateSettings>(
     initial.cardTemplate,
+  );
+  const [theme, setTheme] = useState<GymThemeSettings>(() =>
+    themeFromInitial(initial.theme),
   );
   const [waToken, setWaToken] = useState(initial.whatsappTokenMasked ?? "");
   const [waPhoneId, setWaPhoneId] = useState(initial.whatsappPhoneNumberId);
@@ -72,6 +89,7 @@ export function SettingsPage({ initial }: SettingsPageProps) {
     profile: profileFromGym(initial),
     reminders: initial.reminders,
     cardTemplate: initial.cardTemplate,
+    theme: themeFromInitial(initial.theme),
     waToken: initial.whatsappTokenMasked ?? "",
     waPhoneId: initial.whatsappPhoneNumberId,
   }));
@@ -83,6 +101,7 @@ export function SettingsPage({ initial }: SettingsPageProps) {
     setStaff(initial.staff);
     setGym(initial.gym);
     setLogoUrl(initial.gym.logo_url);
+    setTheme(themeFromInitial(initial.theme));
   }, [initial]);
 
   const dirty =
@@ -90,6 +109,7 @@ export function SettingsPage({ initial }: SettingsPageProps) {
     JSON.stringify(reminders) !== JSON.stringify(savedSnapshot.reminders) ||
     JSON.stringify(cardTemplate) !==
       JSON.stringify(savedSnapshot.cardTemplate) ||
+    JSON.stringify(theme) !== JSON.stringify(savedSnapshot.theme) ||
     (initial.canEditCredentials &&
       (waToken !== savedSnapshot.waToken ||
         waPhoneId !== savedSnapshot.waPhoneId));
@@ -106,6 +126,10 @@ export function SettingsPage({ initial }: SettingsPageProps) {
         profile,
         reminders,
         cardTemplate,
+        theme: {
+          primary: theme.primary,
+          accent: theme.accent,
+        },
         whatsapp: initial.canEditCredentials
           ? {
               api_token: waToken,
@@ -124,15 +148,26 @@ export function SettingsPage({ initial }: SettingsPageProps) {
         ...profile,
         email: profile.email || null,
         logo_url: logoUrl,
+        settings: {
+          ...(typeof g.settings === "object" && g.settings && !Array.isArray(g.settings)
+            ? g.settings
+            : {}),
+          theme: {
+            primary: theme.primary,
+            accent: theme.accent,
+          },
+        },
       }));
       setSavedSnapshot({
         profile,
         reminders,
         cardTemplate,
+        theme,
         waToken,
         waPhoneId,
       });
       toast.success({ message: "Settings saved" });
+      await refreshGym();
       router.refresh();
     });
   };
@@ -150,6 +185,7 @@ export function SettingsPage({ initial }: SettingsPageProps) {
     setLogoUrl(data.logo_url);
     setGym((g) => ({ ...g, logo_url: data.logo_url }));
     toast.success({ message: "Logo updated" });
+    await refreshGym();
   };
 
   const handleTest = () => {
@@ -172,7 +208,7 @@ export function SettingsPage({ initial }: SettingsPageProps) {
           title="Settings"
           titleClassName={styles.pageTitle}
           subtitleClassName={styles.pageSubtitle}
-          subtitle="Configure your gym, reminders, cards, and team access"
+          subtitle="Configure your gym, branding, reminders, cards, and team access"
         />
         <button
           type="button"
@@ -188,8 +224,13 @@ export function SettingsPage({ initial }: SettingsPageProps) {
         <GymProfileSection
           profile={profile}
           slug={initial.gym.slug}
-          logoUrl={logoUrl}
           onChange={setProfile}
+        />
+
+        <BrandingSection
+          theme={theme}
+          logoUrl={logoUrl}
+          onThemeChange={setTheme}
           onLogoUpload={handleLogoUpload}
           uploadingLogo={uploadingLogo}
         />

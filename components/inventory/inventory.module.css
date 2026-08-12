@@ -48,7 +48,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #1b5e3c;
+  background: var(--color-primary);
   color: #fff;
   padding: 11px 18px;
   border-radius: 11px;
@@ -119,12 +119,12 @@
 
 .iconBoxGreen {
   background: #e7f0ea;
-  color: #1b5e3c;
+  color: var(--color-primary);
 }
 
 .iconBoxAmber {
   background: #f7ecd6;
-  color: #c9861b;
+  color: var(--color-accent);
 }
 
 .num {
@@ -144,7 +144,7 @@
 }
 
 .kpiValueGreen {
-  color: #1b5e3c;
+  color: var(--color-primary);
 }
 
 .kpiUnit {

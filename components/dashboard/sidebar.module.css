@@ -4,7 +4,7 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  background: #123d28;
+  background: var(--color-sidebar);
   padding: 22px 0;
 }
 
@@ -31,22 +31,36 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.brandMark {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: #1b5e3c;
+.gymLogoLink {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 11px;
+  max-width: 100%;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.gymLogo {
+  max-height: 34px;
+  max-width: 40px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
   flex-shrink: 0;
+  border-radius: 8px;
 }
 
 .brandName {
   color: #fff;
   font-weight: 700;
-  font-size: 19px;
+  font-size: 17px;
   letter-spacing: -0.01em;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .nav {
@@ -65,7 +79,7 @@
   border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
-  color: #a9c4b4;
+  color: var(--color-sidebar-muted);
   text-decoration: none;
   transition: background 0.15s ease, color 0.15s ease;
 }
@@ -76,7 +90,7 @@
 }
 
 .navLinkActive {
-  background: #1b5e3c;
+  background: var(--color-sidebar-active);
   color: #fff;
   font-weight: 600;
 }
@@ -112,7 +126,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #c9861b;
+  background: var(--color-accent);
   color: #fff;
   display: flex;
   align-items: center;
@@ -137,7 +151,7 @@
 }
 
 .userRole {
-  color: #88a596;
+  color: var(--color-sidebar-subtle);
   font-size: 11.5px;
   white-space: nowrap;
   overflow: hidden;
@@ -145,7 +159,7 @@
 }
 
 .userChevron {
-  color: #88a596;
+  color: var(--color-sidebar-subtle);
   flex-shrink: 0;
   transition: transform 0.15s ease, color 0.15s ease;
 }
@@ -162,7 +176,7 @@
   bottom: calc(100% + 6px);
   padding: 6px;
   border-radius: 12px;
-  background: #0f3221;
+  background: color-mix(in srgb, var(--color-sidebar) 92%, #000);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
   z-index: 20;

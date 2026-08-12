@@ -122,7 +122,7 @@ export function WhatsAppSection({
                 on_due_date: e.currentTarget.checked,
               })
             }
-            color="#1B5E3C"
+            color="var(--color-primary)"
           />
         </div>
 

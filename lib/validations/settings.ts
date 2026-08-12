@@ -42,6 +42,17 @@ export const cardTemplateSchema = z.object({
 
 export type CardTemplateInput = z.infer<typeof cardTemplateSchema>;
 
+const hexColorSchema = z
+  .string()
+  .regex(/^#[0-9A-Fa-f]{6}$/, "Invalid color");
+
+export const gymThemeSchema = z.object({
+  primary: hexColorSchema,
+  accent: hexColorSchema.optional(),
+});
+
+export type GymThemeInput = z.infer<typeof gymThemeSchema>;
+
 export const whatsappCredentialsSchema = z.object({
   api_token: z.string().optional().nullable(),
   phone_number_id: z.string().optional().nullable(),

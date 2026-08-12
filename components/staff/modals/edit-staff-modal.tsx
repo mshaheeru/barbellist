@@ -143,7 +143,7 @@ export function EditStaffModal({
           type="submit"
           disabled={pending}
           style={{
-            background: "#1B5E3C",
+            background: "var(--color-primary)",
             color: "#fff",
             border: "none",
             borderRadius: 11,

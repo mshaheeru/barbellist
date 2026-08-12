@@ -1,8 +1,7 @@
 "use client";
 
 import { TextInput, Select } from "@mantine/core";
-import { Building2, Dumbbell, Upload } from "lucide-react";
-import { useRef } from "react";
+import { Building2 } from "lucide-react";
 import type { GymProfileInput } from "@/lib/validations/settings";
 import { CURRENCY_SYMBOL_MAP } from "@/lib/validations/settings";
 import styles from "./settings.module.css";
@@ -36,22 +35,14 @@ const CURRENCIES = [
 type GymProfileSectionProps = {
   profile: GymProfileInput;
   slug: string;
-  logoUrl: string | null;
   onChange: (next: GymProfileInput) => void;
-  onLogoUpload: (file: File) => void;
-  uploadingLogo?: boolean;
 };
 
 export function GymProfileSection({
   profile,
   slug,
-  logoUrl,
   onChange,
-  onLogoUpload,
-  uploadingLogo,
 }: GymProfileSectionProps) {
-  const fileRef = useRef<HTMLInputElement>(null);
-
   const set = <K extends keyof GymProfileInput>(
     key: K,
     value: GymProfileInput[K],
@@ -146,40 +137,6 @@ export function GymProfileSection({
           value={profile.currency_symbol}
           onChange={(e) => set("currency_symbol", e.currentTarget.value)}
         />
-      </div>
-
-      <div className={styles.logoRow}>
-        <div className={styles.logoPreview}>
-          {logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoUrl} alt="Gym logo" />
-          ) : (
-            <Dumbbell size={24} color="#1B5E3C" strokeWidth={2} />
-          )}
-        </div>
-        <div>
-          <button
-            type="button"
-            className={styles.uploadBtn}
-            disabled={uploadingLogo}
-            onClick={() => fileRef.current?.click()}
-          >
-            <Upload size={15} strokeWidth={2.2} />
-            {uploadingLogo ? "Uploading…" : "Upload Logo"}
-          </button>
-          <div className={styles.uploadHint}>PNG or JPG, max 2MB</div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) onLogoUpload(file);
-              e.target.value = "";
-            }}
-          />
-        </div>
       </div>
     </section>
   );

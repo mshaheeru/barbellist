@@ -13,20 +13,8 @@ import {
   Settings,
 } from "lucide-react";
 
-export const BRAND = {
-  primary: "#1B5E3C",
-  accent: "#C9861B",
-  background: "#FAF7F2",
-  foreground: "#1F1F1F",
-  muted: "#E8E5DF",
-  success: "#16A34A",
-  warning: "#D97706",
-  danger: "#DC2626",
-  sidebar: "#123D28",
-  sidebarActive: "#1B5E3C",
-  sidebarMuted: "#A9C4B4",
-  sidebarSubtle: "#88A596",
-} as const;
+/** @deprecated Prefer DEFAULT_THEME from @/lib/theme/tokens — kept for existing imports */
+export { DEFAULT_THEME as BRAND } from "@/lib/theme/tokens";
 
 export type NavItem = {
   label: string;

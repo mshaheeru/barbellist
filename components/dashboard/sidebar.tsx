@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChevronUp, LogOut } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/constants";
@@ -29,13 +29,29 @@ export function DashboardSidebar({
   onNavigate,
 }: SidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const active = navKeyFromPath(pathname);
-  const { staffName, gymName, role } = useGym();
+  const { staffName, gymName, role, gym } = useGym();
   const initials = getInitials(staffName);
   const roleLabel = role
     ? role.charAt(0).toUpperCase() + role.slice(1)
     : "Staff";
+
+  // Keep last known brand so auth clear mid-logout never flashes Barbellist.
+  const lastBrandRef = useRef<{ logoUrl: string | null; name: string | null }>({
+    logoUrl: null,
+    name: null,
+  });
+  if (gym) {
+    lastBrandRef.current = {
+      logoUrl: gym.logo_url,
+      name: gym.name,
+    };
+  }
+  const displayLogo =
+    gym?.logo_url ?? (gym === null ? lastBrandRef.current.logoUrl : null);
+  const displayName =
+    gymName ?? (gym === null ? lastBrandRef.current.name : null);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -70,11 +86,9 @@ export function DashboardSidebar({
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
-      setMenuOpen(false);
-      onNavigate?.();
-      router.push("/login");
-      router.refresh();
-    } finally {
+      // Hard navigate so cleared gym state never flashes Barbellist branding.
+      window.location.assign("/login");
+    } catch {
       setLoggingOut(false);
     }
   }
@@ -86,7 +100,26 @@ export function DashboardSidebar({
   return (
     <aside className={`${styles.sidebar} ${visibilityClass}`}>
       <div className={styles.brandRow}>
-        <LogoLockupReversed height={30} href="/dashboard" />
+        {displayLogo ? (
+          <Link
+            href="/dashboard"
+            className={styles.gymLogoLink}
+            onClick={onNavigate}
+            aria-label={displayName ?? "Dashboard"}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={displayLogo}
+              alt=""
+              className={styles.gymLogo}
+            />
+            {displayName ? (
+              <span className={styles.brandName}>{displayName}</span>
+            ) : null}
+          </Link>
+        ) : (
+          <LogoLockupReversed height={30} href="/dashboard" />
+        )}
       </div>
 
       <nav className={styles.nav}>

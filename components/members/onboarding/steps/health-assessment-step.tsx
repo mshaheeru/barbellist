@@ -81,7 +81,7 @@ export function HealthAssessmentStep({
                     type="checkbox"
                     checked={checked}
                     onChange={() => toggleGoal(goal.value)}
-                    style={{ accentColor: "#1B5E3C" }}
+                    style={{ accentColor: "var(--color-primary)" }}
                   />
                   {goal.label}
                 </label>

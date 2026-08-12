@@ -472,7 +472,7 @@ export function OwnerDashboard({
                 <Area
                   type="monotone"
                   dataKey="profit"
-                  fill="#C9861B"
+                  fill="var(--color-accent)"
                   fillOpacity={0.2}
                   stroke="none"
                 />
@@ -489,7 +489,7 @@ export function OwnerDashboard({
               <Line
                 type="monotone"
                 dataKey="revenue"
-                stroke="#1B5E3C"
+                stroke="var(--color-primary)"
                 strokeWidth={2.5}
                 dot={false}
               />
@@ -626,7 +626,7 @@ export function OwnerDashboard({
                             href={`tel:${item.phone.replace(/\s+/g, "")}`}
                             className={styles.btnCall}
                           >
-                            <Phone size={15} stroke="#1B5E3C" strokeWidth={2} />
+                            <Phone size={15} stroke="var(--color-primary)" strokeWidth={2} />
                             Call
                           </a>
                         ) : (
@@ -635,7 +635,7 @@ export function OwnerDashboard({
                             className={styles.btnCall}
                             disabled
                           >
-                            <Phone size={15} stroke="#1B5E3C" strokeWidth={2} />
+                            <Phone size={15} stroke="var(--color-primary)" strokeWidth={2} />
                             Call
                           </button>
                         )}

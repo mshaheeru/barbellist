@@ -33,7 +33,7 @@ export function BmiGauge({ heightCm, weightKg }: BmiGaugeProps) {
 
   const labelColor =
     cat.tone === "success"
-      ? "#1b5e3c"
+      ? "var(--color-primary)"
       : cat.tone === "danger"
         ? "#c0392b"
         : "#b07a15";

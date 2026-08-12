@@ -51,10 +51,18 @@ export function mapKioskError(raw: string | null | undefined): KioskErrorInfo {
       message: "You don’t have permission to check in members.",
     };
   }
+  if (msg.includes("not configured") || msg.includes("signing is not")) {
+    return {
+      title: "Check-in unavailable",
+      message:
+        "QR verification is not configured on the server. Ask an admin to set QR_SIGNING_SECRET.",
+    };
+  }
   if (
-    msg.includes("invalid") ||
-    msg.includes("expired") ||
-    msg.includes("qr") ||
+    msg.includes("invalid qr") ||
+    msg.includes("invalid or expired") ||
+    msg.includes("qr code payload") ||
+    msg.includes("not a valid") ||
     !raw
   ) {
     return {

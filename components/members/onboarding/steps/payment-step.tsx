@@ -58,7 +58,7 @@ export function PaymentStep({
           </div>
           <div
             className={styles.num}
-            style={{ fontWeight: 700, fontSize: 19, color: "#1B5E3C" }}
+            style={{ fontWeight: 700, fontSize: 19, color: "var(--color-primary)" }}
           >
             {formatCurrency(packagePrice, currencySymbol)}
           </div>

@@ -5,7 +5,7 @@ import styles from "./attendance.module.css";
 export function AttendanceEmptyState() {
   return (
     <div className={styles.emptyState}>
-      <CalendarCheck size={40} strokeWidth={1.8} color="#1B5E3C" />
+      <CalendarCheck size={40} strokeWidth={1.8} color="var(--color-primary)" />
       <div className={styles.emptyTitle} style={{ marginTop: 16 }}>
         No attendance records yet
       </div>

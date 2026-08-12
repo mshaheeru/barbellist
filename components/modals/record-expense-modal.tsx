@@ -453,7 +453,7 @@ export function RecordExpenseModal({
                   <Check
                     size={14}
                     strokeWidth={3}
-                    color="#1B5E3C"
+                    color="var(--color-primary)"
                     style={{ marginLeft: "auto" }}
                   />
                 ) : null}

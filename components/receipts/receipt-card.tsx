@@ -47,7 +47,7 @@ function GymLogo({
       />
     );
   }
-  return <Dumbbell size={24} color="#C9861B" strokeWidth={2.2} />;
+  return <Dumbbell size={24} color="var(--color-accent)" strokeWidth={2.2} />;
 }
 
 function gymContactLine(

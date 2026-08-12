@@ -42,7 +42,7 @@ export function PackageAdminCard({
     >
       <div
         className={styles.colorStripe}
-        style={{ background: pkg.color || "#1B5E3C" }}
+        style={{ background: pkg.color || "var(--color-primary)" }}
       />
       <div className={styles.cardBody}>
         <div className={styles.cardTop}>
@@ -57,7 +57,7 @@ export function PackageAdminCard({
             onChange={onToggleActive}
             disabled={toggling}
             size="sm"
-            color="#1B5E3C"
+            color="var(--color-primary)"
             aria-label={`Toggle ${pkg.name} active`}
           />
         </div>
@@ -90,7 +90,7 @@ export function PackageAdminCard({
                 <Check
                   size={15}
                   strokeWidth={2.4}
-                  color="#1B5E3C"
+                  color="var(--color-primary)"
                   style={{ flexShrink: 0, marginTop: 2 }}
                 />
                 {f}

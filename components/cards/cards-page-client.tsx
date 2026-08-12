@@ -190,7 +190,8 @@ export function CardsPageClient({ initialMemberId }: CardsPageClientProps) {
     notifications.show({
       color: "blue",
       title: "Coming soon",
-      message: "Digital membership card WhatsApp send is not available yet (no media template in Prompt 9).",
+      message:
+        "Sending digital cards on WhatsApp isn’t available yet. You can still print or download the card.",
     });
   }, []);
 

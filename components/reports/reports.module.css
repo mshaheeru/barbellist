@@ -58,7 +58,7 @@
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  background: #1b5e3c;
+  background: var(--color-primary);
   color: #fff;
   border: none;
   border-radius: 11px;
@@ -111,7 +111,7 @@
 }
 
 .rangeApply {
-  background: #1b5e3c;
+  background: var(--color-primary);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -215,7 +215,7 @@
 .churnNew {
   font-size: 26px;
   font-weight: 700;
-  color: #1b5e3c;
+  color: var(--color-primary);
 }
 
 .churnLost {
@@ -364,7 +364,7 @@
 }
 
 .profitFootnoteStrong {
-  color: #1b5e3c;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -407,11 +407,11 @@
 }
 
 .expenseBarAmber {
-  background: #c9861b;
+  background: var(--color-accent);
 }
 
 .expenseBarGreen {
-  background: #1b5e3c;
+  background: var(--color-primary);
 }
 
 .expenseAmount {
@@ -485,7 +485,7 @@
 }
 
 .heat4 {
-  background: #1b5e3c;
+  background: var(--color-primary);
 }
 
 .heat5 {
@@ -500,7 +500,7 @@
 
 .heatmapFootnoteStrong {
   font-weight: 600;
-  color: #1b5e3c;
+  color: var(--color-primary);
 }
 
 .emptyText {

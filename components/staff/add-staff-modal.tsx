@@ -190,7 +190,7 @@ export function AddStaffModal({ opened, onClose }: AddStaffModalProps) {
           disabled={pending || uploading}
           style={{
             marginTop: 8,
-            background: "#1B5E3C",
+            background: "var(--color-primary)",
             color: "#fff",
             border: "none",
             borderRadius: 11,

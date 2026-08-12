@@ -50,7 +50,7 @@ function GymLogo({
       />
     );
   }
-  return <Dumbbell size={18} color="#C9861B" strokeWidth={2.2} />;
+  return <Dumbbell size={18} color="var(--color-accent)" strokeWidth={2.2} />;
 }
 
 export function MembershipCardFront({
@@ -68,7 +68,7 @@ export function MembershipCardFront({
 }) {
   const t = resolveTemplate(template);
   const packageName = member.package?.name ?? "Member";
-  const badgeColor = member.package?.color || "#C9861B";
+  const badgeColor = member.package?.color || "var(--color-accent)";
 
   return (
     <div

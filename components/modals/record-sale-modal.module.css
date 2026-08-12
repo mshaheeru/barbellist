@@ -93,7 +93,7 @@
   height: 38px;
   border-radius: 50%;
   background: #f7ecd6;
-  color: #c9861b;
+  color: var(--color-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -137,7 +137,7 @@
 }
 
 .chipBtnActive {
-  border-color: #c9861b;
+  border-color: var(--color-accent);
   color: #b07a15;
   background: #fbefd6;
 }
@@ -268,7 +268,7 @@
 }
 
 .qtyBtnPlus {
-  color: #1b5e3c;
+  color: var(--color-primary);
 }
 
 .qtyValue {
@@ -352,7 +352,7 @@
 .totalValue {
   font-weight: 700;
   font-size: 19px;
-  color: #1b5e3c;
+  color: var(--color-primary);
   font-family: var(--font-space-grotesk), sans-serif;
 }
 
@@ -379,14 +379,14 @@
 }
 
 .paymentPillSelected {
-  border: 2px solid #1b5e3c;
+  border: 2px solid var(--color-primary);
   background: #eaf3ee;
   font-weight: 700;
   padding: 8px 12px;
 }
 
 .paymentPillTab {
-  border: 2px solid #c9861b;
+  border: 2px solid var(--color-accent);
   background: #fbefd6;
   color: #b07a15;
   font-weight: 700;
@@ -404,7 +404,7 @@
   justify-content: center;
   gap: 9px;
   width: 100%;
-  background: #1b5e3c;
+  background: var(--color-primary);
   color: #fff;
   font-size: 15px;
   font-weight: 700;

@@ -341,7 +341,7 @@ export function ReportsPage({ initialData }: Props) {
                       <Line
                         type="monotone"
                         dataKey="v"
-                        stroke="#1B5E3C"
+                        stroke="var(--color-primary)"
                         strokeWidth={2.5}
                         dot={false}
                         isAnimationActive={false}
@@ -459,12 +459,12 @@ export function ReportsPage({ initialData }: Props) {
                       <Line
                         type="monotone"
                         dataKey="profit"
-                        stroke="#C9861B"
+                        stroke="var(--color-accent)"
                         strokeWidth={3}
-                        dot={{ r: 4, fill: "#C9861B", strokeWidth: 0 }}
+                        dot={{ r: 4, fill: "var(--color-accent)", strokeWidth: 0 }}
                         activeDot={{
                           r: 4.5,
-                          fill: "#C9861B",
+                          fill: "var(--color-accent)",
                           stroke: "#fff",
                           strokeWidth: 2,
                         }}
@@ -555,7 +555,7 @@ export function ReportsPage({ initialData }: Props) {
               />
               <span
                 className={styles.heatSwatch}
-                style={{ background: "#1B5E3C" }}
+                style={{ background: "var(--color-primary)" }}
               />
               More
             </div>

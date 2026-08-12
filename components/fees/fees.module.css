@@ -84,7 +84,7 @@
 
 .iconBoxGreen {
   background: #e7f0ea;
-  color: #1b5e3c;
+  color: var(--color-primary);
 }
 
 .iconBoxRed {
@@ -110,7 +110,7 @@
 }
 
 .kpiValueGreen {
-  color: #1b5e3c;
+  color: var(--color-primary);
 }
 
 .kpiValueRed {
@@ -186,8 +186,8 @@
 }
 
 .filterChipActive {
-  background: #1b5e3c;
-  border-color: #1b5e3c;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   color: #fff;
   font-weight: 600;
 }
@@ -208,7 +208,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #1b5e3c;
+  background: var(--color-primary);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -340,7 +340,7 @@
 .checkbox {
   width: 18px;
   height: 18px;
-  accent-color: #1b5e3c;
+  accent-color: var(--color-primary);
   cursor: pointer;
 }
 
@@ -382,7 +382,7 @@
   height: 72px;
   border-radius: 50%;
   background: #f7f3ea;
-  color: #1b5e3c;
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;

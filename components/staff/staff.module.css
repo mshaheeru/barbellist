@@ -26,7 +26,7 @@
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  background: #1b5e3c;
+  background: var(--color-primary);
   color: #fff;
   padding: 11px 18px;
   border-radius: 11px;
@@ -107,8 +107,8 @@
 }
 
 .filterChipActive {
-  background: #1b5e3c;
-  border-color: #1b5e3c;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   color: #fff;
   font-weight: 600;
 }
@@ -230,7 +230,7 @@
 
 .progressFill {
   height: 100%;
-  background: #1b5e3c;
+  background: var(--color-primary);
   border-radius: 3px;
 }
 
@@ -283,7 +283,7 @@
 
 .roleTrainer {
   background: #e7f0ea;
-  color: #1b5e3c;
+  color: var(--color-primary);
 }
 
 .roleCleaner {
@@ -303,7 +303,7 @@
 
 .roleOwner {
   background: transparent;
-  border: 1px solid #c9861b;
+  border: 1px solid var(--color-accent);
   color: #b07a15;
   padding: 3px 10px;
 }

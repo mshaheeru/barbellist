@@ -98,7 +98,7 @@ export function PaymentMethodPills({ value, onChange }: PaymentMethodPillsProps)
               <Check
                 size={15}
                 strokeWidth={3}
-                color="#1B5E3C"
+                color="var(--color-primary)"
                 style={{ marginLeft: "auto" }}
               />
             ) : null}

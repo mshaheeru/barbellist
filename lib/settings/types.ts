@@ -1,6 +1,14 @@
 import type { ReminderScheduleSettings } from "@/lib/whatsapp/schedule";
 import { DEFAULT_REMINDER_SCHEDULE } from "@/lib/whatsapp/schedule";
 import type { Gym, Organization, StaffRole, SubscriptionPlan } from "@/lib/types";
+import {
+  DEFAULT_THEME,
+  parseGymTheme,
+  type GymThemeSettings,
+} from "@/lib/theme/tokens";
+
+export type { GymThemeSettings };
+export { DEFAULT_THEME, parseGymTheme };
 
 export type CardTemplateSettings = {
   background_color: string;
@@ -48,6 +56,8 @@ export type SettingsPageData = {
   }>;
   reminders: ReminderScheduleSettings;
   cardTemplate: CardTemplateSettings;
+  /** Null when gym uses Barbellist defaults (no settings.theme). */
+  theme: GymThemeSettings | null;
   whatsappConfigured: boolean;
   whatsappHasToken: boolean;
   whatsappPhoneNumberId: string;

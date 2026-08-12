@@ -126,7 +126,7 @@ export function CardTemplateSection({
                 <Switch
                   checked={template[key]}
                   onChange={(e) => set(key, e.currentTarget.checked)}
-                  color="#1B5E3C"
+                  color="var(--color-primary)"
                 />
               </div>
             ))}

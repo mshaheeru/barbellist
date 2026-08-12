@@ -267,7 +267,7 @@ export function OnboardingWizard({ packages }: OnboardingWizardProps) {
       <header className={styles.topBar}>
         <div className={styles.topBarLeft}>
           <div className={styles.logoMark}>
-            <Dumbbell size={19} color="#C9861B" strokeWidth={2.2} />
+            <Dumbbell size={19} color="var(--color-accent)" strokeWidth={2.2} />
           </div>
           <div>
             <span className={styles.topBarTitle}>New Member — Onboarding</span>

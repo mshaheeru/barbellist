@@ -195,7 +195,7 @@ export function CardDetailsPanel({
                     style={
                       active
                         ? {
-                            borderColor: pkg.color || "#C9861B",
+                            borderColor: pkg.color || "var(--color-accent)",
                             color: pkg.color || "#B07A15",
                           }
                         : undefined
@@ -248,7 +248,7 @@ export function CardDetailsPanel({
           disabled={!member || busy}
           onClick={onWhatsApp}
         >
-          <MessageCircle size={18} color="#1B5E3C" strokeWidth={2} />
+          <MessageCircle size={18} color="var(--color-primary)" strokeWidth={2} />
           Send Digital Card via WhatsApp
         </button>
         <button
@@ -277,7 +277,7 @@ export function CardDetailsPanel({
                 value={
                   (bulkProgress.current / bulkProgress.total) * 100
                 }
-                color="#1B5E3C"
+                color="var(--color-primary)"
                 size="sm"
                 radius="md"
               />

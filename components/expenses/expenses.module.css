@@ -26,7 +26,7 @@
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  background: #1b5e3c;
+  background: var(--color-primary);
   color: #fff;
   padding: 11px 18px;
   border-radius: 11px;
@@ -64,7 +64,7 @@
 }
 
 .cardSalary {
-  border-left: 3px solid #c9861b;
+  border-left: 3px solid var(--color-accent);
 }
 
 .cardPending {
@@ -106,7 +106,7 @@
 
 .iconBoxAmber {
   background: #f7ecd6;
-  color: #c9861b;
+  color: var(--color-accent);
 }
 
 .num {
@@ -194,7 +194,7 @@
   width: 11px;
   height: 3px;
   border-radius: 2px;
-  background: #c9861b;
+  background: var(--color-accent);
 }
 
 .tableWrap {
@@ -250,7 +250,7 @@
 }
 
 .tableRowSalary {
-  border-left: 3px solid #c9861b;
+  border-left: 3px solid var(--color-accent);
 }
 
 .dateCell {
@@ -289,7 +289,7 @@
   align-items: center;
   background: none;
   border: none;
-  color: #1b5e3c;
+  color: var(--color-primary);
   cursor: pointer;
   padding: 0;
 }
