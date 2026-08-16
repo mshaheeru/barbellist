@@ -57,9 +57,11 @@ export default function LoginPage() {
         const destination =
           role === "owner" && !gymId ? "/select-branch" : "/dashboard";
 
-        queuePostLoginToast(
-          destination === "/select-branch" ? "branch" : "dashboard",
-        );
+        // Only queue a toast when the next page still needs context.
+        // "Opening your dashboard…" would otherwise appear after /dashboard is already open.
+        if (destination === "/select-branch") {
+          queuePostLoginToast("branch");
+        }
         window.location.assign(destination);
       } catch (e) {
         notifications.show({

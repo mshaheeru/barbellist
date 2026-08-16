@@ -39,13 +39,13 @@ const STAFF_SEED: Array<{
   role: Exclude<StaffRole, "owner" | "other">;
   salary: number;
 }> = [
-  { name: "Imran Malik", role: "trainer", salary: 65000 },
-  { name: "Sadia Khan", role: "trainer", salary: 45000 },
-  { name: "Yasir Ahmed", role: "trainer", salary: 42000 },
-  { name: "Rashid Ali", role: "cashier", salary: 35000 },
-  { name: "Nasreen Bibi", role: "cleaner", salary: 22000 },
-  { name: "Kamran Sheikh", role: "cleaner", salary: 22000 },
-  { name: "Junaid Iqbal", role: "manager", salary: 55000 },
+  { name: "Imran Malik", role: "trainer", salary: 18000 },
+  { name: "Sadia Khan", role: "trainer", salary: 14000 },
+  { name: "Yasir Ahmed", role: "trainer", salary: 12000 },
+  { name: "Rashid Ali", role: "cashier", salary: 12000 },
+  { name: "Nasreen Bibi", role: "cleaner", salary: 8000 },
+  { name: "Kamran Sheikh", role: "cleaner", salary: 8000 },
+  { name: "Junaid Iqbal", role: "manager", salary: 16000 },
 ];
 
 const PACKAGES_SEED = [
@@ -176,14 +176,12 @@ function daysAgo(n: number): Date {
 }
 
 function isoDate(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 function firstOfMonthOffset(monthsBack: number): string {
   const d = new Date();
-  d.setDate(1);
-  d.setMonth(d.getMonth() - monthsBack);
-  return isoDate(d);
+  return isoDate(new Date(d.getFullYear(), d.getMonth() - monthsBack, 1));
 }
 
 function pickPaymentMethod(i: number): PaymentMethod {
@@ -312,8 +310,8 @@ export async function seedDemoDataForGym(
 
   const overdueMemberIndexes = new Set([18, 19, 20]);
   const partialPaymentIndexes = new Set([0, 1, 2]);
-  // 5 members with no payment for current month (includes the 3 overdue + 2 more)
-  const noCurrentPaymentIndexes = new Set([18, 19, 20, 3, 4]);
+  // 3 overdue members have no current-month payment (Fees page still has demo cases)
+  const noCurrentPaymentIndexes = new Set([18, 19, 20]);
 
   type MemberInsert = {
     id: string;
@@ -587,10 +585,10 @@ export async function seedDemoDataForGym(
   // --- Expenses (last 2 months) ---
   const expenseRows: Array<Record<string, unknown>> = [];
   const utilAmounts: Record<string, [number, number]> = {
-    "K-Electric bill": [62000, 58000],
-    "SSGC gas": [18000, 15000],
-    "Water tanker": [8000, 8000],
-    "Floor cleaner + supplies": [3200, 4100],
+    "K-Electric bill": [18000, 16000],
+    "SSGC gas": [5000, 4500],
+    "Water tanker": [3500, 3500],
+    "Floor cleaner + supplies": [2000, 2200],
   };
 
   for (const monthsBack of [0, 1] as const) {
@@ -637,7 +635,7 @@ export async function seedDemoDataForGym(
       gym_id: gymId,
       category: "miscellaneous",
       description: "Tea/refreshments",
-      amount: 1800,
+      amount: 1200,
       payment_method: "cash",
       recorded_by: recordedBy,
       expense_date: isoDate(
@@ -658,7 +656,7 @@ export async function seedDemoDataForGym(
       gym_id: gymId,
       category: "repairs",
       description: "Treadmill belt repair",
-      amount: 8500,
+      amount: 3500,
       payment_method: "cash",
       recorded_by: recordedBy,
       expense_date: isoDate(daysAgo(18)),
@@ -669,7 +667,7 @@ export async function seedDemoDataForGym(
       gym_id: gymId,
       category: "maintenance",
       description: "Bulb replacement",
-      amount: 2400,
+      amount: 1200,
       payment_method: "easypaisa",
       recorded_by: recordedBy,
       expense_date: isoDate(daysAgo(12)),

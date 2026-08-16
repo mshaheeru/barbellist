@@ -15,7 +15,7 @@ export function startOfMonthIso(date = new Date()): string {
 
 export function endOfMonthIso(date = new Date()): string {
   const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-  return end.toISOString().slice(0, 10);
+  return `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}-${String(end.getDate()).padStart(2, "0")}`;
 }
 
 export function previousMonthRange(date = new Date()): {

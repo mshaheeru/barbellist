@@ -1,10 +1,6 @@
 const POST_LOGIN_TOAST_KEY = "barbellist:post-login-toast";
 
-export type PostLoginToastKind =
-  | "dashboard"
-  | "branch"
-  | "signup"
-  | "signup-signin";
+export type PostLoginToastKind = "branch" | "signup-signin";
 
 /** Queue a welcome toast that survives full-page navigation after login/signup. */
 export function queuePostLoginToast(kind: PostLoginToastKind) {
@@ -19,12 +15,7 @@ export function consumePostLoginToast(): PostLoginToastKind | null {
   try {
     const value = sessionStorage.getItem(POST_LOGIN_TOAST_KEY);
     sessionStorage.removeItem(POST_LOGIN_TOAST_KEY);
-    if (
-      value === "dashboard" ||
-      value === "branch" ||
-      value === "signup" ||
-      value === "signup-signin"
-    ) {
+    if (value === "branch" || value === "signup-signin") {
       return value;
     }
   } catch {
@@ -38,11 +29,6 @@ export function postLoginToastCopy(kind: PostLoginToastKind): {
   message: string;
 } {
   switch (kind) {
-    case "signup":
-      return {
-        title: "Account created",
-        message: "Opening your dashboard…",
-      };
     case "signup-signin":
       return {
         title: "Account created",
@@ -52,12 +38,6 @@ export function postLoginToastCopy(kind: PostLoginToastKind): {
       return {
         title: "Welcome back",
         message: "Choose a branch to continue…",
-      };
-    case "dashboard":
-    default:
-      return {
-        title: "Welcome back",
-        message: "Opening your dashboard…",
       };
   }
 }

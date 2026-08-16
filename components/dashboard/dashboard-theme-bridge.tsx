@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type CSSProperties, type ReactNode } from "react";
 import { useGym } from "@/components/gym-provider";
 import {
   parseGymTheme,
@@ -22,6 +22,7 @@ export function DashboardThemeBridge({
   className,
 }: DashboardThemeBridgeProps) {
   const { gym } = useGym();
+  const lastCssVarsRef = useRef<CSSProperties | null>(null);
 
   const themeKey = useMemo(() => {
     const settings =
@@ -48,10 +49,22 @@ export function DashboardThemeBridge({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [themeKey, gym?.settings]);
 
-  const cssVars = useMemo(
-    () => themeToCssVars(resolved) as CSSProperties,
-    [resolved],
-  );
+  const cssVars = useMemo(() => {
+    if (!gym) {
+      return lastCssVarsRef.current ?? undefined;
+    }
+    const vars = themeToCssVars(resolved) as CSSProperties;
+    lastCssVarsRef.current = vars;
+    return vars;
+  }, [gym, resolved]);
+
+  useEffect(() => {
+    if (!cssVars) return;
+    const root = document.documentElement;
+    for (const [key, value] of Object.entries(cssVars)) {
+      if (typeof value === "string") root.style.setProperty(key, value);
+    }
+  }, [cssVars]);
 
   return (
     <div className={className} style={cssVars}>

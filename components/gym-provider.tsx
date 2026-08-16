@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -44,6 +45,8 @@ type GymContextValue = {
   staffName: string | null;
   loading: boolean;
   refresh: () => Promise<void>;
+  /** Call before signOut so in-flight fetches cannot empty the dashboard shell. */
+  freezeForLogout: () => void;
 };
 
 const GymContext = createContext<GymContextValue | null>(null);
@@ -57,23 +60,33 @@ export function GymProvider({ children }: { children: ReactNode }) {
   const [staffId, setStaffId] = useState<string | null>(null);
   const [staffName, setStaffName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const loadGen = useRef(0);
+  const logoutFrozenRef = useRef(false);
+
+  const freezeForLogout = useCallback(() => {
+    logoutFrozenRef.current = true;
+    loadGen.current += 1;
+  }, []);
 
   const load = useCallback(async () => {
+    if (logoutFrozenRef.current) return;
+    const gen = ++loadGen.current;
+    const alive = () => gen === loadGen.current && !logoutFrozenRef.current;
+
     setLoading(true);
     try {
       const {
         data: { user: authUser },
       } = await supabase.auth.getUser();
-      setUser(authUser);
+      if (!alive()) return;
 
       if (!authUser) {
-        setGym(null);
-        setOrganization(null);
-        setBranches([]);
-        setStaffId(null);
-        setStaffName(null);
+        // Keep last gym/theme/nav until the document unloads. Clearing here
+        // made logout flash default green, a missing logo, and an empty sidebar.
         return;
       }
+
+      setUser(authUser);
 
       const gymId = getUserGymId(authUser);
       const metaName = getUserDisplayName(authUser);
@@ -86,12 +99,15 @@ export function GymProvider({ children }: { children: ReactNode }) {
           .select(GYM_SELECT)
           .eq("id", gymId)
           .maybeSingle();
+        if (!alive()) return;
 
-        setGym((gymRow as Gym | null) ?? null);
-        if (gymRow?.organization_id) {
-          orgId = gymRow.organization_id;
+        if (gymRow) {
+          setGym(gymRow as Gym);
+          if (gymRow.organization_id) {
+            orgId = gymRow.organization_id;
+          }
         }
-      } else {
+      } else if (alive()) {
         setGym(null);
       }
 
@@ -101,6 +117,7 @@ export function GymProvider({ children }: { children: ReactNode }) {
           .select(ORG_SELECT)
           .eq("id", orgId)
           .maybeSingle();
+        if (!alive()) return;
         setOrganization((orgRow as Organization | null) ?? null);
       } else {
         setOrganization(null);
@@ -112,6 +129,7 @@ export function GymProvider({ children }: { children: ReactNode }) {
           .select("id, name, slug, city, address")
           .eq("organization_id", orgId)
           .order("created_at", { ascending: true });
+        if (!alive()) return;
         setBranches((gyms as BranchSummary[] | null) ?? []);
       } else {
         setBranches([]);
@@ -124,6 +142,7 @@ export function GymProvider({ children }: { children: ReactNode }) {
           .eq("gym_id", gymId)
           .eq("auth_user_id", authUser.id)
           .maybeSingle();
+        if (!alive()) return;
 
         setStaffId(staffRow?.id ?? null);
         setStaffName(staffRow?.name ?? metaName ?? authUser.email ?? null);
@@ -132,7 +151,9 @@ export function GymProvider({ children }: { children: ReactNode }) {
         setStaffName(metaName ?? authUser.email ?? null);
       }
     } finally {
-      setLoading(false);
+      if (logoutFrozenRef.current || gen === loadGen.current) {
+        setLoading(false);
+      }
     }
   }, [supabase]);
 
@@ -141,7 +162,11 @@ export function GymProvider({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT" || logoutFrozenRef.current) {
+        loadGen.current += 1;
+        return;
+      }
       void load();
     });
 
@@ -170,6 +195,7 @@ export function GymProvider({ children }: { children: ReactNode }) {
     staffName,
     loading,
     refresh: load,
+    freezeForLogout,
   };
 
   return <GymContext.Provider value={value}>{children}</GymContext.Provider>;

@@ -77,7 +77,7 @@ export default function SignupPage() {
         }
 
         // Full document navigation after session cookies change.
-        queuePostLoginToast("signup");
+        // Don't queue a dashboard toast — it would show after the page is already open.
         window.location.assign("/dashboard");
       } catch (e) {
         notifications.show({

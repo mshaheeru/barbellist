@@ -30,27 +30,36 @@ export function DashboardSidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const active = navKeyFromPath(pathname);
-  const { staffName, gymName, role, gym } = useGym();
-  const initials = getInitials(staffName);
-  const roleLabel = role
-    ? role.charAt(0).toUpperCase() + role.slice(1)
-    : "Staff";
+  const { staffName, gymName, role, gym, freezeForLogout } = useGym();
 
-  // Keep last known brand so auth clear mid-logout never flashes Barbellist.
-  const lastBrandRef = useRef<{ logoUrl: string | null; name: string | null }>({
+  // Freeze last-known shell data so logout never empties the sidebar first.
+  const lastShellRef = useRef<{
+    logoUrl: string | null;
+    name: string | null;
+    role: typeof role;
+    staffName: string | null;
+  }>({
     logoUrl: null,
     name: null,
+    role: null,
+    staffName: null,
   });
-  if (gym) {
-    lastBrandRef.current = {
-      logoUrl: gym.logo_url,
-      name: gym.name,
+  if (gym || role || staffName) {
+    lastShellRef.current = {
+      logoUrl: gym?.logo_url ?? lastShellRef.current.logoUrl,
+      name: gym?.name ?? gymName ?? lastShellRef.current.name,
+      role: role ?? lastShellRef.current.role,
+      staffName: staffName ?? lastShellRef.current.staffName,
     };
   }
-  const displayLogo =
-    gym?.logo_url ?? (gym === null ? lastBrandRef.current.logoUrl : null);
-  const displayName =
-    gymName ?? (gym === null ? lastBrandRef.current.name : null);
+  const displayLogo = gym?.logo_url ?? lastShellRef.current.logoUrl;
+  const displayName = gymName ?? lastShellRef.current.name;
+  const displayRole = role ?? lastShellRef.current.role;
+  const displayStaffName = staffName ?? lastShellRef.current.staffName;
+  const initials = getInitials(displayStaffName);
+  const roleLabel = displayRole
+    ? displayRole.charAt(0).toUpperCase() + displayRole.slice(1)
+    : "Staff";
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -83,13 +92,14 @@ export function DashboardSidebar({
   async function handleLogout() {
     if (loggingOut) return;
     setLoggingOut(true);
+    freezeForLogout();
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
-      // Hard navigate so cleared gym state never flashes Barbellist branding.
-      window.location.assign("/login");
+      // Full document navigation — keeps the current shell painted until /login loads.
+      window.location.replace("/login");
     } catch {
-      setLoggingOut(false);
+      window.location.replace("/login");
     }
   }
 
@@ -123,7 +133,7 @@ export function DashboardSidebar({
       </div>
 
       <nav className={styles.nav}>
-        {NAV_ITEMS.filter((item) => canAccessNavKey(role, item.key)).map(
+        {NAV_ITEMS.filter((item) => canAccessNavKey(displayRole, item.key)).map(
           (item) => {
             const Icon = item.icon;
             const isActive = active === item.key;
@@ -166,10 +176,12 @@ export function DashboardSidebar({
         >
           <div className={styles.userAvatar}>{initials}</div>
           <div className={styles.userMeta}>
-            <div className={styles.userName}>{staffName ?? "Loading…"}</div>
+            <div className={styles.userName}>
+              {displayStaffName ?? "Loading…"}
+            </div>
             <div className={styles.userRole}>
               {roleLabel}
-              {gymName ? ` · ${gymName}` : ""}
+              {displayName ? ` · ${displayName}` : ""}
             </div>
           </div>
           <ChevronUp
