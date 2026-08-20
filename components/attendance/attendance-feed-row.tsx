@@ -4,6 +4,10 @@ import {
   Search,
 } from "lucide-react";
 import { getInitials } from "@/components/gym-provider";
+import {
+  deniedCheckInLabel,
+  isDeniedCheckInStatus,
+} from "@/lib/attendance/fee-snapshot";
 import { avatarToneFromName } from "@/lib/members/format";
 import { formatTime } from "@/lib/members/format";
 import type { AttendanceFeedItem } from "@/lib/types";
@@ -25,6 +29,12 @@ function getStatusPill(item: AttendanceFeedItem) {
     return { label: "Clocked in", className: styles.pillStaff };
   }
 
+  if (isDeniedCheckInStatus(item.fee_status_at_checkin)) {
+    return {
+      label: deniedCheckInLabel(item.fee_status_at_checkin),
+      className: styles.pillAlert,
+    };
+  }
   if (item.fee_status_at_checkin === "overdue") {
     return { label: "Overdue", className: styles.pillRed };
   }
@@ -43,10 +53,15 @@ export function AttendanceFeedRow({ item, isNew }: AttendanceFeedRowProps) {
         ? styles.avatarAmber
         : styles.avatarGrey;
 
+  const denied = isDeniedCheckInStatus(item.fee_status_at_checkin);
+
   const rowClass = [
     styles.feedRow,
     item.person_type === "staff" ? styles.feedRowStaff : "",
-    item.fee_status_at_checkin === "overdue" ? styles.feedRowOverdue : "",
+    denied ? styles.feedRowDenied : "",
+    !denied && item.fee_status_at_checkin === "overdue"
+      ? styles.feedRowOverdue
+      : "",
     isNew ? styles.feedRowNew : "",
   ]
     .filter(Boolean)

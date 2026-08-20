@@ -1,0 +1,98 @@
+[
+  {
+    "file": "01-fee-clear__waqar-shah-demo-0014.png",
+    "title": "Fee clear / paid — first check-in",
+    "expected": "Success green · All Clear — Fee Paid",
+    "memberLabel": "Waqar Shah (DEMO-0014)"
+  },
+  {
+    "file": "02-fee-due-soon__fatima-riaz-demo-0017.png",
+    "title": "Fee due soon",
+    "expected": "Success · Checked in · Fee due soon",
+    "memberLabel": "Fatima Riaz (DEMO-0017)"
+  },
+  {
+    "file": "03-fee-partial-overdue__ahmed-khan-demo-0001.png",
+    "title": "Partial payment (shows as overdue)",
+    "expected": "Warning · Fee overdue · see reception",
+    "memberLabel": "Ahmed Khan (DEMO-0001)"
+  },
+  {
+    "file": "04-fee-overdue__hina-butt-demo-0020.png",
+    "title": "Late / overdue fee",
+    "expected": "Warning · Fee overdue · see reception",
+    "memberLabel": "Hina Butt (DEMO-0020)"
+  },
+  {
+    "file": "05-already-checked-in-clear__saad-malik-demo-0007.png",
+    "title": "Already checked in (fees clear)",
+    "expected": "Info blue · Already checked in today",
+    "memberLabel": "Saad Malik (DEMO-0007)"
+  },
+  {
+    "file": "06-already-checked-in-due-soon__danish-rehman-demo-0013.png",
+    "title": "Already checked in + fee due soon",
+    "expected": "Info · Already checked in · Fee due soon",
+    "memberLabel": "Danish Rehman (DEMO-0013)"
+  },
+  {
+    "file": "07-already-checked-in-overdue__sara-ahmed-demo-0019.png",
+    "title": "Already checked in + overdue",
+    "expected": "Warning · Already checked in + fee overdue",
+    "memberLabel": "Sara Ahmed (DEMO-0019)"
+  },
+  {
+    "file": "08-frozen-inactive__amna-tariq-demo-0022.png",
+    "title": "Frozen membership",
+    "expected": "Error · Member is not active",
+    "memberLabel": "Amna Tariq (DEMO-0022)"
+  },
+  {
+    "file": "09-expired-inactive__nadia-akhtar-demo-0024.png",
+    "title": "Expired membership",
+    "expected": "Error · Member is not active",
+    "memberLabel": "Nadia Akhtar (DEMO-0024)"
+  },
+  {
+    "file": "10-outdated-replaced-card__zubair-ahmed-demo-0010.png",
+    "title": "Replaced / outdated QR (old card)",
+    "expected": "Error · Outdated card — use the latest card",
+    "memberLabel": "Zubair Ahmed (DEMO-0010)"
+  },
+  {
+    "file": "11-wrong-gym__iron-republic-ahmed-khan.png",
+    "title": "Card from another gym (Iron Republic)",
+    "expected": "Error · This card belongs to another gym",
+    "memberLabel": "Ahmed Khan (IR-1001) · Iron Republic"
+  },
+  {
+    "file": "12-member-not-found__ghost-uuid.png",
+    "title": "Valid JWT but member missing",
+    "expected": "Error · Member not found",
+    "memberLabel": "(ghost UUID)"
+  },
+  {
+    "file": "13-invalid-qr__garbage.png",
+    "title": "Invalid / non-Barbellist QR payload",
+    "expected": "Error · Invalid QR code",
+    "memberLabel": "(garbage payload)"
+  },
+  {
+    "file": "spare-clear__asad-hussain-demo-0015.png",
+    "title": "Spare clear member (extra scans)",
+    "expected": "Success green · All Clear — Fee Paid",
+    "memberLabel": "Asad Hussain (DEMO-0015)"
+  },
+  {
+    "file": "spare-clear__ayesha-malik-demo-0016.png",
+    "title": "Spare clear member (extra scans)",
+    "expected": "Success green · All Clear — Fee Paid",
+    "memberLabel": "Ayesha Malik (DEMO-0016)"
+  },
+  {
+    "file": "spare-clear__zainab-iqbal-demo-0018.png",
+    "title": "Spare clear member (extra scans)",
+    "expected": "Success green · All Clear — Fee Paid",
+    "memberLabel": "Zainab Iqbal (DEMO-0018)"
+  }
+]

@@ -51,14 +51,17 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isDashboard = pathname.startsWith("/dashboard");
   const isSelectBranch = pathname === "/select-branch";
+  const isEnter = pathname === "/enter";
   const isAuthPage = pathname === "/login" || pathname === "/signup";
 
-  if ((isDashboard || isSelectBranch) && !user) {
+  if ((isDashboard || isSelectBranch || isEnter) && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
+  // Logged-in users on /login or /signup skip ignition and go straight in.
+  // /enter is only reached from a fresh sign-in via buildEnterUrl.
   if (user && isAuthPage) {
     const gymId = claim(user, "gym_id");
     const role = claim(user, "role");

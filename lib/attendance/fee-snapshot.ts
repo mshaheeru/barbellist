@@ -6,6 +6,38 @@ import type { FeeDue, MemberStatus } from "@/lib/types";
 
 export type FeeSnapshotAtCheckin = "clear" | "overdue" | "due_soon";
 
+/** Logged when an inactive member tries to check in (not counted as in-gym). */
+export type DeniedCheckInStatus =
+  | "denied_frozen"
+  | "denied_expired"
+  | "denied_cancelled";
+
+export function deniedStatusForMember(
+  status: MemberStatus,
+): DeniedCheckInStatus | null {
+  if (status === "frozen") return "denied_frozen";
+  if (status === "expired") return "denied_expired";
+  if (status === "cancelled") return "denied_cancelled";
+  return null;
+}
+
+export function isDeniedCheckInStatus(
+  status: string | null | undefined,
+): status is DeniedCheckInStatus {
+  return (
+    status === "denied_frozen" ||
+    status === "denied_expired" ||
+    status === "denied_cancelled"
+  );
+}
+
+export function deniedCheckInLabel(status: string | null | undefined): string {
+  if (status === "denied_frozen") return "Frozen — denied";
+  if (status === "denied_expired") return "Expired — denied";
+  if (status === "denied_cancelled") return "Cancelled — denied";
+  return "Denied entry";
+}
+
 export type FeeSnapshotResult = {
   snapshot: FeeSnapshotAtCheckin;
   display: FeeDisplayStatus;

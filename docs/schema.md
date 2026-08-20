@@ -216,7 +216,7 @@ CREATE TABLE public.attendance (
   check_in_method TEXT DEFAULT 'qr' CHECK (check_in_method IN ('qr', 'fingerprint', 'manual')),
   check_in_at TIMESTAMPTZ DEFAULT NOW(),
   check_out_at TIMESTAMPTZ,
-  fee_status_at_checkin TEXT, -- snapshot: 'clear' | 'overdue' | 'due_soon'
+  fee_status_at_checkin TEXT, -- snapshot: 'clear' | 'overdue' | 'due_soon' | 'denied_frozen' | 'denied_expired' | 'denied_cancelled'
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT attendance_person_check CHECK (

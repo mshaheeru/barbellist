@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "@mantine/form";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import {
@@ -16,11 +17,17 @@ import { notifications } from "@mantine/notifications";
 import { Lock, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getUserGymId, getUserRole } from "@/lib/auth/claims";
+import {
+  buildEnterUrl,
+  isAllowedEnterDestination,
+} from "@/lib/auth/post-login-enter";
 import { queuePostLoginToast } from "@/lib/auth/post-login-toast";
+import { primeIgnitionAudio } from "@/lib/brand/ignition-audio";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<LoginInput>({
@@ -32,6 +39,8 @@ export default function LoginPage() {
 
   const onSubmit = form.onSubmit(
     async (values) => {
+      // Unlock Web Audio during the click gesture (before await).
+      primeIgnitionAudio();
       setLoading(true);
       try {
         const supabase = createClient();
@@ -58,11 +67,19 @@ export default function LoginPage() {
           role === "owner" && !gymId ? "/select-branch" : "/dashboard";
 
         // Only queue a toast when the next page still needs context.
-        // "Opening your dashboard…" would otherwise appear after /dashboard is already open.
+        // Dashboard goes through /enter (Ignition Sequence) — no toast there.
         if (destination === "/select-branch") {
           queuePostLoginToast("branch");
+          window.location.assign(destination);
+          return;
         }
-        window.location.assign(destination);
+
+        // Soft nav keeps the primed AudioContext alive for the ignition score.
+        if (isAllowedEnterDestination(destination)) {
+          router.push(buildEnterUrl(destination));
+          return;
+        }
+        window.location.assign(buildEnterUrl(destination));
       } catch (e) {
         notifications.show({
           color: "red",

@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { computeFeeSnapshotAtCheckin } from "@/lib/attendance/fee-snapshot";
+import {
+  computeFeeSnapshotAtCheckin,
+  deniedStatusForMember,
+  isDeniedCheckInStatus,
+} from "@/lib/attendance/fee-snapshot";
 import {
   formatHourLabel,
   formatPeakHourRange,
@@ -83,6 +87,17 @@ function toFeedItem(row: RawAttendanceRow): AttendanceFeedItem {
   }
 
   const member = row.members;
+  const pkgName = member ? unwrapPackage(member.packages as never) : null;
+  const denied = isDeniedCheckInStatus(row.fee_status_at_checkin);
+  const statusWord =
+    row.fee_status_at_checkin === "denied_frozen"
+      ? "Frozen"
+      : row.fee_status_at_checkin === "denied_expired"
+        ? "Expired"
+        : row.fee_status_at_checkin === "denied_cancelled"
+          ? "Cancelled"
+          : null;
+
   return {
     id: row.id,
     check_in_at: row.check_in_at,
@@ -92,11 +107,13 @@ function toFeedItem(row: RawAttendanceRow): AttendanceFeedItem {
     name: member?.name ?? "Unknown",
     photo_url: member?.photo_url ?? null,
     member_code: member?.member_code ?? null,
-    package_name: member ? unwrapPackage(member.packages as never) : null,
+    package_name: pkgName,
     staff_role: null,
     staff_role_label: null,
     subtitle: member
-      ? `${unwrapPackage(member.packages as never) ?? "Member"} · ${member.member_code}`
+      ? denied && statusWord
+        ? `Alert · ${statusWord} membership · ${member.member_code}`
+        : `${pkgName ?? "Member"} · ${member.member_code}`
       : "Member",
   };
 }
@@ -200,13 +217,13 @@ export async function fetchLiveGymCounts(
   const [openRes, todayRes] = await Promise.all([
     supabase
       .from("attendance")
-      .select("person_type")
+      .select("person_type, fee_status_at_checkin")
       .eq("gym_id", gymId)
       .is("check_out_at", null)
       .gte("check_in_at", todayStart),
     supabase
       .from("attendance")
-      .select("check_in_at")
+      .select("check_in_at, fee_status_at_checkin")
       .eq("gym_id", gymId)
       .gte("check_in_at", todayStart),
   ]);
@@ -214,20 +231,24 @@ export async function fetchLiveGymCounts(
   if (openRes.error) throw new Error(openRes.error.message);
   if (todayRes.error) throw new Error(todayRes.error.message);
 
-  const openSessions = openRes.data;
-  const todayRows = todayRes.data;
+  const openSessions = (openRes.data ?? []).filter(
+    (row) => !isDeniedCheckInStatus(row.fee_status_at_checkin),
+  );
+  const todayRows = (todayRes.data ?? []).filter(
+    (row) => !isDeniedCheckInStatus(row.fee_status_at_checkin),
+  );
 
   let membersInGym = 0;
   let staffInGym = 0;
-  for (const row of openSessions ?? []) {
+  for (const row of openSessions) {
     if (row.person_type === "staff") staffInGym += 1;
     else membersInGym += 1;
   }
 
-  const checkInsToday = todayRows?.length ?? 0;
+  const checkInsToday = todayRows.length;
   const hourCounts = new Map<number, number>();
 
-  for (const row of todayRows ?? []) {
+  for (const row of todayRows) {
     const hour = getHourInTimezone(row.check_in_at, timeZone);
     hourCounts.set(hour, (hourCounts.get(hour) ?? 0) + 1);
   }
@@ -265,7 +286,9 @@ export async function fetchAttendanceSidebarStats(
     await Promise.all([
       supabase
         .from("attendance")
-        .select("check_in_at, member_id, person_type, staff_id")
+        .select(
+          "check_in_at, member_id, person_type, staff_id, fee_status_at_checkin",
+        )
         .eq("gym_id", gymId)
         .gte("check_in_at", start)
         .lte("check_in_at", end),
@@ -283,7 +306,7 @@ export async function fetchAttendanceSidebarStats(
         .is("check_out_at", null),
       supabase
         .from("attendance")
-        .select("member_id")
+        .select("member_id, fee_status_at_checkin")
         .eq("gym_id", gymId)
         .eq("person_type", "member")
         .is("check_out_at", null)
@@ -292,7 +315,9 @@ export async function fetchAttendanceSidebarStats(
 
   if (rangeRes.error) throw new Error(rangeRes.error.message);
 
-  const records = rangeRes.data ?? [];
+  const records = (rangeRes.data ?? []).filter(
+    (r) => !isDeniedCheckInStatus(r.fee_status_at_checkin),
+  );
   const uniqueMembers = new Set(
     records.filter((r) => r.person_type === "member").map((r) => r.member_id),
   );
@@ -332,7 +357,9 @@ export async function fetchAttendanceSidebarStats(
   }
 
   const currentlyInside = new Set(
-    (openMemberRes.data ?? []).map((r) => r.member_id),
+    (openMemberRes.data ?? [])
+      .filter((r) => !isDeniedCheckInStatus(r.fee_status_at_checkin))
+      .map((r) => r.member_id),
   ).size;
 
   return {
@@ -461,7 +488,32 @@ export async function performMemberCheckIn(
   }
 
   if (context.member.status !== "active") {
-    throw new Error("Member is not active");
+    const deniedStatus = deniedStatusForMember(context.member.status);
+    if (deniedStatus) {
+      const now = new Date().toISOString();
+      const { error: deniedError } = await supabase.from("attendance").insert({
+        gym_id: gymId,
+        member_id: memberId,
+        person_type: "member",
+        check_in_method: method,
+        check_in_at: now,
+        // Immediately closed so denied scans never count as "in gym"
+        check_out_at: now,
+        fee_status_at_checkin: deniedStatus,
+        notes: `Denied check-in: membership ${context.member.status}`,
+      });
+      if (deniedError) throw new Error(deniedError.message);
+    }
+
+    const reason =
+      context.member.status === "frozen"
+        ? "frozen"
+        : context.member.status === "expired"
+          ? "expired"
+          : context.member.status === "cancelled"
+            ? "cancelled"
+            : "inactive";
+    throw new Error(`Member is not active (${reason})`);
   }
 
   const existing = await findOpenSession(supabase, gymId, { memberId });

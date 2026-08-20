@@ -201,6 +201,13 @@
   margin-left: -13px;
 }
 
+.feedRowDenied {
+  border-left: 3px solid #9b1c1c;
+  padding-left: 13px;
+  margin-left: -13px;
+  background: #fdf2f0;
+}
+
 .feedRowNew {
   animation: slideIn 0.35s ease-out;
 }
@@ -329,6 +336,11 @@
 .pillRed {
   background: #f9e4e1;
   color: #c0392b;
+}
+
+.pillAlert {
+  background: #9b1c1c;
+  color: #fff;
 }
 
 .sidebar {

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "@mantine/form";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import {
@@ -24,7 +25,9 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { signUpGym } from "@/app/actions/auth";
+import { buildEnterUrl } from "@/lib/auth/post-login-enter";
 import { queuePostLoginToast } from "@/lib/auth/post-login-toast";
+import { primeIgnitionAudio } from "@/lib/brand/ignition-audio";
 import {
   friendlySignUpError,
   signUpSchema,
@@ -33,6 +36,7 @@ import {
 import { AuthShell } from "@/components/auth/auth-shell";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<SignUpInput>({
@@ -52,6 +56,8 @@ export default function SignupPage() {
 
   const onSubmit = form.onSubmit(
     async (values) => {
+      // Unlock Web Audio during the click gesture (before await).
+      primeIgnitionAudio();
       setLoading(true);
       try {
         const result = await signUpGym(values);
@@ -76,9 +82,8 @@ export default function SignupPage() {
           return;
         }
 
-        // Full document navigation after session cookies change.
-        // Don't queue a dashboard toast — it would show after the page is already open.
-        window.location.assign("/dashboard");
+        // Soft nav keeps the primed AudioContext alive for the ignition score.
+        router.push(buildEnterUrl("/dashboard"));
       } catch (e) {
         notifications.show({
           color: "red",

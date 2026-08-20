@@ -161,9 +161,14 @@ export async function checkInMember(raw: {
     revalidatePath("/dashboard/attendance");
     return { data: result, error: null };
   } catch (e) {
+    const message = e instanceof Error ? e.message : "Check-in failed";
+    // Denied inactive scans are logged to the feed — refresh so reception sees the alert
+    if (message.toLowerCase().includes("not active")) {
+      revalidatePath("/dashboard/attendance");
+    }
     return {
       data: null,
-      error: e instanceof Error ? e.message : "Check-in failed",
+      error: message,
     };
   }
 }

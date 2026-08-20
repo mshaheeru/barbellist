@@ -39,7 +39,25 @@ export function mapKioskError(raw: string | null | undefined): KioskErrorInfo {
       message: "No matching member for this card. Please see reception.",
     };
   }
-  if (msg.includes("not active") || msg.includes("frozen")) {
+  if (msg.includes("frozen")) {
+    return {
+      title: "Membership frozen",
+      message: "This membership is frozen. Please see reception.",
+    };
+  }
+  if (msg.includes("expired")) {
+    return {
+      title: "Membership expired",
+      message: "This membership has expired. Please see reception.",
+    };
+  }
+  if (msg.includes("cancelled")) {
+    return {
+      title: "Membership cancelled",
+      message: "This membership is cancelled. Please see reception.",
+    };
+  }
+  if (msg.includes("not active")) {
     return {
       title: "Membership inactive",
       message: "This membership is not active. Please see reception.",
