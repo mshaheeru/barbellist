@@ -9,7 +9,8 @@ const FOUNDERS = [
     name: "Muhammad Mashhood",
     shortName: "Mashhood",
     role: "Founder, Barbellist",
-    line: "IBA Karachi CS grad. Built and shipped real products since 2021 — now building the ops stack that stops your gym from quietly leaking money.",
+    line: "Ships product and answers when billing breaks on a Monday morning.",
+    cred: "IBA CS · building since 2021",
     photo: "/founders/mashhood.avif",
     linkedin: "https://www.linkedin.com/in/mashhood00/",
   },
@@ -17,7 +18,8 @@ const FOUNDERS = [
     name: "M. Shaheer Uddin",
     shortName: "Shaheer",
     role: "Co-founder, Barbellist",
-    line: "IBA Karachi CS ’23. Years shipping software at agencies and a global company — now building tools independent gyms actually need, not enterprise shelfware.",
+    line: "Onboards every gym personally. Your WhatsApp reaches him, not a queue.",
+    cred: "IBA CS · agency & global product experience",
     photo: "/founders/shaheer.jpeg",
     linkedin: "https://www.linkedin.com/in/mshaheeruddin/",
   },
@@ -25,232 +27,164 @@ const FOUNDERS = [
 
 export function FoundersSection() {
   return (
-    <Reveal as="div">
-      <section
-        aria-label="Founders"
+    <Reveal as="section" aria-label="Founders" className="lp-section">
+      <h2
+        className="lp-heading-lg"
         style={{
-          maxWidth: 896,
-          margin: "0 auto",
-          padding: "96px 32px",
+          textAlign: "center",
+          fontSize: "clamp(32px, 4vw, 48px)",
+          lineHeight: 1.1,
+          marginBottom: 16,
         }}
       >
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <h2
-            className="lp-heading-md"
+        Your gym won&apos;t be handed to a support queue.
+      </h2>
+      <p
+        style={{
+          textAlign: "center",
+          fontSize: 17,
+          color: "var(--lp-text-muted)",
+          maxWidth: 440,
+          margin: "0 auto 48px",
+          lineHeight: 1.6,
+        }}
+      >
+        We personally onboard every gym. Every support question comes to us
+        directly. Not a chatbot.
+      </p>
+
+      <div
+        className="lp-founders-grid"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 22,
+          maxWidth: 720,
+          margin: "0 auto",
+        }}
+      >
+        {FOUNDERS.map((f) => (
+          <article
+            key={f.name}
+            className="lp-founder-card"
             style={{
-              fontSize: 36,
-              lineHeight: 1.12,
-              letterSpacing: "-0.03em",
-              fontWeight: 800,
-              color: "#173D28",
-              marginBottom: 14,
-            }}
-          >
-            Built in Karachi. By people who get it.
-          </h2>
-          <div
-            style={{
-              display: "inline-flex",
+              background: "var(--lp-bg-card)",
+              borderRadius: 16,
+              border: "1px solid var(--lp-border)",
+              padding: 24,
+              display: "flex",
+              flexDirection: "column",
               alignItems: "center",
-              gap: 10,
-              background: "#fff",
-              border: "1px solid #EEE9DE",
-              borderRadius: 100,
-              padding: "8px 16px 8px 10px",
-              boxShadow: "0 8px 24px -18px rgba(23,61,40,.3)",
+              textAlign: "center",
+              transition: "border-color 0.3s ease",
             }}
           >
-            <Image
-              src="/founders/iba-karachi-logo.avif"
-              alt="IBA Karachi"
-              width={28}
-              height={28}
-              style={{ objectFit: "contain" }}
-            />
-            <span
+            <div
+              style={{
+                position: "relative",
+                width: 80,
+                height: 80,
+                marginBottom: 16,
+                borderRadius: "50%",
+                overflow: "hidden",
+                border: "2px solid var(--lp-border)",
+                background: "var(--lp-bg-card-hover)",
+              }}
+            >
+              <Image
+                src={f.photo}
+                alt={f.name}
+                fill
+                sizes="80px"
+                style={{ objectFit: "cover", objectPosition: "center top" }}
+              />
+            </div>
+
+            <h3
+              style={{
+                fontSize: 18,
+                fontWeight: 700,
+                color: "var(--lp-text-primary)",
+                letterSpacing: "-0.02em",
+                marginBottom: 4,
+              }}
+            >
+              {f.name}
+            </h3>
+            <p
               style={{
                 fontSize: 13,
+                color: "var(--lp-accent)",
                 fontWeight: 600,
-                color: "#54524B",
-                letterSpacing: "0.01em",
+                marginBottom: 12,
               }}
             >
-              Both Computer Science · IBA Karachi
-            </span>
-          </div>
-        </div>
+              {f.role}
+            </p>
 
-        <div
-          className="lp-grid-2"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 22,
-          }}
-        >
-          {FOUNDERS.map((f) => (
-            <article
-              key={f.name}
-              className="lp-founder-card"
+            <p
               style={{
-                background: "#FAF7F2",
-                borderRadius: 18,
-                boxShadow: "0 18px 44px -28px rgba(23,61,40,.38)",
-                border: "1px solid #EEE9DE",
-                padding: "36px 28px 30px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                textAlign: "center",
-                position: "relative",
-                overflow: "hidden",
-                transition: "transform .22s ease, box-shadow .22s ease",
+                fontSize: 14,
+                lineHeight: 1.55,
+                color: "var(--lp-text-primary)",
+                maxWidth: "34ch",
+                flex: 1,
               }}
             >
-              <div
-                style={{
-                  position: "relative",
-                  width: 112,
-                  height: 112,
-                  marginBottom: 20,
-                }}
-              >
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: -4,
-                    borderRadius: "50%",
-                    background:
-                      "linear-gradient(145deg, rgba(27,94,60,.35), rgba(201,134,27,.45))",
-                  }}
-                  aria-hidden
-                />
-                <div
-                  style={{
-                    position: "relative",
-                    width: 112,
-                    height: 112,
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    border: "3px solid #FAF7F2",
-                    background: "#EDE8DD",
-                  }}
-                >
-                  <Image
-                    src={f.photo}
-                    alt={f.name}
-                    fill
-                    sizes="112px"
-                    style={{ objectFit: "cover", objectPosition: "center top" }}
-                  />
-                </div>
-              </div>
+              {f.line}
+            </p>
+            <p
+              style={{
+                fontSize: 12,
+                color: "var(--lp-text-muted)",
+                marginTop: 10,
+              }}
+            >
+              {f.cred}
+            </p>
 
-              <h3
-                style={{
-                  fontSize: 21,
-                  fontWeight: 700,
-                  color: "#1B5E3C",
-                  letterSpacing: "-0.02em",
-                  marginBottom: 4,
-                }}
-              >
-                {f.name}
-              </h3>
-              <p
-                style={{
-                  fontSize: 13.5,
-                  color: "#8A877E",
-                  fontWeight: 500,
-                  marginBottom: 14,
-                }}
-              >
-                {f.role}
-              </p>
+            <a
+              href={f.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${f.shortName} on LinkedIn`}
+              style={{
+                marginTop: 16,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--lp-text-muted)",
+                textDecoration: "none",
+                padding: "8px 14px",
+                borderRadius: 8,
+                background: "var(--lp-white-5)",
+                border: "1px solid var(--lp-white-10)",
+                transition: "background 0.18s, border-color 0.18s",
+              }}
+              className="lp-founder-linkedin"
+            >
+              <LinkedInIcon />
+              LinkedIn
+            </a>
+          </article>
+        ))}
+      </div>
 
-              <p
-                style={{
-                  fontSize: 15,
-                  lineHeight: 1.55,
-                  color: "#3A3A38",
-                  maxWidth: "34ch",
-                  flex: 1,
-                }}
-              >
-                {f.line}
-              </p>
-
-              <a
-                href={f.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${f.shortName} on LinkedIn`}
-                style={{
-                  marginTop: 20,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "#1B5E3C",
-                  textDecoration: "none",
-                  padding: "8px 14px",
-                  borderRadius: 10,
-                  background: "rgba(27,94,60,.06)",
-                  border: "1px solid rgba(27,94,60,.12)",
-                  transition: "background .18s, border-color .18s",
-                }}
-                className="lp-founder-linkedin"
-              >
-                <LinkedInIcon />
-                LinkedIn
-              </a>
-
-              <div
-                aria-hidden
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  height: 3,
-                  background: "linear-gradient(90deg,#C9861B,#E7B24E)",
-                }}
-              />
-            </article>
-          ))}
-        </div>
-
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: 16,
-            color: "#54524B",
-            marginTop: 40,
-            fontWeight: 500,
-          }}
+      <div style={{ textAlign: "center", marginTop: 40 }}>
+        <a
+          href={getWhatsAppUrl(
+            "Hi Shaheer, I have a question about Barbellist.",
+          )}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="lp-btn-nav-wa"
+          style={{ padding: "12px 24px", fontSize: 14 }}
         >
-          We answer support questions personally. Not a chatbot. Not a ticket
-          system. Us.
-        </p>
-        <p style={{ textAlign: "center", marginTop: 14 }}>
-          <a
-            href={getWhatsAppUrl(
-              "Hi Shaheer — I have a question about Barbellist.",
-            )}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              fontSize: 15,
-              fontWeight: 600,
-              color: "#1B5E3C",
-              textDecoration: "none",
-            }}
-          >
-            💬 WhatsApp Shaheer directly: +92 336 7808477
-          </a>
-        </p>
-      </section>
+          💬 WhatsApp Shaheer: +92 336 7808477
+        </a>
+      </div>
     </Reveal>
   );
 }

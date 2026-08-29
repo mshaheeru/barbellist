@@ -1,6 +1,6 @@
 import { chartData, qrPattern } from "./landing-data";
 
-export function QrDots() {
+export function QrDots({ color = "#173D28" }: { color?: string }) {
   return (
     <div
       style={{
@@ -17,7 +17,7 @@ export function QrDots() {
             width: 7,
             height: 7,
             borderRadius: 1,
-            background: v ? "#173D28" : "transparent",
+            background: v ? color : "transparent",
           }}
         />
       ))}

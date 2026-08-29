@@ -1,7 +1,6 @@
 "use client";
 
 import { ChartBars } from "./landing-helpers";
-import { useCurrency } from "./CurrencyProvider";
 import { useCountUp, useInViewOnce } from "./landing-motion";
 
 const AT_RISK = [
@@ -10,8 +9,11 @@ const AT_RISK = [
   { name: "Usman T.", badge: "expires 2d", color: "#9A6A12", bg: "#F7EBD3" },
 ];
 
+function rs(n: number) {
+  return `Rs. ${n.toLocaleString("en-PK")}`;
+}
+
 export function AnimatedDashboard() {
-  const { demo } = useCurrency();
   const { ref, inView } = useInViewOnce<HTMLDivElement>(0.2);
   const revenue = useCountUp(8420, inView, 1600);
   const expenses = useCountUp(3180, inView, 1600);
@@ -207,7 +209,7 @@ export function AnimatedDashboard() {
                       marginTop: 4,
                     }}
                   >
-                    {demo(revenue)}
+                    {rs(revenue)}
                   </div>
                   <div
                     style={{
@@ -240,7 +242,7 @@ export function AnimatedDashboard() {
                       marginTop: 4,
                     }}
                   >
-                    {demo(expenses)}
+                    {rs(expenses)}
                   </div>
                   <div
                     style={{
@@ -250,7 +252,7 @@ export function AnimatedDashboard() {
                       marginTop: 2,
                     }}
                   >
-                    — utilities
+                    utilities
                   </div>
                 </div>
                 <div
@@ -274,7 +276,7 @@ export function AnimatedDashboard() {
                       marginTop: 4,
                     }}
                   >
-                    {demo(net)}
+                    {rs(net)}
                   </div>
                   <div
                     style={{

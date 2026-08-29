@@ -21,6 +21,7 @@ type RevealProps = {
   as?: "div" | "section" | "header" | "article";
   /** How much of the element must be visible (0–1) */
   threshold?: number;
+  "aria-label"?: string;
 };
 
 export function Reveal({
@@ -32,6 +33,7 @@ export function Reveal({
   delay = 0,
   as: Tag = "div",
   threshold = 0.12,
+  "aria-label": ariaLabel,
 }: RevealProps) {
   const ref = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
@@ -67,6 +69,7 @@ export function Reveal({
     <Tag
       id={id}
       ref={ref as never}
+      aria-label={ariaLabel}
       className={`lp-reveal lp-reveal-${variant}${visible ? " is-visible" : ""} ${className}`.trim()}
       style={{
         ...style,

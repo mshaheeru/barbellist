@@ -4,24 +4,24 @@ import { JsonLd } from "@/components/seo/json-ld";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Barbellist — Gym Management Software for Independent Gyms",
+    absolute: "Barbellist | Gym Revenue Recovery System",
   },
   description:
-    "Stop managing spreadsheets. Start running your gym. Barbellist automates membership tracking, fee collection, attendance, staff management, and inventory for independent gyms worldwide. Free for 3 months.",
+    "More revenue. Fewer cancellations. Less admin. Barbellist finds overdue fees, at-risk members, and missed renewals, then helps you recover them. Free Revenue Leak Audit. First 30 days free.",
   alternates: {
     canonical: "https://barbellist.com/home",
   },
   openGraph: {
-    title: "Barbellist — Gym Management Software for Independent Gyms",
+    title: "Barbellist | Gym Revenue Recovery System",
     description:
-      "Stop managing spreadsheets. Start running your gym. Barbellist automates membership tracking, fee collection, attendance, staff management, and inventory.",
+      "More revenue. Fewer cancellations. Less admin. Free Gym Revenue Leak Audit. First 30 days free for founding gyms.",
     url: "https://barbellist.com/home",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Barbellist — Gym Management Dashboard",
+        alt: "Barbellist | Gym Revenue Recovery System",
       },
     ],
   },

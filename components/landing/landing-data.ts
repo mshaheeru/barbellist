@@ -8,7 +8,7 @@ export function buildFaqData(profile: CurrencyProfile) {
   return [
     {
       q: "How is Barbellist different from legacy gym software?",
-      a: "Legacy platforms charge flat monthly fees regardless of your size and lock features behind tiers. Barbellist charges per member — a simple monthly rate with every feature included from day one. It was built for independent gyms, not enterprise chains.",
+      a: "Legacy platforms charge flat monthly fees regardless of your size and lock features behind tiers. Barbellist charges per member: a simple monthly rate with every feature included from day one. It was built for independent gyms, not enterprise chains.",
     },
     {
       q: "Do you support gyms outside South Asia?",
@@ -16,11 +16,11 @@ export function buildFaqData(profile: CurrencyProfile) {
     },
     {
       q: `What happens after the first 3 months at ${early}/member?`,
-      a: `You move to the Standard rate of ${standard} per member per month — still a fraction of legacy pricing. Nothing changes about your data or features, and there is no lock-in. You can cancel any time.`,
+      a: `You move to the Standard rate of ${standard} per member per month, still a fraction of legacy pricing. Nothing changes about your data or features, and there is no lock-in. You can cancel any time.`,
     },
     {
       q: "Do I need special hardware?",
-      a: "No. Any phone, tablet, or laptop works as a check-in kiosk — members simply scan their QR card. Biometric integration is available on the Standard plan if you want it, but it is never required.",
+      a: "No. Any phone, tablet, or laptop works as a check-in kiosk. Members simply scan their QR card. Biometric integration is available on the Standard plan if you want it, but it is never required.",
     },
     {
       q: "Is my member data secure?",
@@ -28,7 +28,7 @@ export function buildFaqData(profile: CurrencyProfile) {
     },
     {
       q: "Can I cancel anytime?",
-      a: "Always. There are no contracts, no lock-in, and no cancellation fees. If Barbellist stops paying for itself, you are free to leave — though most owners find the opposite happens.",
+      a: "Always. There are no contracts, no lock-in, and no cancellation fees. If Barbellist stops paying for itself, you are free to leave, though most owners find the opposite happens.",
     },
   ];
 }

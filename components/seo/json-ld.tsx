@@ -1,8 +1,8 @@
 import { profileFromCountry } from "@/lib/currency";
 import { buildFaqData } from "@/components/landing/landing-data";
 
-const usdProfile = profileFromCountry("US");
-const faqs = buildFaqData(usdProfile);
+const pkrProfile = profileFromCountry("PK");
+const faqs = buildFaqData(pkrProfile);
 
 const softwareApplication = {
   "@context": "https://schema.org",
@@ -11,14 +11,14 @@ const softwareApplication = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   description:
-    "All-in-one gym management platform for independent gyms. Manage members, fees, attendance, staff, expenses, and inventory.",
+    "Gym Revenue Recovery System for independent gyms. Finds overdue fees, at-risk members, and missed payments, then recovers them automatically.",
   url: "https://barbellist.com",
   offers: {
     "@type": "Offer",
-    price: String(usdProfile.earlyRate),
-    priceCurrency: "USD",
+    price: "35000",
+    priceCurrency: "PKR",
     description:
-      "Early Access — $1 per member per month for the first 3 months",
+      "Founding Gym: Rs. 35,000 per month, up to 150 members included. First 30 days free.",
     availability: "https://schema.org/InStock",
   },
 };
