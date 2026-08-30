@@ -2,36 +2,42 @@
 
 import { useState } from "react";
 import { Reveal } from "./Reveal";
-
-const FAQS = [
-  {
-    q: "What is the free Gym Revenue Leak Audit?",
-    a: "Send us your member sheet (or WhatsApp a summary). We return overdue revenue, memberships expiring soon, inactive members, former members worth reactivating, and an estimated recoverable figure, before you commit to anything.",
-  },
-  {
-    q: "What's included in the Founding Gym offer?",
-    a: "We migrate your members and configure Barbellist personally. First 30 days free. Cancel anytime. After that, Founding Gym is Rs. 35,000 per month (up to 150 members included) for the first 50 gyms.",
-  },
-  {
-    q: "What does the Make More Than You Pay Guarantee cover?",
-    a: "If Barbellist doesn't recover at least your monthly subscription fee during your first paid month, we refund that month's subscription. The free trial is separate. The guarantee kicks in once billing starts.",
-  },
-  {
-    q: "Do I need special hardware?",
-    a: "No. Any phone, tablet, or laptop works as a check-in kiosk. Members scan their QR card. Nothing biometric required to start.",
-  },
-  {
-    q: "Who do I talk to if something breaks?",
-    a: "Us. Founders personally onboard every gym. Support questions come to us directly, not a ticket queue or chatbot.",
-  },
-  {
-    q: "Can I cancel anytime?",
-    a: "Yes. No contracts, no lock-in, no cancellation fees.",
-  },
-];
+import { useCurrency } from "./CurrencyProvider";
 
 export function LandingFaqSection() {
+  const { earlyRate, earlyMin, memberCap } = useCurrency();
   const [open, setOpen] = useState<number | null>(0);
+
+  const faqs = [
+    {
+      q: "What is the free revenue audit?",
+      a: "A short form about your members, fees, overdue accounts, and renewals. You get a rough estimate of monthly revenue at risk. We save your answers and follow up personally. No software install required.",
+    },
+    {
+      q: "What's included in the Founding Gym offer?",
+      a: `We migrate your members and configure Barbellist personally. First 30 days free. Cancel anytime. Then it's ${earlyRate} per active member per month (minimum ${earlyMin}). Custom pricing for ${memberCap}+ members. First 50 gyms only.`,
+    },
+    {
+      q: "Who counts as an active member?",
+      a: "Only active paid memberships. Former members, leads, staff, and archived records don't count toward billing.",
+    },
+    {
+      q: "What does the Make More Than You Pay Guarantee cover?",
+      a: "If Barbellist doesn't recover at least your subscription during your first paid month, we refund that month. The free trial is separate. The guarantee kicks in once billing starts.",
+    },
+    {
+      q: "Do I need special hardware?",
+      a: "No. Any phone, tablet, or laptop works as a check-in kiosk. Members scan their QR card. Nothing biometric required to start.",
+    },
+    {
+      q: "Who do I talk to if something breaks?",
+      a: "Us. Founders personally onboard every gym. Support questions come to us directly, not a ticket queue or chatbot.",
+    },
+    {
+      q: "Can I cancel anytime?",
+      a: "Yes. No contracts, no lock-in, no cancellation fees.",
+    },
+  ];
 
   return (
     <Reveal as="section" id="faq" aria-label="FAQ" className="lp-section">
@@ -49,7 +55,7 @@ export function LandingFaqSection() {
       </h2>
 
       <div style={{ maxWidth: 640, margin: "0 auto" }}>
-        {FAQS.map((faq, i) => {
+        {faqs.map((faq, i) => {
           const isOpen = open === i;
           return (
             <div

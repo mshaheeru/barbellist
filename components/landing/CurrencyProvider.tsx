@@ -25,12 +25,32 @@ type CurrencyContextValue = {
   standardRate: string;
   earlyMin: string;
   standardMin: string;
-  barbellist200: string;
+  memberCap: number;
+  example100: string;
 };
 
 const CurrencyContext = createContext<CurrencyContextValue | null>(null);
 
 const DEFAULT = profileFromCountry("US");
+
+/** Soft fallback when IP geo fails (common on localhost). */
+function countryFromTimezone(): string | null {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const map: Record<string, string> = {
+      "Asia/Karachi": "PK",
+      "Asia/Dubai": "AE",
+      "Asia/Muscat": "OM",
+      "Asia/Qatar": "QA",
+      "Asia/Bahrain": "BH",
+      "Asia/Kuwait": "KW",
+      "Asia/Riyadh": "SA",
+    };
+    return map[tz] ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<CurrencyProfile>(DEFAULT);
@@ -42,10 +62,21 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       try {
         const res = await fetch("/api/geo");
         if (!res.ok) throw new Error("geo failed");
-        const data = (await res.json()) as { country?: string };
-        if (!cancelled) setProfile(profileFromCountry(data.country));
+        const data = (await res.json()) as {
+          country?: string;
+          source?: string;
+        };
+        let country = data.country;
+        // IP lookup often fails on localhost / rate limits → use timezone
+        if (!country || data.source === "default") {
+          country = countryFromTimezone() ?? country;
+        }
+        if (!cancelled) setProfile(profileFromCountry(country));
       } catch {
-        if (!cancelled) setProfile(DEFAULT);
+        const tzCountry = countryFromTimezone();
+        if (!cancelled) {
+          setProfile(profileFromCountry(tzCountry ?? "US"));
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -65,7 +96,10 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       standardRate: rateLabel(profile, "standard"),
       earlyMin: formatMoney(profile.earlyMin, profile),
       standardMin: formatMoney(profile.standardMin, profile),
-      barbellist200: formatMoney(profile.standardRate * 200, profile),
+      memberCap: profile.memberCap,
+      example100: formatMoney(profile.earlyRate * 100, profile, {
+        decimals: profile.earlyRate % 1 ? 2 : 0,
+      }),
     };
   }, [profile, loading]);
 

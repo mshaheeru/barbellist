@@ -2,25 +2,30 @@ import type { CurrencyProfile } from "@/lib/currency";
 import { formatMoney, rateLabel } from "@/lib/currency";
 
 export function buildFaqData(profile: CurrencyProfile) {
-  const early = rateLabel(profile, "early");
-  const standard = rateLabel(profile, "standard");
+  const rate = rateLabel(profile, "early");
+  const min = formatMoney(profile.earlyMin, profile);
+  const cap = profile.memberCap;
 
   return [
     {
       q: "How is Barbellist different from legacy gym software?",
-      a: "Legacy platforms charge flat monthly fees regardless of your size and lock features behind tiers. Barbellist charges per member: a simple monthly rate with every feature included from day one. It was built for independent gyms, not enterprise chains.",
+      a: "Legacy platforms charge flat monthly fees and lock features behind tiers. Barbellist charges per active member, with every core feature included. It was built for independent gyms, not enterprise chains.",
     },
     {
       q: "Do you support gyms outside South Asia?",
-      a: "Yes. Barbellist is used by gyms across South Asia, the Middle East, and beyond. The platform supports local currency billing and multiple languages, and WhatsApp reminders work anywhere WhatsApp does.",
+      a: "Yes. Barbellist is used by gyms across South Asia, the Middle East, and beyond. The platform supports local currency billing and WhatsApp reminders work anywhere WhatsApp does.",
     },
     {
-      q: `What happens after the first 3 months at ${early}/member?`,
-      a: `You move to the Standard rate of ${standard} per member per month, still a fraction of legacy pricing. Nothing changes about your data or features, and there is no lock-in. You can cancel any time.`,
+      q: `How does pricing work at ${rate}/member?`,
+      a: `You pay ${rate} per active member per month, with a minimum of ${min}. Former members, leads, and staff don't count. Gyms with ${cap}+ members get custom pricing. First 30 days are free.`,
+    },
+    {
+      q: "Who counts as an active member?",
+      a: "Only active paid memberships. Former members, leads, staff, and archived records don't count toward billing.",
     },
     {
       q: "Do I need special hardware?",
-      a: "No. Any phone, tablet, or laptop works as a check-in kiosk. Members simply scan their QR card. Biometric integration is available on the Standard plan if you want it, but it is never required.",
+      a: "No. Any phone, tablet, or laptop works as a check-in kiosk. Members simply scan their QR card. Biometric integration is never required to start.",
     },
     {
       q: "Is my member data secure?",

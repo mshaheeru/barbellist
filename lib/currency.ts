@@ -9,14 +9,16 @@ export type CurrencyProfile = {
   label: string;
   /** Symbol or short prefix shown before amounts */
   symbol: string;
-  /** Early-access price per member / month */
+  /** Founding / list price per active member / month (fixed local book) */
   earlyRate: number;
-  /** Standard price per member / month */
+  /** Legacy field — unused on landing; kept for FAQ helpers */
   standardRate: number;
-  /** Monthly minimum — early */
+  /** Monthly minimum — founding */
   earlyMin: number;
-  /** Monthly minimum — standard */
+  /** Legacy monthly minimum */
   standardMin: number;
+  /** Self-serve cap; above this → talk to founders */
+  memberCap: number;
   /** Approx multiplier vs USD for demo/mock figures */
   demoFactor: number;
   countryCode: string;
@@ -32,16 +34,21 @@ const GULF_MAP: Record<string, CurrencyCode> = {
   OM: "OMR",
 };
 
+/**
+ * Fixed local price books — NOT FX conversions.
+ * Adjust each market independently as willingness-to-pay becomes clearer.
+ */
 const PROFILES: Record<CurrencyCode, Omit<CurrencyProfile, "countryCode">> = {
   USD: {
     code: "USD",
     region: "usd",
     label: "USD",
     symbol: "$",
-    earlyRate: 1,
-    standardRate: 3,
-    earlyMin: 9,
-    standardMin: 15,
+    earlyRate: 1.99,
+    standardRate: 1.99,
+    earlyMin: 50,
+    standardMin: 50,
+    memberCap: 200,
     demoFactor: 1,
   },
   AED: {
@@ -49,10 +56,11 @@ const PROFILES: Record<CurrencyCode, Omit<CurrencyProfile, "countryCode">> = {
     region: "gulf",
     label: "AED",
     symbol: "AED ",
-    earlyRate: 1,
-    standardRate: 2,
-    earlyMin: 9,
-    standardMin: 15,
+    earlyRate: 7,
+    standardRate: 7,
+    earlyMin: 175,
+    standardMin: 175,
+    memberCap: 200,
     demoFactor: 3.67,
   },
   SAR: {
@@ -60,10 +68,11 @@ const PROFILES: Record<CurrencyCode, Omit<CurrencyProfile, "countryCode">> = {
     region: "gulf",
     label: "SAR",
     symbol: "SAR ",
-    earlyRate: 1,
-    standardRate: 2,
-    earlyMin: 9,
-    standardMin: 15,
+    earlyRate: 7,
+    standardRate: 7,
+    earlyMin: 175,
+    standardMin: 175,
+    memberCap: 200,
     demoFactor: 3.75,
   },
   QAR: {
@@ -71,10 +80,11 @@ const PROFILES: Record<CurrencyCode, Omit<CurrencyProfile, "countryCode">> = {
     region: "gulf",
     label: "QAR",
     symbol: "QAR ",
-    earlyRate: 1,
-    standardRate: 2,
-    earlyMin: 9,
-    standardMin: 15,
+    earlyRate: 7,
+    standardRate: 7,
+    earlyMin: 175,
+    standardMin: 175,
+    memberCap: 200,
     demoFactor: 3.64,
   },
   KWD: {
@@ -82,10 +92,11 @@ const PROFILES: Record<CurrencyCode, Omit<CurrencyProfile, "countryCode">> = {
     region: "gulf",
     label: "KWD",
     symbol: "KWD ",
-    earlyRate: 1,
-    standardRate: 2,
-    earlyMin: 9,
+    earlyRate: 0.6,
+    standardRate: 0.6,
+    earlyMin: 15,
     standardMin: 15,
+    memberCap: 200,
     demoFactor: 0.31,
   },
   BHD: {
@@ -93,10 +104,11 @@ const PROFILES: Record<CurrencyCode, Omit<CurrencyProfile, "countryCode">> = {
     region: "gulf",
     label: "BHD",
     symbol: "BHD ",
-    earlyRate: 1,
-    standardRate: 2,
-    earlyMin: 9,
-    standardMin: 15,
+    earlyRate: 0.7,
+    standardRate: 0.7,
+    earlyMin: 18,
+    standardMin: 18,
+    memberCap: 200,
     demoFactor: 0.38,
   },
   OMR: {
@@ -104,10 +116,11 @@ const PROFILES: Record<CurrencyCode, Omit<CurrencyProfile, "countryCode">> = {
     region: "gulf",
     label: "OMR",
     symbol: "OMR ",
-    earlyRate: 1,
-    standardRate: 2,
-    earlyMin: 9,
-    standardMin: 15,
+    earlyRate: 0.7,
+    standardRate: 0.7,
+    earlyMin: 18,
+    standardMin: 18,
+    memberCap: 200,
     demoFactor: 0.38,
   },
   PKR: {
@@ -115,10 +128,11 @@ const PROFILES: Record<CurrencyCode, Omit<CurrencyProfile, "countryCode">> = {
     region: "pakistan",
     label: "PKR",
     symbol: "Rs ",
-    earlyRate: 30,
-    standardRate: 100,
-    earlyMin: 270,
-    standardMin: 900,
+    earlyRate: 299,
+    standardRate: 299,
+    earlyMin: 7500,
+    standardMin: 7500,
+    memberCap: 200,
     demoFactor: 280,
   },
 };
@@ -146,7 +160,7 @@ export function formatMoney(amount: number, profile: CurrencyProfile, opts?: { d
   }).format(amount);
 
   if (profile.code === "USD") return `$${formatted}`;
-  if (profile.code === "PKR") return `Rs ${formatted}`;
+  if (profile.code === "PKR") return `Rs. ${formatted}`;
   return `${profile.code} ${formatted}`;
 }
 
@@ -164,7 +178,8 @@ export function formatDemoUsd(usdAmount: number, profile: CurrencyProfile): stri
 
 export function rateLabel(profile: CurrencyProfile, which: "early" | "standard"): string {
   const rate = which === "early" ? profile.earlyRate : profile.standardRate;
+  const needsDecimals = rate % 1 !== 0;
   return formatMoney(rate, profile, {
-    decimals: profile.code === "USD" || profile.region === "gulf" ? (rate % 1 ? 2 : 0) : 0,
+    decimals: needsDecimals ? 2 : 0,
   });
 }

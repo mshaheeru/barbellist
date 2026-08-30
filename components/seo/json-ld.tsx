@@ -1,8 +1,8 @@
 import { profileFromCountry } from "@/lib/currency";
 import { buildFaqData } from "@/components/landing/landing-data";
 
-const pkrProfile = profileFromCountry("PK");
-const faqs = buildFaqData(pkrProfile);
+const usdProfile = profileFromCountry("US");
+const faqs = buildFaqData(usdProfile);
 
 const softwareApplication = {
   "@context": "https://schema.org",
@@ -15,10 +15,10 @@ const softwareApplication = {
   url: "https://barbellist.com",
   offers: {
     "@type": "Offer",
-    price: "35000",
-    priceCurrency: "PKR",
+    price: "1.99",
+    priceCurrency: "USD",
     description:
-      "Founding Gym: Rs. 35,000 per month, up to 150 members included. First 30 days free.",
+      "Founding Gym: $1.99 per active member per month. First 30 days free. Custom pricing for 200+ members.",
     availability: "https://schema.org/InStock",
   },
 };

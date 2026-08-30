@@ -7,13 +7,14 @@ import { WhatsAppFloat } from "./WhatsAppFloat";
 import { getWhatsAppUrl } from "@/lib/whatsapp";
 import { FoundersSection } from "./FoundersSection";
 import { LeakSection } from "./LeakSection";
-import { RecoveredRevenueCard } from "./RecoveredRevenueCard";
+import { GymWithBarbellistSection } from "./GymWithBarbellistSection";
 import { HowItWorksSection } from "./HowItWorksSection";
-import { PricingSection, AUDIT_WHATSAPP_MSG } from "./PricingSection";
+import { PricingSection } from "./PricingSection";
 import { ProductPreviewSection } from "./ProductPreviewSection";
-import { CaseStudySection } from "./CaseStudySection";
 import { IncludedSection } from "./IncludedSection";
 import { LandingFaqSection } from "./LandingFaqSection";
+import { RevenueAuditModal } from "./RevenueAuditModal";
+import { CurrencyProvider } from "./CurrencyProvider";
 import { LogoLockupReversed } from "@/components/brand/logo";
 
 const CONTENT_MAX = 1240;
@@ -28,7 +29,21 @@ const NAV_LINK: CSSProperties = {
 };
 
 export function LandingPage() {
+  return (
+    <CurrencyProvider>
+      <LandingInner />
+    </CurrencyProvider>
+  );
+}
+
+function LandingInner() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [auditOpen, setAuditOpen] = useState(false);
+
+  const openAudit = () => {
+    setMenuOpen(false);
+    setAuditOpen(true);
+  };
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -39,11 +54,22 @@ export function LandingPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [menuOpen]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hash === "#audit") {
+      setAuditOpen(true);
+    }
+  }, []);
+
   const closeMenu = () => setMenuOpen(false);
 
   return (
     <div className="landing">
       <WhatsAppFloat />
+      <RevenueAuditModal
+        open={auditOpen}
+        onClose={() => setAuditOpen(false)}
+      />
 
       <nav
         aria-label="Primary"
@@ -86,8 +112,8 @@ export function LandingPage() {
             <a href="#how-it-works" className="nav-link" style={NAV_LINK}>
               How it works
             </a>
-            <a href="#results" className="nav-link" style={NAV_LINK}>
-              Results
+            <a href="#with-barbellist" className="nav-link" style={NAV_LINK}>
+              Your gym
             </a>
             <a href="#pricing" className="nav-link" style={NAV_LINK}>
               Pricing
@@ -95,15 +121,14 @@ export function LandingPage() {
             <Link href="/login" className="nav-link" style={NAV_LINK}>
               Sign In
             </Link>
-            <a
-              href={getWhatsAppUrl(AUDIT_WHATSAPP_MSG)}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={openAudit}
               className="lp-btn-nav-wa"
               style={{ marginLeft: 8 }}
             >
               Get free audit
-            </a>
+            </button>
           </div>
           <button
             type="button"
@@ -144,8 +169,8 @@ export function LandingPage() {
             <a href="#how-it-works" onClick={closeMenu}>
               How it works
             </a>
-            <a href="#results" onClick={closeMenu}>
-              Results
+            <a href="#with-barbellist" onClick={closeMenu}>
+              Your gym
             </a>
             <a href="#pricing" onClick={closeMenu}>
               Pricing
@@ -153,39 +178,36 @@ export function LandingPage() {
             <Link href="/login" onClick={closeMenu}>
               Sign In
             </Link>
-            <a
-              href={getWhatsAppUrl(AUDIT_WHATSAPP_MSG)}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={closeMenu}
+            <button
+              type="button"
+              onClick={openAudit}
               className="lp-mobile-order"
             >
               Get free audit
-            </a>
+            </button>
           </div>
         )}
       </nav>
 
       <main>
-        <HeroSection />
-        <RecoveredRevenueCard />
+        <HeroSection onOpenAudit={openAudit} />
+        <GymWithBarbellistSection />
         <LeakSection />
         <HowItWorksSection />
         <ProductPreviewSection />
-        <CaseStudySection />
         <IncludedSection />
         <FoundersSection />
-        <PricingSection />
+        <PricingSection onOpenAudit={openAudit} />
         <LandingFaqSection />
-        <FinalCtaSection />
+        <FinalCtaSection onOpenAudit={openAudit} />
       </main>
 
-      <FooterSection />
+      <FooterSection onOpenAudit={openAudit} />
     </div>
   );
 }
 
-function HeroSection() {
+function HeroSection({ onOpenAudit }: { onOpenAudit: () => void }) {
   return (
     <header id="top" className="lp-hero">
       <div
@@ -214,14 +236,13 @@ function HeroSection() {
             your team recover them automatically.
           </p>
           <div className="lp-hero-ctas">
-            <a
-              href={getWhatsAppUrl(AUDIT_WHATSAPP_MSG)}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={onOpenAudit}
               className="lp-btn-primary"
             >
-              See how much you&apos;re losing →
-            </a>
+              Get my free revenue audit →
+            </button>
             <a href="#how-it-works" className="lp-btn-secondary">
               How it works
             </a>
@@ -233,7 +254,7 @@ function HeroSection() {
               marginTop: 16,
             }}
           >
-            Free Gym Revenue Leak Audit · First 30 days free · Cancel anytime
+            Free Revenue Leak Audit · No card required
           </p>
 
           <div
@@ -257,7 +278,7 @@ function HeroSection() {
                 marginBottom: 10,
               }}
             >
-              Free Gym Revenue Leak Audit
+              Free revenue audit
             </div>
             <p
               style={{
@@ -267,23 +288,26 @@ function HeroSection() {
                 marginBottom: 14,
               }}
             >
-              Share your member sheet. We show overdue revenue, memberships
-              expiring soon, inactive members, former members worth reactivating,
-              and estimated recoverable revenue.
+              Tell us your member count, fees, and overdue renewals. Get a rough
+              estimate of monthly revenue at risk, then we follow up personally.
             </p>
-            <a
-              href={getWhatsAppUrl(AUDIT_WHATSAPP_MSG)}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={onOpenAudit}
               style={{
                 fontSize: 14,
                 fontWeight: 700,
                 color: "var(--lp-accent)",
                 textDecoration: "none",
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                fontFamily: "inherit",
               }}
             >
-              Request your audit on WhatsApp →
-            </a>
+              Start the free audit →
+            </button>
           </div>
         </div>
       </div>
@@ -291,7 +315,7 @@ function HeroSection() {
   );
 }
 
-function FinalCtaSection() {
+function FinalCtaSection({ onOpenAudit }: { onOpenAudit: () => void }) {
   return (
     <section
       aria-label="Get started"
@@ -324,9 +348,8 @@ function FinalCtaSection() {
             lineHeight: 1.6,
           }}
         >
-          Start with a free Revenue Leak Audit. We migrate your members. First
-          30 days free. If we don&apos;t recover at least your subscription in
-          the first paid month, that month is refunded.
+          Start with a free revenue audit. We migrate your members personally.
+          You only pay when you&apos;re ready to keep going.
         </p>
         <div
           style={{
@@ -337,14 +360,13 @@ function FinalCtaSection() {
             marginTop: 36,
           }}
         >
-          <a
-            href={getWhatsAppUrl(AUDIT_WHATSAPP_MSG)}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={onOpenAudit}
             className="lp-btn-primary"
           >
-            Get free Revenue Leak Audit →
-          </a>
+            Get my free revenue audit →
+          </button>
           <Link href="/signup" className="lp-btn-secondary">
             Start founding trial
           </Link>
@@ -356,7 +378,7 @@ function FinalCtaSection() {
             marginTop: 16,
           }}
         >
-          First 30 days free · No card required · Cancel anytime
+          Free Revenue Leak Audit · No card required
         </p>
         <div
           style={{
@@ -378,13 +400,13 @@ function FinalCtaSection() {
   );
 }
 
-function FooterSection() {
+function FooterSection({ onOpenAudit }: { onOpenAudit: () => void }) {
   const columns = [
     {
       title: "Product",
       links: [
         { label: "How it works", href: "#how-it-works" },
-        { label: "Results", href: "#results" },
+        { label: "Your gym", href: "#with-barbellist" },
         { label: "Pricing", href: "#pricing" },
       ],
     },
@@ -397,13 +419,7 @@ function FooterSection() {
     },
     {
       title: "Resources",
-      links: [
-        { label: "Full FAQ", href: "/faq" },
-        {
-          label: "Free audit",
-          href: getWhatsAppUrl(AUDIT_WHATSAPP_MSG),
-        },
-      ],
+      links: [{ label: "Full FAQ", href: "/faq" }],
     },
     {
       title: "Legal",
@@ -437,6 +453,23 @@ function FooterSection() {
             More revenue. Fewer cancellations. Less admin. Powered by a Gym
             Revenue Recovery System.
           </p>
+          <button
+            type="button"
+            onClick={onOpenAudit}
+            style={{
+              marginTop: 16,
+              background: "none",
+              border: "none",
+              padding: 0,
+              fontSize: 14,
+              fontWeight: 600,
+              color: "var(--lp-accent)",
+              cursor: "pointer",
+              fontFamily: "inherit",
+            }}
+          >
+            Free revenue audit →
+          </button>
           <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
             {[
               {

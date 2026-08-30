@@ -2,28 +2,33 @@
 
 import { getWhatsAppUrl } from "@/lib/whatsapp";
 import { Reveal } from "./Reveal";
+import { useCurrency } from "./CurrencyProvider";
 
-export const AUDIT_WHATSAPP_MSG =
-  "Hi, I'd like a free Gym Revenue Leak Audit for my gym. I can share my member list or a summary.";
+const FOUNDER_WHATSAPP_MSG =
+  "Hi, we have 200+ members (or multiple branches) and want a custom Barbellist plan for our gym.";
 
 const EARLY_FEATURES = [
-  "Up to 150 members included",
   "Personal migration & setup by founders",
   "Revenue leak dashboard",
   "Automated WhatsApp reminders",
-  "At-risk & inactive member alerts",
-  "QR membership cards + check-in kiosk",
+  "At-risk member alerts",
+  "QR cards & check-in kiosk",
 ];
 
-const STANDARD_FEATURES = [
-  "Higher member caps",
+const LARGER_FEATURES = [
+  "Built around your gym size",
   "Multi-branch support",
-  "Advanced analytics",
-  "Priority support",
   "Everything in Founding Gym",
+  "Priority founder support",
 ];
 
-export function PricingSection() {
+export function PricingSection({
+  onOpenAudit,
+}: {
+  onOpenAudit: () => void;
+}) {
+  const { earlyRate, earlyMin, memberCap, loading } = useCurrency();
+
   return (
     <Reveal
       as="section"
@@ -52,8 +57,8 @@ export function PricingSection() {
           lineHeight: 1.6,
         }}
       >
-        We migrate your members and configure Barbellist personally. First 30
-        days free. Cancel anytime.
+        We migrate your members and configure Barbellist personally. You only
+        pay for active members.
       </p>
 
       <div
@@ -87,9 +92,8 @@ export function PricingSection() {
             margin: 0,
           }}
         >
-          If Barbellist doesn&apos;t recover at least your monthly subscription
-          fee during your first paid month, we refund that month&apos;s
-          subscription.
+          If Barbellist doesn&apos;t recover at least your subscription during
+          your first paid month, we refund that month.
         </p>
       </div>
 
@@ -120,26 +124,31 @@ export function PricingSection() {
           >
             Founding Gym
           </div>
-          <div className="lp-price-amount">Rs. 35,000</div>
+          <div
+            className="lp-price-amount"
+            style={{ opacity: loading ? 0.4 : 1 }}
+          >
+            {earlyRate}
+          </div>
           <div
             style={{
               fontSize: 14,
               color: "var(--lp-text-muted)",
               marginTop: 6,
-              marginBottom: 4,
-            }}
-          >
-            / month after trial
-          </div>
-          <div
-            style={{
-              fontSize: 16,
-              color: "var(--lp-text-primary)",
-              fontWeight: 700,
               marginBottom: 8,
             }}
           >
-            Up to 150 members included
+            / active member / month
+          </div>
+          <div
+            style={{
+              fontSize: 15,
+              color: "var(--lp-text-primary)",
+              fontWeight: 600,
+              marginBottom: 8,
+            }}
+          >
+            You only pay for members you&apos;re managing.
           </div>
           <div
             style={{
@@ -149,7 +158,7 @@ export function PricingSection() {
               marginBottom: 28,
             }}
           >
-            First 30 days free · No card required
+            First 30 days free · Cancel anytime
           </div>
           <ul
             style={{
@@ -157,7 +166,7 @@ export function PricingSection() {
               display: "flex",
               flexDirection: "column",
               gap: 12,
-              marginBottom: 32,
+              marginBottom: 24,
             }}
           >
             {EARLY_FEATURES.map((f) => (
@@ -177,47 +186,60 @@ export function PricingSection() {
               </li>
             ))}
           </ul>
-          <a
-            href={getWhatsAppUrl(AUDIT_WHATSAPP_MSG)}
-            target="_blank"
-            rel="noopener noreferrer"
+          <p
+            style={{
+              fontSize: 12,
+              color: "var(--lp-text-muted)",
+              lineHeight: 1.5,
+              marginBottom: 24,
+            }}
+          >
+            Minimum {earlyMin}/month. Custom pricing for {memberCap}+ members.
+          </p>
+          <button
+            type="button"
+            onClick={onOpenAudit}
             className="lp-btn-primary"
             style={{ width: "100%" }}
           >
-            Get free Revenue Leak Audit →
-          </a>
+            Start free →
+          </button>
         </div>
 
-        <div className="lp-price-card lp-price-card-dim">
+        <div className="lp-price-card">
           <div
             style={{
               fontSize: 18,
               fontWeight: 700,
-              color: "var(--lp-text-muted)",
+              color: "var(--lp-text-primary)",
               marginBottom: 12,
               marginTop: 36,
             }}
           >
-            Standard
-          </div>
-          <div
-            className="lp-price-amount"
-            style={{ color: "var(--lp-text-muted)" }}
-          >
-            Custom
+            Larger gyms
           </div>
           <div
             style={{
-              fontSize: 14,
+              fontSize: 22,
+              fontWeight: 800,
+              color: "var(--lp-text-primary)",
+              letterSpacing: "-0.02em",
+              lineHeight: 1.25,
+              marginBottom: 12,
+            }}
+          >
+            {memberCap}+ members or multiple branches?
+          </div>
+          <p
+            style={{
+              fontSize: 15,
               color: "var(--lp-text-muted)",
-              marginTop: 6,
+              lineHeight: 1.55,
               marginBottom: 28,
             }}
           >
-            Higher caps · multi-branch
-            <br />
-            After Founding period
-          </div>
+            We&apos;ll build a plan around your gym.
+          </p>
           <ul
             style={{
               listStyle: "none",
@@ -227,41 +249,32 @@ export function PricingSection() {
               marginBottom: 32,
             }}
           >
-            {STANDARD_FEATURES.map((f) => (
+            {LARGER_FEATURES.map((f) => (
               <li
                 key={f}
                 style={{
                   display: "flex",
                   gap: 10,
                   fontSize: 14,
-                  color: "var(--lp-text-muted)",
+                  color: "var(--lp-text-primary)",
                 }}
               >
-                <span style={{ color: "var(--lp-text-muted)", fontWeight: 700 }}>
+                <span style={{ color: "var(--lp-accent)", fontWeight: 700 }}>
                   ✓
                 </span>
                 {f}
               </li>
             ))}
           </ul>
-          <button
-            type="button"
-            disabled
-            style={{
-              width: "100%",
-              padding: "16px 32px",
-              borderRadius: 8,
-              border: "1px solid var(--lp-white-5)",
-              background: "var(--lp-white-5)",
-              color: "var(--lp-text-muted)",
-              fontWeight: 600,
-              fontSize: 16,
-              cursor: "not-allowed",
-              fontFamily: "inherit",
-            }}
+          <a
+            href={getWhatsAppUrl(FOUNDER_WHATSAPP_MSG)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="lp-btn-secondary"
+            style={{ width: "100%" }}
           >
-            Coming soon
-          </button>
+            Talk to a founder →
+          </a>
         </div>
       </div>
     </Reveal>
